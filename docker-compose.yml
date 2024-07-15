@@ -14,6 +14,7 @@ services:
     command: --default-authentication-plugin=mysql_native_password
     networks:
       - internal
+
   web:
     command: gunicorn --workers 1  -t 90 --bind 0.0.0.0:8081 uwsgi:app --log-level=debug
     build:
