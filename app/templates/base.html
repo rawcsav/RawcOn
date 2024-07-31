@@ -86,20 +86,6 @@
     endblock %} {% include 'footer.html' %} {% assets "common_js_bundle" %}
     <script src="{{ ASSET_URL }}"></script>
     {% endassets %} {% block scripts %} {% endblock %} {% if not config['DEBUG']
-    %}
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-1RCQ936RPQ"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
-
-      gtag("config", "G-1RCQ936RPQ");
-    </script>
-    {% endif %}
+    %} {% endif %}
   </body>
 </html>
