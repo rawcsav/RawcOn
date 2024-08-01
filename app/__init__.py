@@ -45,7 +45,6 @@ def create_app():
         from app.modules.auth import auth
         from app.modules.user import user
         from app.modules.stats import stats
-        from app.modules.art_gen import art_gen
         from app.modules.recs import recs
         from app.modules.playlists import playlist
 
@@ -54,7 +53,6 @@ def create_app():
         app.register_blueprint(stats.stats_bp)
         app.register_blueprint(recs.recs_bp)
         app.register_blueprint(playlist.playlist_bp)
-        app.register_blueprint(art_gen.art_gen_bp)
 
         from app.util.assets_util import compile_static_assets
 

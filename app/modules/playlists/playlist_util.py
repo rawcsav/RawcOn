@@ -4,7 +4,7 @@ from datetime import datetime
 
 from flask import session
 from app import db
-from app.models.user_models import playlist_sql
+from app.models.user_models import PlaylistData
 from app.modules.user.user_util import init_session_client
 from app.util.database_util import get_or_fetch_audio_features, get_or_fetch_artist_info
 
@@ -300,7 +300,7 @@ def update_playlist_data(playlist_id):
     if error:
         return json.dumps(error), 401
 
-    playlist = playlist_sql.query.get(playlist_id)
+    playlist = PlaylistData.query.get(playlist_id)
     if not playlist:
         return "Playlist not found", 404
 

@@ -1,5 +1,4 @@
 from flask import Blueprint, render_template, jsonify, session
-from sqlalchemy.orm import joinedload
 
 from app.models.user_models import UserData
 from app.modules.auth.auth import require_spotify_auth, fetch_user_data

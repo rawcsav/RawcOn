@@ -1,13 +1,8 @@
-import base64
 import json
 import random
-from io import BytesIO
-import requests
-from PIL import Image
 from flask import Blueprint, render_template, jsonify, session, redirect, url_for, request
 from app import db
-from app.models.artgen_models import genre_sql
-from app.models.user_models import UserData, playlist_sql
+from app.models.user_models import UserData, PlaylistData, GenreData
 from app.modules.auth.auth import require_spotify_auth, fetch_user_data
 from app.modules.auth.auth_util import verify_session
 from app.modules.playlists.playlist_util import (
@@ -19,7 +14,6 @@ from app.modules.playlists.playlist_util import (
 )
 from app.modules.recs.recs_util import get_recommendations
 from app.modules.user.user_util import init_session_client, format_track_info
-from app.util.database_util import delete_expired_images_for_playlist
 
 playlist_bp = Blueprint(
     "playlist", __name__, template_folder="templates", static_folder="static", url_prefix="/playlist"
@@ -59,9 +53,7 @@ def playlist():
 @playlist_bp.route("/playlist/<string:playlist_id>")
 @require_spotify_auth
 def show_playlist(playlist_id):
-    delete_expired_images_for_playlist(playlist_id)
-
-    playlist = playlist_sql.query.get(playlist_id)
+    playlist = PlaylistData.query.get(playlist_id)
     playlist_url = f"https://open.spotify.com/playlist/{playlist_id}"
     access_token = verify_session(session)
 
@@ -78,7 +70,7 @@ def show_playlist(playlist_id):
         sorted_genre_data = sorted(playlist_data["genre_counts"].items(), key=lambda x: x[1]["count"], reverse=True)
         top_10_genre_data = dict(sorted_genre_data[:10])
 
-        artgen_ten, genre_scores = calculate_genre_weights(playlist_data["genre_counts"], genre_sql)
+        genre_scores = calculate_genre_weights(playlist_data["genre_counts"], GenreData)
         return render_template(
             "spec_playlist.html",
             playlist_id=playlist_id,
@@ -91,7 +83,6 @@ def show_playlist(playlist_id):
             total_tracks=total_tracks,
             is_collaborative=is_collaborative,
             is_public=is_public,
-            artgen_ten=artgen_ten,
             genre_scores=genre_scores,
         )
 
@@ -108,8 +99,7 @@ def show_playlist(playlist_id):
         pl_temporal_stats,
     ) = get_playlist_details(sp, playlist_id)
 
-    # Create a new playlist_sql object and save it to the SQL database
-    new_playlist = playlist_sql(
+    new_playlist = PlaylistData(
         id=pl_playlist_info["id"],
         name=pl_playlist_info["name"],
         owner=pl_playlist_info["owner"],
@@ -142,7 +132,7 @@ def show_playlist(playlist_id):
     # Preprocess the genre_counts data in the Python route function
     sorted_genre_data = sorted(playlist_data["genre_counts"].items(), key=lambda x: x[1]["count"], reverse=True)
     top_10_genre_data = dict(sorted_genre_data[:10])
-    artgen_ten, genre_scores = calculate_genre_weights(playlist_data["genre_counts"], genre_sql)
+    genre_scores = calculate_genre_weights(playlist_data["genre_counts"], GenreData)
     return render_template(
         "spec_playlist.html",
         playlist_id=playlist_id,
@@ -155,7 +145,6 @@ def show_playlist(playlist_id):
         total_tracks=total_tracks,
         is_collaborative=is_collaborative,
         is_public=is_public,
-        artgen_ten=artgen_ten,
         genre_scores=genre_scores,
     )
 
@@ -177,7 +166,7 @@ def like_all_songs(playlist_id):
     if error:
         return json.dumps(error), 401
 
-    playlist = playlist_sql.query.get(playlist_id)
+    playlist = PlaylistData.query.get(playlist_id)
     if not playlist:
         return "Playlist not found", 404
 
@@ -203,7 +192,7 @@ def unlike_all_songs(playlist_id):
     if error:
         return json.dumps(error), 401
 
-    playlist = playlist_sql.query.get(playlist_id)
+    playlist = PlaylistData.query.get(playlist_id)
     if not playlist:
         return "Playlist not found", 404
 
@@ -229,7 +218,7 @@ def remove_duplicates(playlist_id):
     if error:
         return json.dumps(error), 401
 
-    playlist = playlist_sql.query.get(playlist_id)
+    playlist = PlaylistData.query.get(playlist_id)
     if not playlist:
         return "Playlist not found", 404
 
@@ -275,7 +264,7 @@ def reorder_playlist(playlist_id):
     if error:
         return jsonify(error=error), 401
 
-    playlist = playlist_sql.query.get(playlist_id)
+    playlist = PlaylistData.query.get(playlist_id)
     if not playlist:
         return jsonify(error="Playlist not found"), 404
 
@@ -327,7 +316,7 @@ def get_pl_recommendations(playlist_id):
     if error:
         return jsonify(error=error), 401
 
-    playlist = playlist_sql.query.get(playlist_id)
+    playlist = PlaylistData.query.get(playlist_id)
     if not playlist:
         return jsonify(error="Playlist not found"), 404
 
@@ -351,34 +340,3 @@ def get_pl_recommendations(playlist_id):
 
     track_info_list = [format_track_info(track) for track in recommendations_data["tracks"]]
     return jsonify({"recommendations": track_info_list})
-
-
-@playlist_bp.route("/playlist/<string:playlist_id>/cover-art", methods=["POST"])
-@require_spotify_auth
-def change_cover_art(playlist_id):
-    image_url = request.json.get("image_url")
-
-    if not image_url:
-        return jsonify(error="Image URL not provided"), 400
-
-    try:
-        # Fetch the image from the provided URL
-        response = requests.get(image_url)
-        image = Image.open(BytesIO(response.content))
-
-        buffered = BytesIO()
-        image.save(buffered, format="JPEG")
-        img_base64 = base64.b64encode(buffered.getvalue())
-
-        # Initialize the Spotify client
-        sp, error = init_session_client(session)
-        if error:
-            return jsonify(error=error), 401
-
-        # Use the Spotify API to update the cover art
-        sp.playlist_upload_cover_image(playlist_id, img_base64.decode("utf-8"))
-
-        return jsonify(status="Cover art updated successfully"), 200
-
-    except Exception as e:
-        return jsonify(error=str(e)), 500

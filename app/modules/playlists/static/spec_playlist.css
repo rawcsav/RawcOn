@@ -267,7 +267,6 @@ body.dark-mode p {
 .homepage-link:hover img,
 .profile-link:hover,
 .pl-refresh:hover,
-#generate-art-btn:hover,
 .button-group button:hover,
 .plfunc-group button:hover,
 .plorder-group button:hover,
@@ -279,7 +278,6 @@ body.dark-mode p {
 
 .pl-refresh,
 .profile-link,
-#generate-art-btn:hover,
 .button-group button,
 .plfunc-group button,
 .plorder-group button {
@@ -620,21 +618,6 @@ body.dark-mode .utils-title body.dark-mode .gen-titles {
   width: 95%;
 }
 
-.artist-gen-container {
-  align-items: center;
-  display: flex;
-  flex-flow: column;
-  margin-top: 100px;
-}
-
-#artgen-btn {
-  background-color: #f7a1d5;
-}
-
-#art-gen-title {
-  text-align: center;
-}
-
 #recommendations-title {
   text-align: center;
 }
@@ -812,158 +795,6 @@ body.dark-mode li {
   margin-top: 5px;
 }
 
-.login-button {
-  align-items: center;
-  background-color: #fff;
-  border-radius: 20px;
-  box-shadow: 0 4px 10px rgb(0 0 0 / 8%);
-  color: #191919;
-  display: flex;
-  font-size: 1.1em;
-  font-weight: bold;
-  justify-content: space-between;
-  padding: 10px 15px 10px 10px;
-  text-decoration: none;
-  transition: box-shadow 0.3s;
-  width: 230px;
-}
-
-.login-button,
-.login-button img {
-  line-height: normal;
-  vertical-align: middle;
-}
-
-.openai-logo {
-  height: auto;
-  width: 100px;
-}
-
-#generate-art-btn {
-  background-color: #f7a1d5;
-  border: transparent;
-  border-radius: 10px;
-  color: #fff;
-  cursor: pointer;
-  font-size: 10px;
-  font-weight: bold;
-  text-align: center;
-  text-decoration: none;
-  transition: background-color 0.3s;
-  width: 100px;
-}
-
-body.dark-mode #generate-art-btn,
-body.dark-mode #artgen-btn {
-  background-color: #f9778c;
-}
-
-body.dark-mode #gen-refresh-icon,
-body.dark-mode .art-gen-icon-div {
-  color: #f9778c;
-}
-
-#apiKeyForm {
-  align-items: center;
-  background-color: #fff;
-  border-radius: 20px;
-  box-shadow: 0 4px 10px rgb(0 0 0 / 8%);
-  color: #191919;
-  display: flex;
-  font-size: 1.3em;
-  justify-content: space-between;
-  padding: 10px 15px 10px 10px;
-  text-decoration: none;
-  transition: box-shadow 0.3s;
-  width: 200px;
-}
-
-#apiKeyForm input {
-  border: none;
-  flex-grow: 1;
-}
-
-#apiKeyForm .submit-btn {
-  background: none;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-  font-size: 1em;
-  padding: 0;
-}
-
-#parent-toggle-icon {
-  color: grey;
-  cursor: pointer;
-}
-
-#parent-toggle-icon.active {
-  color: red;
-}
-
-#hd-toggle-icon {
-  color: grey;
-  cursor: pointer;
-}
-
-#hd-toggle-icon.active {
-  color: #9b5de5;
-}
-
-#art-gen-results {
-  display: flex;
-  flex-direction: row;
-  gap: 75px;
-}
-
-.art-gen-img {
-  border: 1px solid #000;
-  box-shadow: 0 0 10px rgb(0 0 0 / 10%);
-  height: 300px;
-  margin: 10px;
-  width: 300px;
-}
-
-.art-gen-img:hover {
-  transform: scale(1.05);
-  transition: transform 0.5s ease-in-out;
-}
-
-.art-gen-icon-div {
-  align-items: center;
-  color: #ca403f;
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: space-around;
-  text-align: center;
-  gap: 50px;
-}
-
-.art-gen-prompt {
-  color: white;
-  font-size: 10px;
-  width: 300px;
-  display: flex;
-  position: absolute;
-  margin-bottom: 40px;
-  background-color: rgba(0, 0, 0, 0.7);
-  padding: 5px;
-  border-radius: 5px;
-  z-index: 10;
-}
-
-.art-gen-prompt.hidden {
-  position: absolute;
-  display: none;
-  bottom: 0;
-}
-
-.art-gen-img-div {
-  display: flex;
-  flex-direction: column-reverse;
-  align-items: center;
-}
-
 .genre-title-container {
   align-content: center;
   align-items: center;
@@ -974,12 +805,6 @@ body.dark-mode .art-gen-icon-div {
 
 body.dark-mode .art-gen-prompt {
   color: #ff506d;
-}
-
-.art-gen-icon-div i {
-  cursor: pointer;
-  font-size: 20px;
-  margin: 5px;
 }
 
 #gen-refresh-icon {
@@ -1195,11 +1020,5 @@ body.dark-mode .art-gen-prompt {
 
   .bottom-section {
     flex-direction: column;
-  }
-
-  #art-gen-results {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
   }
 }

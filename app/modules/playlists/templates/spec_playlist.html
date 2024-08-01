@@ -32,13 +32,6 @@
       >
         <i class="icon-list-music"></i> Track Recs
       </button>
-      <button
-        id="artgen-btn"
-        title="Generate cover art"
-        onclick="showArtGenContainer()"
-      >
-        <i class="icon-paintbruhs"></i> Cover Art Gen
-      </button>
     </div>
     <div class="playlist-container">
       <a href="{{ playlist_url }}" target="_blank" rel="noopener noreferrer">
@@ -101,61 +94,6 @@
     <div class="results-container">
       <div id="results"></div>
     </div>
-  </div>
-  <div class="artist-gen-container" style="display: none">
-    <div id="connect-button" onclick="displayInputField(event)">
-      <a class="login-button" href="#">
-        Connect
-        <br />
-        <img
-          src="https://upload.wikimedia.org/wikipedia/commons/4/4d/OpenAI_Logo.svg"
-          class="openai-logo"
-          alt="OpenAI"
-        />
-      </a>
-    </div>
-    <form
-      id="apiKeyForm"
-      style="display: none"
-      onsubmit="handleApiKeySubmit(event)"
-    >
-      <input type="text" id="apiKey" name="apiKey" required />
-      <button type="submit" class="submit-btn">
-        <i class="icon-arrow-right"></i>
-      </button>
-    </form>
-    <div class="gen-btns">
-      <input type="checkbox" id="parent-toggle" style="display: none" />
-      <i
-        class="icon-target"
-        id="parent-toggle-icon"
-        title="Use Parent Genre"
-        onclick="toggleCheckbox('parent-toggle', 'parent-toggle-icon')"
-      ></i>
-
-      <input type="checkbox" id="hd-toggle" style="display: none" />
-      <i
-        class="icon-high-definition"
-        id="hd-toggle-icon"
-        title="Toggle HD Quality"
-        onclick="toggleCheckbox('hd-toggle', 'hd-toggle-icon')"
-      ></i>
-      <button id="generate-art-btn" onclick="generateArtForPlaylist()">
-        Generate Art
-      </button>
-
-      <i id="gen-refresh-icon" class="icon-refresh" onclick="refreshArt()"></i>
-    </div>
-    <div id="art-gen-results"></div>
-    <p
-      id="update-button"
-      style="color: grey; font-size: small; cursor: pointer"
-      onclick="showKeyFormAndHideUpdateButton()"
-    >
-      Update OpenAI Key
-    </p>
-
-    <div class="custom-line"></div>
   </div>
 </div>
 <div class="bottom-section">
@@ -222,7 +160,6 @@
       </ul>
     </div>
 
-    <!-- Most Similar Genres Section -->
     <div id="most-similar" class="data-view">
       <h3 class="gen-titles">Most Similar</h3>
       <ul>
@@ -273,7 +210,6 @@
 </div>
 <div
   id="data-container"
-  data-artgen-ten="{{ artgen_ten|safe }}"
   data-year-count="{{ year_count }}"
   data-playlist-id="{{ playlist_id }}"
 ></div>

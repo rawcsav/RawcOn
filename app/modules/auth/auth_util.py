@@ -1,10 +1,7 @@
-import os
 import secrets
 import string
 from datetime import timezone, timedelta, datetime
-import openai
 import requests
-from cryptography.fernet import Fernet
 from flask import abort, session, current_app
 
 
@@ -50,40 +47,6 @@ def request_tokens(payload, client_id, client_secret):
 
 def convert_utc_to_est(utc_time):
     return utc_time.replace(tzinfo=timezone.utc).astimezone(timezone(timedelta(hours=-4)))
-
-
-def load_encryption_key():
-    return os.environ["CRYPT_KEY"].encode()
-
-
-def encrypt_data(api_key):
-    cipher_suite = Fernet(load_encryption_key())
-    encrypted_api_key = cipher_suite.encrypt(api_key.encode())
-    return encrypted_api_key
-
-
-def decrypt_data(encrypted_api_key):
-    cipher_suite = Fernet(load_encryption_key())
-    decrypted_api_key = cipher_suite.decrypt(encrypted_api_key)
-    return decrypted_api_key.decode()
-
-
-def is_api_key_valid(key):
-    openai.api_key = key
-    try:
-        test = openai.chat.completions.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": "Hello!"},
-            ],
-            max_tokens=10,
-            temperature=0,
-        )
-        if test.choices[0].message.content:
-            return True
-    except openai.OpenAIError:
-        return False
 
 
 def refresh_tokens():

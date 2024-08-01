@@ -14,11 +14,10 @@ class UserData(db.Model):
     recent_tracks = db.Column(db.JSON, nullable=True)
     playlist_info = db.Column(db.JSON, nullable=True)
     last_active = db.Column(db.DateTime, default=datetime.utcnow)
-    api_key_encrypted = db.Column(BLOB, nullable=True)
     isDarkMode = db.Column(db.Boolean, nullable=True)
 
 
-class artist_sql(db.Model):
+class ArtistData(db.Model):
     id = db.Column(db.String(100), primary_key=True, index=True)
     name = db.Column(db.VARCHAR(255))
     external_url = db.Column(db.VARCHAR(255))
@@ -31,7 +30,7 @@ class artist_sql(db.Model):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
-class features_sql(db.Model):
+class FeatureData(db.Model):
     id = db.Column(db.VARCHAR(255), primary_key=True, index=True)
     danceability = db.Column(db.Float)
     energy = db.Column(db.Float)
@@ -50,7 +49,7 @@ class features_sql(db.Model):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
-class playlist_sql(db.Model):
+class PlaylistData(db.Model):
     id = db.Column(db.VARCHAR(255), primary_key=True, index=True)
     name = db.Column(db.VARCHAR(255))
     owner = db.Column(db.VARCHAR(255))
@@ -64,3 +63,17 @@ class playlist_sql(db.Model):
     top_artists = db.Column(db.JSON)
     feature_stats = db.Column(db.JSON)
     temporal_stats = db.Column(db.JSON)
+
+
+class GenreData(db.Model):
+    genre = db.Column(db.VARCHAR(50), primary_key=True)
+    sim_genres = db.Column(db.TEXT, nullable=True)
+    sim_weights = db.Column(db.TEXT, nullable=True)
+    opp_genres = db.Column(db.TEXT, nullable=True)
+    opp_weights = db.Column(db.TEXT, nullable=True)
+    spotify_url = db.Column(db.TEXT, nullable=True)
+    color_hex = db.Column(db.TEXT, nullable=True)
+    color_rgb = db.Column(db.TEXT, nullable=True)
+    x = db.Column(db.Float, nullable=True)
+    y = db.Column(db.Float, nullable=True)
+    closest_stat_genres = db.Column(db.TEXT, nullable=True)

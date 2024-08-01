@@ -1,25 +1,11 @@
-import re
 from datetime import datetime, timedelta
 from functools import wraps
 from urllib.parse import urlencode
-import cloudinary
-import requests
 from flask import Blueprint, abort, redirect, render_template, request, session, url_for, jsonify, current_app
 from flask import make_response
-from openai import OpenAI
 
-from app import db
-from app.models.user_models import UserData
-from app.modules.auth.auth_util import (
-    verify_session,
-    generate_state,
-    prepare_auth_payload,
-    request_tokens,
-    fetch_user_data,
-    decrypt_data,
-    is_api_key_valid,
-    encrypt_data,
-)
+
+from app.modules.auth.auth_util import generate_state, prepare_auth_payload, request_tokens, fetch_user_data
 
 auth_bp = Blueprint("auth", __name__, template_folder="templates", static_folder="static", url_prefix="/")
 
@@ -139,59 +125,3 @@ def refresh():
     )
 
     return redirect(session.pop("original_request_url", url_for("user.profile")))
-
-
-@auth_bp.route("/save-api-key", methods=["POST"])
-def save_api_key():
-    access_token = verify_session(session)
-    res_data = fetch_user_data(access_token)
-    spotify_user_id = res_data.get("id")
-
-    user_data = UserData.query.filter_by(spotify_user_id=spotify_user_id).first()
-
-    api_key = request.json.get("api_key")
-    api_key_pattern = re.compile(r"sk-[A-Za-z0-9]{48}")
-    if not api_key_pattern.match(api_key):
-        return jsonify({"status": "error", "message": "Invalid API key format."}), 400
-
-    if not is_api_key_valid(api_key):
-        return jsonify({"message": "Invalid OpenAI API Key"}), 400
-
-    encrypted_key = encrypt_data(api_key)
-    try:
-        user_data.api_key_encrypted = encrypted_key
-        db.session.commit()
-    except:
-        db.session.rollback()
-        raise
-
-    return jsonify({"message": "API Key saved successfully"}), 200
-
-
-@auth_bp.route("/check-api-key", methods=["GET"])
-def check_api_key():
-    access_token = verify_session(session)
-    if not access_token:
-        # Handle the case where session verification fails
-        return jsonify({"error": "Access token verification failed"}), 401
-
-    res_data = fetch_user_data(access_token)
-    if not res_data:
-        # Handle the case where fetching user data fails
-        return jsonify({"error": "Failed to fetch user data"}), 500
-
-    spotify_user_id = res_data.get("id")
-    if not spotify_user_id:
-        # Handle the case where Spotify user ID is not obtained
-        return jsonify({"error": "Spotify user ID not found"}), 500
-
-    user = UserData.query.filter_by(spotify_user_id=spotify_user_id).first()
-    if user and user.api_key_encrypted:
-        api_key = decrypt_data(user.api_key_encrypted)
-        if is_api_key_valid(api_key):
-            return jsonify({"has_key": True})
-        else:
-            return jsonify({"has_key": False})
-    else:
-        # Handle the case where no user or API key is found
-        return jsonify({"has_key": False})

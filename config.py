@@ -44,9 +44,6 @@ class Config(object):
     CLOUD_API_KEY = os.getenv("CLOUDINARY_API_KEY")
     CLOUD_SECRET = os.getenv("CLOUDINARY_SECRET")
 
-    GOOGLE_SITE_KEY = os.getenv("GOOGLE_SITE_KEY")
-    GOOGLE_SECRET_KEY = os.getenv("GOOGLE_SECRET_KEY")
-
     SEARCH_ID = os.getenv("SEARCH_ID")
     SEARCH_SECRET = os.getenv("SEARCH_SECRET")
 
