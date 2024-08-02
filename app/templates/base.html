@@ -83,7 +83,7 @@
   </head>
   <body class="{% if g.is_dark_mode %}dark-mode{% endif %}">
     {% block menu %}{% include 'menu.html' %} {% endblock %} {% block body %} {%
-    endblock %} {% include 'footer.html' %} {% assets "common_js_bundle" %}
+    endblock %}{% assets "common_js_bundle" %}
     <script src="{{ ASSET_URL }}"></script>
     {% endassets %} {% block scripts %} {% endblock %} {% if not config['DEBUG']
     %} {% endif %}
