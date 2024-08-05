@@ -98,31 +98,32 @@
   <div class="card">
     <h2>Audio Features</h2>
     <canvas id="audioFeaturesChart"></canvas>
+    <div id="minMaxTracks"></div>
   </div>
-</div>
 
-<div class="card">
-  <h2>Playlists</h2>
-  <ul id="playlists"></ul>
-</div>
-{% else %}
-<p>No user data available. Please try refreshing your data.</p>
-{% endif %} {% endblock %}{% block scripts %}
-<script>
-  {% if user_data and period_data and top_genres and audio_features_summary and top_artists_summary and top_tracks_summary and playlist_summary %}
-        const userData = {{ user_data | tojson | safe }};
-        const periodData = {{ period_data | tojson | safe }};
-        const topGenres = {{ top_genres | tojson | safe }};
-        const audioFeaturesSummary = {{ audio_features_summary | tojson | safe }};
-        const topArtistsSummary = {{ top_artists_summary | tojson | safe }};
-        const topTracksSummary = {{ top_tracks_summary | tojson | safe }};
-        const playlistSummary = {{ playlist_summary | tojson | safe }};
+  <div class="card">
+    <h2>Playlists</h2>
+    <ul id="playlists"></ul>
+  </div>
+  {% else %}
+  <p>No user data available. Please try refreshing your data.</p>
+  {% endif %} {% endblock %}{% block scripts %}
+  <script>
+    {% if user_data and period_data and top_genres and audio_features_summary and top_artists_summary and top_tracks_summary and playlist_summary %}
+          const userData = {{ user_data | tojson | safe }};
+          const periodData = {{ period_data | tojson | safe }};
+          const topGenres = {{ top_genres | tojson | safe }};
+          const audioFeaturesSummary = {{ audio_features_summary | tojson | safe }};
+          const topArtistsSummary = {{ top_artists_summary | tojson | safe }};
+          const topTracksSummary = {{ top_tracks_summary | tojson | safe }};
+          const playlistSummary = {{ playlist_summary | tojson | safe }};
 
-        console.log("Script loaded and initial display set");  // Debug log
-    {% else %}
-        console.log("Some required data is missing");
-    {% endif %}
-</script>
-{% assets "user_js_bundle" %}
-<script src="{{ ASSET_URL }}"></script>
-{% endassets %}{% endblock %}
+          console.log("Script loaded and initial display set");  // Debug log
+      {% else %}
+          console.log("Some required data is missing");
+      {% endif %}
+  </script>
+  {% assets "user_js_bundle" %}
+  <script src="{{ ASSET_URL }}"></script>
+  {% endassets %}{% endblock %}
+</div>

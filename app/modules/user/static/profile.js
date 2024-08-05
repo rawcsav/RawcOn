@@ -31,7 +31,6 @@ document.addEventListener("DOMContentLoaded", function () {
     updateTopArtists(period);
     updateTopTracks(period);
     updateTopGenres(period);
-    updateAudioFeaturesChart(period);
   }
 
   function updateTopArtists(period) {
@@ -118,7 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .map(
           (genre) => `
           <a href="#" class="genre-link" data-period="${period}" data-genre="${genre[0]}">
-            ${genre[0]} (${genre[1]})
+            ${genre[0]}
           </a>
         `,
         )
@@ -186,55 +185,207 @@ document.addEventListener("DOMContentLoaded", function () {
 
     genreDetails.style.display = "block";
   }
+  function createEnhancedAudioFeaturesChart(audioFeaturesSummary, periodData) {
+    const ctx = document.getElementById("audioFeaturesChart").getContext("2d");
+    const features = [
+      "acousticness",
+      "danceability",
+      "energy",
+      "instrumentalness",
+      "liveness",
+      "speechiness",
+      "valence",
+      "loudness",
+      "tempo",
+    ];
+    let currentPeriod = "short_term";
+    let showMinMax = false;
 
-  function updateAudioFeaturesChart(period) {
-    if (audioFeaturesSummary && audioFeaturesSummary[period]) {
-      const features = audioFeaturesSummary[period];
-      const ctx = document
-        .getElementById("audioFeaturesChart")
-        .getContext("2d");
+    const featureRanges = {
+      acousticness: [0, 1],
+      danceability: [0, 1],
+      energy: [0, 1],
+      instrumentalness: [0, 1],
+      liveness: [0, 1],
+      speechiness: [0, 1],
+      valence: [0, 1],
+      loudness: [-60, 0],
+      tempo: [0, 250],
+    };
 
-      if (audioFeaturesChart) {
-        audioFeaturesChart.destroy();
+    function normalizeFeature(feature, value) {
+      const [min, max] = featureRanges[feature];
+      return (value - min) / (max - min);
+    }
+
+    function denormalizeFeature(feature, value) {
+      const [min, max] = featureRanges[feature];
+      return value * (max - min) + min;
+    }
+
+    let chart = new Chart(ctx, {
+      type: "radar",
+      data: {
+        labels: features,
+        datasets: [
+          {
+            label: "Audio Features",
+            data: features.map((feature) =>
+              normalizeFeature(
+                feature,
+                audioFeaturesSummary[currentPeriod][feature],
+              ),
+            ),
+            backgroundColor: "rgba(29, 185, 84, 0.2)",
+            borderColor: "rgb(29, 185, 84)",
+            pointBackgroundColor: "rgb(29, 185, 84)",
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: "rgb(29, 185, 84)",
+          },
+        ],
+      },
+      options: {
+        scales: {
+          r: {
+            angleLines: { display: false },
+            suggestedMin: 0,
+            suggestedMax: 1,
+          },
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                const feature = context.label.toLowerCase();
+                const value = denormalizeFeature(feature, context.raw);
+                return `${context.label}: ${value.toFixed(2)}`;
+              },
+            },
+          },
+        },
+      },
+    });
+
+    function updateChart() {
+      const avgData = features.map((feature) =>
+        normalizeFeature(feature, audioFeaturesSummary[currentPeriod][feature]),
+      );
+
+      chart.data.datasets = [
+        {
+          label: "Average",
+          data: avgData,
+          backgroundColor: "rgba(29, 185, 84, 0.2)",
+          borderColor: "rgb(29, 185, 84)",
+          pointBackgroundColor: "rgb(29, 185, 84)",
+          pointBorderColor: "#fff",
+          pointHoverBackgroundColor: "#fff",
+          pointHoverBorderColor: "rgb(29, 185, 84)",
+        },
+      ];
+
+      if (showMinMax) {
+        chart.data.datasets.push(
+          {
+            label: "Min",
+            data: features.map((feature) =>
+              normalizeFeature(
+                feature,
+                periodData[currentPeriod].min_values[feature],
+              ),
+            ),
+            backgroundColor: "rgba(255, 99, 132, 0.2)",
+            borderColor: "rgb(255, 99, 132)",
+            pointBackgroundColor: "rgb(255, 99, 132)",
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: "rgb(255, 99, 132)",
+          },
+          {
+            label: "Max",
+            data: features.map((feature) =>
+              normalizeFeature(
+                feature,
+                periodData[currentPeriod].max_values[feature],
+              ),
+            ),
+            backgroundColor: "rgba(54, 162, 235, 0.2)",
+            borderColor: "rgb(54, 162, 235)",
+            pointBackgroundColor: "rgb(54, 162, 235)",
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: "rgb(54, 162, 235)",
+          },
+        );
       }
 
-      audioFeaturesChart = new Chart(ctx, {
-        type: "radar",
-        data: {
-          labels: Object.keys(features),
-          datasets: [
-            {
-              label: "Audio Features",
-              data: Object.values(features),
-              backgroundColor: "rgba(29, 185, 84, 0.2)",
-              borderColor: "rgb(29, 185, 84)",
-              pointBackgroundColor: "rgb(29, 185, 84)",
-              pointBorderColor: "#fff",
-              pointHoverBackgroundColor: "#fff",
-              pointHoverBorderColor: "rgb(29, 185, 84)",
-            },
-          ],
-        },
-        options: {
-          elements: {
-            line: {
-              borderWidth: 3,
-            },
-          },
-          scales: {
-            r: {
-              angleLines: {
-                display: false,
-              },
-              suggestedMin: 0,
-              suggestedMax: 1,
-            },
-          },
-        },
-      });
-    } else {
-      console.log("No audio features data available for period:", period);
+      chart.update();
+      updateMinMaxTracks();
     }
+
+    function updateMinMaxTracks() {
+      const minMaxContainer = document.getElementById("minMaxTracks");
+      minMaxContainer.innerHTML = "";
+
+      if (showMinMax) {
+        features.forEach((feature) => {
+          const minTrack = periodData[currentPeriod].min_track[feature];
+          const maxTrack = periodData[currentPeriod].max_track[feature];
+
+          const featureInfo = document.createElement("div");
+          featureInfo.innerHTML = `
+          <h4>${feature}</h4>
+          <p>Min: ${minTrack.name} by ${minTrack.artists[0].name}</p>
+          <p>Max: ${maxTrack.name} by ${maxTrack.artists[0].name}</p>
+        `;
+          minMaxContainer.appendChild(featureInfo);
+        });
+      }
+    }
+
+    // Add controls
+    const controlsContainer = document.createElement("div");
+    controlsContainer.className = "audio-features-controls";
+    controlsContainer.innerHTML = `
+    <select id="timePeriodSelect">
+      <option value="short_term">Short Term</option>
+      <option value="medium_term">Medium Term</option>
+      <option value="long_term">Long Term</option>
+    </select>
+    <button id="toggleMinMaxBtn">Toggle Min/Max</button>
+  `;
+    document
+      .getElementById("audioFeaturesChart")
+      .parentNode.insertBefore(
+        controlsContainer,
+        document.getElementById("audioFeaturesChart"),
+      );
+
+    // Add min/max tracks container
+    const minMaxContainer = document.createElement("div");
+    minMaxContainer.id = "minMaxTracks";
+    document
+      .getElementById("audioFeaturesChart")
+      .parentNode.appendChild(minMaxContainer);
+
+    // Event listeners
+    document
+      .getElementById("timePeriodSelect")
+      .addEventListener("change", function (e) {
+        currentPeriod = e.target.value;
+        updateChart();
+      });
+
+    document
+      .getElementById("toggleMinMaxBtn")
+      .addEventListener("click", function () {
+        showMinMax = !showMinMax;
+        updateChart();
+      });
+
+    // Initial update
+    updateChart();
   }
 
   function displayPlaylists() {
@@ -294,4 +445,5 @@ document.addEventListener("DOMContentLoaded", function () {
   // Initial display
   updateDisplay("short_term");
   displayPlaylists();
+  createEnhancedAudioFeaturesChart(audioFeaturesSummary, periodData);
 });
