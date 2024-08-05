@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 function handleAuthClick() {
   window.isArtGenerationRequest = true;
   window.showLoading(20000);

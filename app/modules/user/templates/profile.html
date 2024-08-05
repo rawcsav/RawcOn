@@ -4,110 +4,141 @@
 <link rel="stylesheet" href="{{ ASSET_URL }}" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endassets %} {% endblock %} {% block body %}
-<div class="profile-header">
-  <div id="profile-container">
-    <h1 class="user-name">
-      {% if user_data %} {{ user_data.display_name }} {% else %} {{ user_data.id
-      }} {% endif %}
-    </h1>
-    <div id="profile-metadata">
-      {% if user_data.images and user_data.images[0] %}
-      <a href="{{ user_data.external_urls.spotify }}" target="_blank">
+<div class="main-div">
+  <div class="profile-header">
+    <div id="profile-container">
+      <h1 class="user-name">
+        {% if user_data %} {{ user_data.display_name }} {% else %} {{
+        user_data.id }} {% endif %}
+      </h1>
+      <div id="profile-metadata">
+        {% if user_data.images and user_data.images[0] %}
+        <a href="{{ user_data.external_urls.spotify }}" target="_blank">
+          <img
+            id="profile-pic"
+            src="{{ user_data.images[0].url }}"
+            alt="User Image"
+          />
+        </a>
+        {% else %}
         <img
           id="profile-pic"
-          src="{{ user_data.images[0].url }}"
-          alt="User Image"
+          src="/static/dist/img/user.svg"
+          alt="Placeholder Image"
         />
-      </a>
-      {% else %}
-      <img
-        id="profile-pic"
-        src="/static/dist/img/user.svg"
-        alt="Placeholder Image"
-      />
-      {% endif %}
-      <div id="metadata">
-        {% if user_data.followers %}
-        <p>
-          <img
-            class="icon"
-            src="/static/dist/img/users.svg"
-            alt="Followers Icon"
-          />
-          {{ user_data.followers.total }}
-        </p>
-        {% endif %} {% if user_data.country %}
-        <p>
-          <span id="country-flag">{{ user_data.country|country_flag }}</span>
-          {{ user_data.country }}
-        </p>
         {% endif %}
-        <a class="logout" href="/logout">Logout</a>
+        <div id="metadata">
+          {% if user_data.followers %}
+          <p>
+            <img
+              class="icon"
+              src="/static/dist/img/users.svg"
+              alt="Followers Icon"
+            />
+            {{ user_data.followers.total }}
+          </p>
+          {% endif %} {% if user_data.country %}
+          <p>
+            <span id="country-flag">{{ user_data.country|country_flag }}</span>
+            {{ user_data.country }}
+          </p>
+          {% endif %}
+          <a class="logout" href="/logout">Logout</a>
+        </div>
+      </div>
+    </div>
+    <div class="nav-container">
+      <div class="recommendations">
+        <a href="{{ url_for('recs.recommendations') }}"></a>
+      </div>
+      <div class="card">
+        <h2 class="playlist-header">
+          Playlists
+          <img
+            class="toggle-arrow"
+            src="/static/dist/img/angle-down.svg"
+            alt="toggle open arrow"
+          />
+        </h2>
+        <ul id="playlists" class="hidden"></ul>
       </div>
     </div>
   </div>
-  <div class="card">
-    <h2 class="playlist-header">
-      Playlists
-      <img class="toggle-arrow" src="/static/dist/img/angle-down.svg" alt="toggle open arrow"></img>
-    </h2>
-    <ul id="playlists" class="hidden"></ul>
-  </div>
-</div>
-<div class="user-content">
-  {% if user_data %}
-  <div>
-    <h2>Time Period</h2>
-    <select id="timePeriod">
-      <option value="short_term">Short Term (4 weeks)</option>
-      <option value="medium_term">Medium Term (6 months)</option>
-      <option value="long_term">Long Term (Several years)</option>
-    </select>
-  </div>
-  <div class="artists-row">
-    <h3>Top Artists</h3>
-    <div class="scroll-container">
-      <div id="topArtists" class="row-container"></div>
-    </div>
-  </div>
-
-  <div class="tracks-row">
-    <h3>Top Tracks</h3>
-    <div class="scroll-container">
-      <div id="topTracks" class="row-container"></div>
-    </div>
-  </div>
-
-  <div class="genres-row">
-    <h3>Top Genres</h3>
-    <div id="topGenres"></div>
-    <div id="genreOverlay" class="overlay">
-      <div class="overlay-content">
-        <span class="close-btn">&times;</span>
-        <h3 id="genre-title"></h3>
-        <div class="genre-content">
-          <div id="genre-artists">
-            <h4>Top Artists</h4>
-            <ul id="genre-artists-list" class="grid-container"></ul>
+  <div class="user-content">
+    {% if user_data %}
+    <div class="time-selector">
+      <div class="selector-header">
+        <svg
+          class="icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <div>
+          <div class="selector-title">Select Time Range</div>
+          <div class="selector-subtitle">
+            Choose your Spotify listening period
           </div>
-          <div id="genre-tracks">
-            <h4>Top Tracks</h4>
-            <ul id="genre-tracks-list" class="grid-container"></ul>
+        </div>
+      </div>
+      <div class="time-options">
+        <button class="time-option" data-value="short_term">4 weeks</button>
+        <button class="time-option" data-value="medium_term">6 months</button>
+        <button class="time-option" data-value="long_term">All time</button>
+      </div>
+    </div>
+
+    <div class="artists-row">
+      <h3>Top Artists</h3>
+      <div class="scroll-container">
+        <div id="topArtists" class="row-container"></div>
+      </div>
+    </div>
+
+    <div class="tracks-row">
+      <h3>Top Tracks</h3>
+      <div class="scroll-container">
+        <div id="topTracks" class="row-container"></div>
+      </div>
+    </div>
+
+    <div class="genres-row">
+      <h3>Top Genres</h3>
+      <div id="topGenres"></div>
+      <div id="genreOverlay" class="overlay">
+        <div class="overlay-content">
+          <span class="close-btn">&times;</span>
+          <h3 id="genre-title"></h3>
+          <div class="genre-content">
+            <div id="genre-artists">
+              <h4>Top Artists</h4>
+              <ul id="genre-artists-list" class="grid-container"></ul>
+            </div>
+            <div id="genre-tracks">
+              <h4>Top Tracks</h4>
+              <ul id="genre-tracks-list" class="grid-container"></ul>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="features-row">
-    <div class="audio-features">
-      <h3>Audio Features</h3>
-      <canvas id="audioFeaturesChart"></canvas>
-      <div id="minMaxTracks"></div>
+    <div class="features-row">
+      <div class="audio-features">
+        <h3>Audio Features</h3>
+        <canvas id="audioFeaturesChart"></canvas>
+        <div id="minMaxTracks"></div>
+      </div>
     </div>
+    {% else %}
+    <p>No user data available. Please try refreshing your data.</p>
+    {% endif %}
   </div>
-  {% else %}
-  <p>No user data available. Please try refreshing your data.</p>
-  {% endif %}
 </div>
 {% endblock %}{% block scripts %}
 <script>

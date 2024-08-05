@@ -2,14 +2,11 @@ body {
   line-height: 1.6;
   color: #333;
   margin: 0 auto;
-  padding: 20px;
   font-family: Diatype, sans-serif;
   background-color: #f4f4f4;
   display: flex;
   overflow-x: hidden;
-  gap: 30px;
-  max-width: calc(100vw - 40px);
-  padding-top: 50px;
+  max-width: 100vw;
 }
 
 h1,
@@ -69,7 +66,6 @@ select {
 
 .card {
   border-radius: 5px;
-  padding: 20px;
 }
 
 ul {
@@ -92,7 +88,6 @@ li {
   align-items: center;
   border-radius: 10px;
   max-width: 400px;
-  padding: 0 20px 20px;
 }
 
 #profile-metadata {
@@ -147,8 +142,12 @@ li {
   display: flex;
   flex-direction: column;
   flex: 1;
+  padding: 50px;
+  padding-top: 0;
   align-items: flex-start;
   margin-bottom: 30px;
+  background-color: #dfe8fd;
+  border-right: 2px solid black;
 }
 
 .grid {
@@ -221,7 +220,7 @@ li {
   margin-bottom: 20px;
   line-height: 1.8;
   display: flex;
-  max-width: 40%;
+  max-width: 60%;
   flex-wrap: wrap;
 }
 
@@ -232,14 +231,14 @@ li {
 }
 .genre-link {
   display: inline-block;
-  margin-right: 10px;
-  margin-bottom: 10px;
-  padding: 5px 10px;
+  margin-right: 14px;
+  margin-bottom: 14px;
+  padding: 7px 12px;
   background-color: #1276fc;
   color: white;
   text-decoration: none;
   border-radius: 15px;
-  font-size: 0.9em;
+  font-size: 1.2em;
 }
 
 .genre-link:hover {
@@ -343,8 +342,12 @@ p {
   background-color: #4a97ff;
 }
 
+.audio-features {
+  max-width: 70%;
+}
+
 #audioFeaturesChart {
-  max-width: 100%;
+  max-width: 80%;
   height: 400px;
 }
 
@@ -374,9 +377,9 @@ p {
 .user-content {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 40px;
   flex: 3;
-  width: 100%;
+  width: 80%;
 }
 
 .tracks-row,
@@ -505,6 +508,10 @@ p {
   gap: 10px;
 }
 
+.user-name {
+  color: #333;
+}
+
 .toggle-arrow {
   display: inline-block;
   width: 25px;
@@ -547,4 +554,66 @@ p {
 .playlist-visibility {
   font-size: 0.8em;
   color: #666;
+}
+
+.main-div {
+  display: flex;
+  gap: 60px;
+  width: calc(100% - 60px);
+}
+
+.time-selector {
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+.selector-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.selector-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-left: 12px;
+}
+.selector-subtitle {
+  font-size: 14px;
+  color: #b3b3b3;
+  margin-top: 4px;
+}
+.time-options {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+.time-option {
+  background: none;
+  border: 2px solid white;
+  border-radius: 500px;
+  color: #1276fc;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 12px 24px;
+  transition: all 0.3s ease;
+  flex-grow: 1;
+  margin: 0 8px;
+  text-align: center;
+}
+.time-option:hover {
+  border-color: #4a97ff;
+}
+.time-option.selected {
+  background-color: #1276fc;
+  border-color: #1276fc;
+  color: white;
+}
+.icon {
+  width: 24px;
+  height: 24px;
 }

@@ -1,5 +1,25 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const timePeriodSelect = document.getElementById("timePeriod");
+  let showMinMax = true; // Set this to true by default
+  const timeSelector = document.querySelector(".time-selector");
+  const timeOptions = document.querySelectorAll(".time-option");
+  timeOptions.forEach((option) => {
+    option.addEventListener("click", () => {
+      timeOptions.forEach((opt) => opt.classList.remove("selected"));
+      option.classList.add("selected");
+      const selectedValue = option.getAttribute("data-value");
+      updateDisplay(selectedValue);
+
+      // Update the chart
+      currentPeriod = selectedValue;
+      if (typeof updateChart === "function") {
+        updateChart();
+      }
+
+      // Reset scroll positions when changing time periods
+      artistsContainer.scrollLeft = 0;
+      tracksContainer.scrollLeft = 0;
+    });
+  });
   const topArtistsList = document.getElementById("topArtists");
   const topTracksList = document.getElementById("topTracks");
   const topGenresList = document.getElementById("topGenres");
@@ -17,6 +37,33 @@ document.addEventListener("DOMContentLoaded", function () {
   let artistsOffset = 0;
   let tracksOffset = 0;
   const ITEMS_PER_LOAD = 20;
+  // Add this function to get the currently selected time period
+  function getCurrentTimePeriod() {
+    const selectedOption = document.querySelector(".time-option.selected");
+    return selectedOption
+      ? selectedOption.getAttribute("data-value")
+      : "short_term";
+  }
+
+  function handleScroll(container, loadMoreFunction) {
+    if (
+      container.scrollLeft + container.clientWidth >=
+      container.scrollWidth - 20
+    ) {
+      loadMoreFunction(getCurrentTimePeriod());
+    }
+  }
+
+  // Update the event listeners for scrolling
+  const artistsContainer = topArtistsList.parentElement;
+  const tracksContainer = topTracksList.parentElement;
+
+  artistsContainer.addEventListener("scroll", () =>
+    handleScroll(artistsContainer, loadMoreArtists),
+  );
+  tracksContainer.addEventListener("scroll", () =>
+    handleScroll(tracksContainer, loadMoreTracks),
+  );
 
   function updateDisplay(period) {
     artistsOffset = 0;
@@ -104,9 +151,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  const artistsContainer = topArtistsList.parentElement;
-  const tracksContainer = topTracksList.parentElement;
-
   artistsContainer.addEventListener("scroll", () =>
     handleScroll(artistsContainer, loadMoreArtists),
   );
@@ -114,8 +158,19 @@ document.addEventListener("DOMContentLoaded", function () {
     handleScroll(tracksContainer, loadMoreTracks),
   );
 
-  timePeriodSelect.addEventListener("change", (event) => {
-    updateDisplay(event.target.value);
+  timeOptions.forEach((option) => {
+    option.addEventListener("click", () => {
+      timeOptions.forEach((opt) => opt.classList.remove("selected"));
+      option.classList.add("selected");
+      const selectedValue = option.getAttribute("data-value");
+      updateDisplay(selectedValue);
+
+      // Update the chart if it exists
+      if (typeof updateChart === "function") {
+        currentPeriod = selectedValue;
+        updateChart();
+      }
+    });
   });
 
   // Initial display
@@ -409,42 +464,37 @@ document.addEventListener("DOMContentLoaded", function () {
           pointHoverBackgroundColor: "#fff",
           pointHoverBorderColor: "rgb(29, 185, 84)",
         },
+        {
+          label: "Min",
+          data: features.map((feature) =>
+            normalizeFeature(
+              feature,
+              periodData[currentPeriod].min_values[feature],
+            ),
+          ),
+          backgroundColor: "rgba(255, 99, 132, 0.2)",
+          borderColor: "rgb(255, 99, 132)",
+          pointBackgroundColor: "rgb(255, 99, 132)",
+          pointBorderColor: "#fff",
+          pointHoverBackgroundColor: "#fff",
+          pointHoverBorderColor: "rgb(255, 99, 132)",
+        },
+        {
+          label: "Max",
+          data: features.map((feature) =>
+            normalizeFeature(
+              feature,
+              periodData[currentPeriod].max_values[feature],
+            ),
+          ),
+          backgroundColor: "rgba(54, 162, 235, 0.2)",
+          borderColor: "rgb(54, 162, 235)",
+          pointBackgroundColor: "rgb(54, 162, 235)",
+          pointBorderColor: "#fff",
+          pointHoverBackgroundColor: "#fff",
+          pointHoverBorderColor: "rgb(54, 162, 235)",
+        },
       ];
-
-      if (showMinMax) {
-        chart.data.datasets.push(
-          {
-            label: "Min",
-            data: features.map((feature) =>
-              normalizeFeature(
-                feature,
-                periodData[currentPeriod].min_values[feature],
-              ),
-            ),
-            backgroundColor: "rgba(255, 99, 132, 0.2)",
-            borderColor: "rgb(255, 99, 132)",
-            pointBackgroundColor: "rgb(255, 99, 132)",
-            pointBorderColor: "#fff",
-            pointHoverBackgroundColor: "#fff",
-            pointHoverBorderColor: "rgb(255, 99, 132)",
-          },
-          {
-            label: "Max",
-            data: features.map((feature) =>
-              normalizeFeature(
-                feature,
-                periodData[currentPeriod].max_values[feature],
-              ),
-            ),
-            backgroundColor: "rgba(54, 162, 235, 0.2)",
-            borderColor: "rgb(54, 162, 235)",
-            pointBackgroundColor: "rgb(54, 162, 235)",
-            pointBorderColor: "#fff",
-            pointHoverBackgroundColor: "#fff",
-            pointHoverBorderColor: "rgb(54, 162, 235)",
-          },
-        );
-      }
 
       chart.update();
       clearMinMaxTrack();
@@ -487,9 +537,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Add controls
     const controlsContainer = document.createElement("div");
     controlsContainer.className = "audio-features-controls";
-    controlsContainer.innerHTML = `
-      <button id="toggleMinMaxBtn">Toggle Min/Max</button>
-    `;
     document
       .getElementById("audioFeaturesChart")
       .parentNode.insertBefore(
@@ -503,23 +550,6 @@ document.addEventListener("DOMContentLoaded", function () {
     document
       .getElementById("audioFeaturesChart")
       .parentNode.appendChild(minMaxContainer);
-
-    // Event listeners
-    timePeriodSelect.addEventListener("change", function (e) {
-      currentPeriod = e.target.value;
-      updateChart();
-    });
-
-    timePeriodSelect.addEventListener("change", (event) => {
-      updateDisplay(event.target.value);
-    });
-
-    document
-      .getElementById("toggleMinMaxBtn")
-      .addEventListener("click", function () {
-        showMinMax = !showMinMax;
-        updateChart();
-      });
 
     // Initial update
     updateChart();

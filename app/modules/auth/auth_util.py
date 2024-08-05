@@ -71,4 +71,6 @@ def fetch_user_data(access_token):
     res = requests.get(current_app.config["ME_URL"], headers=headers)
     if res.status_code != 200:
         abort(res.status_code)
+
+    print(res.json())
     return res.json()
