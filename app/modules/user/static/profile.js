@@ -1,4 +1,3 @@
-// DOM elements
 document.addEventListener("DOMContentLoaded", function () {
   const timePeriodSelect = document.getElementById("timePeriod");
   const topArtistsList = document.getElementById("topArtists");
@@ -6,11 +5,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const topGenresList = document.getElementById("topGenres");
   const playlistsList = document.getElementById("playlists");
 
-  // Pagination elements
-  const prevArtistsBtn = document.getElementById("prevArtists");
-  const nextArtistsBtn = document.getElementById("nextArtists");
-  const prevTracksBtn = document.getElementById("prevTracks");
-  const nextTracksBtn = document.getElementById("nextTracks");
   const artistsPageInfo = document.getElementById("artistsPageInfo");
   const tracksPageInfo = document.getElementById("tracksPageInfo");
 
@@ -20,96 +14,112 @@ document.addEventListener("DOMContentLoaded", function () {
   const genreArtistsList = document.getElementById("genre-artists-list");
   const genreTracksList = document.getElementById("genre-tracks-list");
 
-  let audioFeaturesChart;
-  const ITEMS_PER_PAGE = 10;
-  let currentArtistsPage = 1;
-  let currentTracksPage = 1;
+  let artistsOffset = 0;
+  let tracksOffset = 0;
+  const ITEMS_PER_LOAD = 20;
 
-  // Function to update the display based on the selected time period
   function updateDisplay(period) {
-    console.log("Updating display for period:", period);
-    updateTopArtists(period);
-    updateTopTracks(period);
-    updateTopGenres(period);
+    artistsOffset = 0;
+    tracksOffset = 0;
+    topArtistsList.innerHTML = "";
+    topTracksList.innerHTML = "";
+    loadMoreArtists(period);
+    loadMoreTracks(period);
+    updateTopGenres(period); // Add this line
   }
 
-  function updateTopArtists(period) {
+  function loadMoreArtists(period) {
     if (topArtistsSummary && topArtistsSummary[period]) {
-      displayArtists(topArtistsSummary[period], currentArtistsPage);
-      updatePagination(
-        topArtistsSummary[period].length,
-        currentArtistsPage,
-        "artists",
+      const artists = topArtistsSummary[period].slice(
+        artistsOffset,
+        artistsOffset + ITEMS_PER_LOAD,
       );
-    } else {
-      topArtistsList.innerHTML = "<p>No data available</p>";
-      updatePagination(0, 1, "artists");
+      displayArtists(artists);
+      artistsOffset += ITEMS_PER_LOAD;
     }
   }
 
-  function updateTopTracks(period) {
+  function loadMoreTracks(period) {
     if (topTracksSummary && topTracksSummary[period]) {
-      displayTracks(topTracksSummary[period], currentTracksPage);
-      updatePagination(
-        topTracksSummary[period].length,
-        currentTracksPage,
-        "tracks",
+      const tracks = topTracksSummary[period].slice(
+        tracksOffset,
+        tracksOffset + ITEMS_PER_LOAD,
       );
-    } else {
-      topTracksList.innerHTML = "<p>No data available</p>";
-      updatePagination(0, 1, "tracks");
+      displayTracks(tracks);
+      tracksOffset += ITEMS_PER_LOAD;
     }
   }
 
-  function displayArtists(artists, page) {
-    const start = (page - 1) * ITEMS_PER_PAGE;
-    const end = start + ITEMS_PER_PAGE;
-    const artistsToDisplay = artists.slice(start, end);
-
-    topArtistsList.innerHTML = artistsToDisplay
-      .map(
-        (artist) => `
-    <div class="grid-item">
-      <a href="${artist.spotify_url}" target="_blank">
-        <img src="${artist.image_url || "/static/dist/img/default-artist.png"}" alt="${artist.name}" class="artist-image">
-        <p>${artist.name}</p>
-      </a>
-    </div>
-  `,
-      )
-      .join("");
+  function displayArtists(artists) {
+    const fragment = document.createDocumentFragment();
+    artists.forEach((artist) => {
+      const div = document.createElement("div");
+      div.className = "grid-item";
+      div.innerHTML = `
+        <a href="${artist.spotify_url}" target="_blank" rel="noopener noreferrer">
+          <img src="${artist.image_url || "/static/dist/img/default-artist.png"}" alt="${artist.name}" class="artist-image" loading="lazy">
+          <p>${artist.name}</p>
+        </a>
+      `;
+      addInteractions(div);
+      fragment.appendChild(div);
+    });
+    topArtistsList.appendChild(fragment);
   }
 
-  function displayTracks(tracks, page) {
-    const start = (page - 1) * ITEMS_PER_PAGE;
-    const end = start + ITEMS_PER_PAGE;
-    const tracksToDisplay = tracks.slice(start, end);
-
-    topTracksList.innerHTML = tracksToDisplay
-      .map(
-        (track) => `
-    <div class="grid-item">
-      <a href="${track.spotify_url}" target="_blank">
-        <img src="${track.image_url || "/static/dist/img/default-album.png"}" alt="${track.name}" class="track-image">
-        <p>${track.name}</p>
-        <p class="artist-name">${track.artists.join(", ")}</p>
-      </a>
-    </div>
-  `,
-      )
-      .join("");
+  function displayTracks(tracks) {
+    const fragment = document.createDocumentFragment();
+    tracks.forEach((track) => {
+      const div = document.createElement("div");
+      div.className = "grid-item";
+      div.innerHTML = `
+        <a href="${track.spotify_url}" target="_blank" rel="noopener noreferrer">
+          <img src="${track.image_url || "/static/dist/img/default-album.png"}" alt="${track.name}" class="track-image" loading="lazy">
+          <p>${track.name}</p>
+          <p class="artist-name">${track.artists.join(", ")}</p>
+        </a>
+      `;
+      addInteractions(div);
+      fragment.appendChild(div);
+    });
+    topTracksList.appendChild(fragment);
   }
 
-  function updatePagination(totalItems, currentPage, type) {
-    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-    const pageInfo = type === "artists" ? artistsPageInfo : tracksPageInfo;
-    pageInfo.innerHTML = `Page&nbsp;${currentPage}&nbsp;of&nbsp;${totalPages}`;
-    const prevBtn = type === "artists" ? prevArtistsBtn : prevTracksBtn;
-    const nextBtn = type === "artists" ? nextArtistsBtn : nextTracksBtn;
-
-    prevBtn.disabled = currentPage === 1;
-    nextBtn.disabled = currentPage === totalPages;
+  function addInteractions(element) {
+    element.addEventListener("mouseenter", () => {
+      element.style.transform = "scale(1.05)";
+      element.style.transition = "transform 0.3s ease";
+    });
+    element.addEventListener("mouseleave", () => {
+      element.style.transform = "scale(1)";
+    });
   }
+
+  function handleScroll(container, loadMoreFunction) {
+    if (
+      container.scrollLeft + container.clientWidth >=
+      container.scrollWidth - 20
+    ) {
+      loadMoreFunction(timePeriodSelect.value);
+    }
+  }
+
+  const artistsContainer = topArtistsList.parentElement;
+  const tracksContainer = topTracksList.parentElement;
+
+  artistsContainer.addEventListener("scroll", () =>
+    handleScroll(artistsContainer, loadMoreArtists),
+  );
+  tracksContainer.addEventListener("scroll", () =>
+    handleScroll(tracksContainer, loadMoreTracks),
+  );
+
+  timePeriodSelect.addEventListener("change", (event) => {
+    updateDisplay(event.target.value);
+  });
+
+  // Initial display
+  updateDisplay("short_term");
 
   function updateTopGenres(period) {
     if (topGenres && topGenres[period]) {
@@ -150,41 +160,77 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function displayGenreData(genre, period, data) {
+    const overlay = document.getElementById("genreOverlay");
+    const genreTitle = document.getElementById("genre-title");
+    const genreArtistsList = document.getElementById("genre-artists-list");
+    const genreTracksList = document.getElementById("genre-tracks-list");
+
     genreTitle.textContent = `${genre}`;
 
     genreArtistsList.innerHTML = data.top_artists
       .map(
         (artist) => `
-        <li class="grid-item">
-          <img src="${
-            artist.images && artist.images.length > 0
-              ? artist.images[0].url
-              : "/static/dist/img/default-artist.png"
-          }" alt="${artist.name}" class="artist-image">
-          <p>${artist.name}</p>
-        </li>
-      `,
+      <li class="grid-item">
+        <img src="${
+          artist.images && artist.images.length > 0
+            ? artist.images[0].url
+            : "/static/dist/img/default-artist.png"
+        }" alt="${artist.name}" class="artist-image">
+        <p>${artist.name}</p>
+      </li>
+    `,
       )
       .join("");
 
     genreTracksList.innerHTML = data.top_tracks
       .map(
         (track) => `
-        <li class="grid-item">
-          <img src="${
-            track.album && track.album.images && track.album.images.length > 0
-              ? track.album.images[0].url
-              : "/static/dist/img/default-album.png"
-          }" alt="${track.name}" class="track-image">
-          <p>${track.name}</p>
-          <p class="artist-name">${track.artists[0].name}</p>
-        </li>
-      `,
+      <li class="grid-item">
+        <img src="${
+          track.album && track.album.images && track.album.images.length > 0
+            ? track.album.images[0].url
+            : "/static/dist/img/default-album.png"
+        }" alt="${track.name}" class="track-image">
+        <p>${track.name}</p>
+        <p class="artist-name">${track.artists[0].name}</p>
+      </li>
+    `,
       )
       .join("");
 
-    genreDetails.style.display = "block";
+    overlay.style.display = "block";
   }
+
+  // Add this function to close the overlay
+  function closeGenreOverlay() {
+    document.getElementById("genreOverlay").style.display = "none";
+  }
+
+  // Add event listener for the close button
+  document
+    .querySelector(".close-btn")
+    .addEventListener("click", closeGenreOverlay);
+
+  // Close the overlay if the user clicks outside of the content
+  window.addEventListener("click", function (event) {
+    if (event.target == document.getElementById("genreOverlay")) {
+      closeGenreOverlay();
+    }
+  });
+
+  // Modify the addGenreEventListeners function
+  function addGenreEventListeners() {
+    const genreLinks = document.querySelectorAll(".genre-link");
+    genreLinks.forEach((link) => {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        const period = this.dataset.period;
+        const genre = this.dataset.genre;
+        fetchGenreData(period, genre);
+      });
+    });
+  }
+
   function createEnhancedAudioFeaturesChart(audioFeaturesSummary, periodData) {
     const ctx = document.getElementById("audioFeaturesChart").getContext("2d");
     const features = [
@@ -272,6 +318,12 @@ document.addEventListener("DOMContentLoaded", function () {
             angleLines: { display: false },
             suggestedMin: 0,
             suggestedMax: 1,
+            pointLabels: {
+              font: 12,
+            },
+            ticks: {
+              display: false, // Add this line to remove the numbers
+            },
           },
         },
         plugins: {
@@ -286,11 +338,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     : feature === "tempo"
                       ? "BPM"
                       : "";
-                return `${context.label}: ${value.toFixed(2)}${unit ? " " + unit : ""}`;
+                return ` ${value.toFixed(2)}${unit ? " " + unit : ""}`;
               },
               afterLabel: function (context) {
                 const feature = context.label.toLowerCase();
-                return featureExplanations[feature];
+                const explanation = featureExplanations[feature];
+                return wrapText(explanation, 40); // Wrap explanation text
               },
             },
           },
@@ -321,6 +374,24 @@ document.addEventListener("DOMContentLoaded", function () {
         },
       },
     });
+
+    function wrapText(text, maxLength) {
+      const words = text.split(" ");
+      let lines = [];
+      let currentLine = "";
+
+      words.forEach((word) => {
+        if ((currentLine + word).length <= maxLength) {
+          currentLine += (currentLine ? " " : "") + word;
+        } else {
+          lines.push(currentLine);
+          currentLine = word;
+        }
+      });
+      lines.push(currentLine);
+
+      return lines;
+    }
 
     function updateChart() {
       const avgData = features.map((feature) =>
@@ -379,12 +450,33 @@ document.addEventListener("DOMContentLoaded", function () {
       clearMinMaxTrack();
     }
 
-    function updateMinMaxTrack(feature, trackInfo) {
+    function updateMinMaxTrack(feature, trackInfo, datasetLabel) {
       const minMaxContainer = document.getElementById("minMaxTrack");
+      const value =
+        datasetLabel === "Min"
+          ? periodData[currentPeriod].min_values[feature]
+          : periodData[currentPeriod].max_values[feature];
+      const formattedValue = formatFeatureValue(feature, value);
+
       minMaxContainer.innerHTML = `
-      <h4>${feature}</h4>
-      <p>${trackInfo.name}&nbsp;by&nbsp;${trackInfo.artists[0].name}</p>
-    `;
+        <h4>${feature.charAt(0).toUpperCase() + feature.slice(1)}</h4>
+        <p><strong>Track:</strong> ${trackInfo.name}</p>
+        <p><strong>Artist:</strong> ${trackInfo.artists[0].name}</p>
+        <p><strong>Value:</strong> ${formattedValue}</p>
+      `;
+    }
+
+    function formatFeatureValue(feature, value) {
+      switch (feature) {
+        case "loudness":
+          return `${value.toFixed(2)} dB`;
+        case "tempo":
+          return `${value.toFixed(2)} BPM`;
+        case "popularity":
+          return `${Math.round(value)}`;
+        default:
+          return value.toFixed(2);
+      }
     }
 
     function clearMinMaxTrack() {
@@ -396,8 +488,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const controlsContainer = document.createElement("div");
     controlsContainer.className = "audio-features-controls";
     controlsContainer.innerHTML = `
-    <button id="toggleMinMaxBtn">Toggle Min/Max</button>
-  `;
+      <button id="toggleMinMaxBtn">Toggle Min/Max</button>
+    `;
     document
       .getElementById("audioFeaturesChart")
       .parentNode.insertBefore(
@@ -418,6 +510,10 @@ document.addEventListener("DOMContentLoaded", function () {
       updateChart();
     });
 
+    timePeriodSelect.addEventListener("change", (event) => {
+      updateDisplay(event.target.value);
+    });
+
     document
       .getElementById("toggleMinMaxBtn")
       .addEventListener("click", function () {
@@ -428,15 +524,22 @@ document.addEventListener("DOMContentLoaded", function () {
     // Initial update
     updateChart();
   }
-
   function displayPlaylists() {
+    const playlistsList = document.getElementById("playlists");
     if (playlistSummary && playlistSummary.length > 0) {
       playlistsList.innerHTML = playlistSummary
         .map(
-          (playlist) =>
-            `<li>${playlist.name} (${
-              playlist.public ? "Public" : "Private"
-            })</li>`,
+          (playlist) => `
+      <li>
+        <a href="https://open.spotify.com/playlist/${playlist.id}" target="_blank" rel="noopener noreferrer" class="playlist-item">
+          <img src="${playlist.image_url || "/static/dist/img/default-playlist.png"}" alt="${playlist.name}" class="playlist-image">
+          <div class="playlist-info">
+            <span class="playlist-name">${playlist.name}</span>
+            <span class="playlist-visibility">${playlist.public ? "Public" : "Private"}</span>
+          </div>
+        </a>
+      </li>
+      `,
         )
         .join("");
     } else {
@@ -444,47 +547,20 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Event listeners for pagination
-  prevArtistsBtn.addEventListener("click", () => {
-    if (currentArtistsPage > 1) {
-      currentArtistsPage--;
-      updateTopArtists(timePeriodSelect.value);
-    }
-  });
+  function setupPlaylistToggle() {
+    const playlistHeader = document.querySelector(".playlist-header");
+    const playlistsList = document.getElementById("playlists");
+    const toggleArrow = document.querySelector(".toggle-arrow");
 
-  nextArtistsBtn.addEventListener("click", () => {
-    const totalArtists = topArtistsSummary[timePeriodSelect.value].length;
-    if (currentArtistsPage < Math.ceil(totalArtists / ITEMS_PER_PAGE)) {
-      currentArtistsPage++;
-      updateTopArtists(timePeriodSelect.value);
-    }
-  });
-
-  prevTracksBtn.addEventListener("click", () => {
-    if (currentTracksPage > 1) {
-      currentTracksPage--;
-      updateTopTracks(timePeriodSelect.value);
-    }
-  });
-
-  nextTracksBtn.addEventListener("click", () => {
-    const totalTracks = topTracksSummary[timePeriodSelect.value].length;
-    if (currentTracksPage < Math.ceil(totalTracks / ITEMS_PER_PAGE)) {
-      currentTracksPage++;
-      updateTopTracks(timePeriodSelect.value);
-    }
-  });
-
-  // Event listener for time period changes
-  timePeriodSelect.addEventListener("change", (event) => {
-    console.log("Time period changed to:", event.target.value);
-    currentArtistsPage = 1;
-    currentTracksPage = 1;
-    updateDisplay(event.target.value);
-  });
+    playlistHeader.addEventListener("click", () => {
+      playlistsList.classList.toggle("hidden");
+      toggleArrow.classList.toggle("open");
+    });
+  }
 
   // Initial display
   updateDisplay("short_term");
   displayPlaylists();
+  setupPlaylistToggle();
   createEnhancedAudioFeaturesChart(audioFeaturesSummary, periodData);
 });

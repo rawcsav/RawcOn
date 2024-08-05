@@ -6,7 +6,7 @@
 {% endassets %} {% endblock %} {% block body %}
 <div class="profile-header">
   <div id="profile-container">
-    <h1>
+    <h1 class="user-name">
       {% if user_data %} {{ user_data.display_name }} {% else %} {{ user_data.id
       }} {% endif %}
     </h1>
@@ -34,96 +34,97 @@
             src="/static/dist/img/users.svg"
             alt="Followers Icon"
           />
-          Followers: {{ user_data.followers.total }}
+          {{ user_data.followers.total }}
         </p>
         {% endif %} {% if user_data.country %}
         <p>
           <span id="country-flag">{{ user_data.country|country_flag }}</span>
-          Country: {{ user_data.country }}
+          {{ user_data.country }}
         </p>
         {% endif %}
         <a class="logout" href="/logout">Logout</a>
       </div>
     </div>
   </div>
-</div>
-{% if user_data %}
-<div>
-  <h2>Time Period</h2>
-  <select id="timePeriod">
-    <option value="short_term">Short Term (4 weeks)</option>
-    <option value="medium_term">Medium Term (6 months)</option>
-    <option value="long_term">Long Term (Several years)</option>
-  </select>
-</div>
-
-<div class="grid">
   <div class="card">
-    <h2>Top Artists</h2>
-    <div id="topArtists" class="grid-container"></div>
-    <div class="pagination">
-      <button id="prevArtists">&lt; Previous</button>
-      <span id="artistsPageInfo"></span>
-      <button id="nextArtists">Next &gt;</button>
+    <h2 class="playlist-header">
+      Playlists
+      <img class="toggle-arrow" src="/static/dist/img/angle-down.svg" alt="toggle open arrow"></img>
+    </h2>
+    <ul id="playlists" class="hidden"></ul>
+  </div>
+</div>
+<div class="user-content">
+  {% if user_data %}
+  <div>
+    <h2>Time Period</h2>
+    <select id="timePeriod">
+      <option value="short_term">Short Term (4 weeks)</option>
+      <option value="medium_term">Medium Term (6 months)</option>
+      <option value="long_term">Long Term (Several years)</option>
+    </select>
+  </div>
+  <div class="artists-row">
+    <h3>Top Artists</h3>
+    <div class="scroll-container">
+      <div id="topArtists" class="row-container"></div>
     </div>
   </div>
 
-  <div class="card">
-    <h2>Top Tracks</h2>
-    <div id="topTracks" class="grid-container"></div>
-    <div class="pagination">
-      <button id="prevTracks">&lt; Previous</button>
-      <span id="tracksPageInfo"></span>
-      <button id="nextTracks">Next &gt;</button>
+  <div class="tracks-row">
+    <h3>Top Tracks</h3>
+    <div class="scroll-container">
+      <div id="topTracks" class="row-container"></div>
     </div>
   </div>
-  <div class="card">
-    <h2>Top Genres</h2>
+
+  <div class="genres-row">
+    <h3>Top Genres</h3>
     <div id="topGenres"></div>
-    <div id="genre-details" style="display: none">
-      <h3 id="genre-title"></h3>
-      <div class="genre-content">
-        <div id="genre-artists">
-          <h4>Top Artists</h4>
-          <ul id="genre-artists-list" class="grid-container"></ul>
-        </div>
-        <div id="genre-tracks">
-          <h4>Top Tracks</h4>
-          <ul id="genre-tracks-list" class="grid-container"></ul>
+    <div id="genreOverlay" class="overlay">
+      <div class="overlay-content">
+        <span class="close-btn">&times;</span>
+        <h3 id="genre-title"></h3>
+        <div class="genre-content">
+          <div id="genre-artists">
+            <h4>Top Artists</h4>
+            <ul id="genre-artists-list" class="grid-container"></ul>
+          </div>
+          <div id="genre-tracks">
+            <h4>Top Tracks</h4>
+            <ul id="genre-tracks-list" class="grid-container"></ul>
+          </div>
         </div>
       </div>
     </div>
   </div>
-
-  <div class="card">
-    <h2>Audio Features</h2>
-    <canvas id="audioFeaturesChart"></canvas>
-    <div id="minMaxTracks"></div>
-  </div>
-
-  <div class="card">
-    <h2>Playlists</h2>
-    <ul id="playlists"></ul>
+  <div class="features-row">
+    <div class="audio-features">
+      <h3>Audio Features</h3>
+      <canvas id="audioFeaturesChart"></canvas>
+      <div id="minMaxTracks"></div>
+    </div>
   </div>
   {% else %}
   <p>No user data available. Please try refreshing your data.</p>
-  {% endif %} {% endblock %}{% block scripts %}
-  <script>
-    {% if user_data and period_data and top_genres and audio_features_summary and top_artists_summary and top_tracks_summary and playlist_summary %}
-          const userData = {{ user_data | tojson | safe }};
-          const periodData = {{ period_data | tojson | safe }};
-          const topGenres = {{ top_genres | tojson | safe }};
-          const audioFeaturesSummary = {{ audio_features_summary | tojson | safe }};
-          const topArtistsSummary = {{ top_artists_summary | tojson | safe }};
-          const topTracksSummary = {{ top_tracks_summary | tojson | safe }};
-          const playlistSummary = {{ playlist_summary | tojson | safe }};
-
-          console.log("Script loaded and initial display set");  // Debug log
-      {% else %}
-          console.log("Some required data is missing");
-      {% endif %}
-  </script>
-  {% assets "user_js_bundle" %}
-  <script src="{{ ASSET_URL }}"></script>
-  {% endassets %}{% endblock %}
+  {% endif %}
 </div>
+{% endblock %}{% block scripts %}
+<script>
+  {% if user_data and period_data and top_genres and audio_features_summary and top_artists_summary and top_tracks_summary and playlist_summary %}
+        const userData = {{ user_data | tojson | safe }};
+        const periodData = {{ period_data | tojson | safe }};
+        const topGenres = {{ top_genres | tojson | safe }};
+        const audioFeaturesSummary = {{ audio_features_summary | tojson | safe }};
+        const topArtistsSummary = {{ top_artists_summary | tojson | safe }};
+        const topTracksSummary = {{ top_tracks_summary | tojson | safe }};
+        const playlistSummary = {{ playlist_summary | tojson | safe }};
+
+        console.log("Script loaded and initial display set");  // Debug log
+    {% else %}
+        console.log("Some required data is missing");
+    {% endif %}
+</script>
+{% assets "user_js_bundle" %}
+<script src="{{ ASSET_URL }}"></script>
+{% endassets %}{% endblock %}
