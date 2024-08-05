@@ -8,196 +8,191 @@
   font-synthesis: none;
 }
 
+@font-face {
+  font-family: "Lastik";
+  src:
+    url("../../fonts/Lastik-VariableVF.woff2") format("woff2-variations"),
+    url("../../fonts/Lastik-VariableVF.ttf") format("truetype-variations");
+  font-weight: 50 100;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Diatype";
+  src:
+    url("../../fonts/Diatype.woff2") format("woff2-variations"),
+    url("../../fonts/Diatype.ttf") format("truetype-variations");
+  font-weight: 100 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Monument";
+  src:
+    url("../../fonts/Monument.woff2") format("woff2-variations"),
+    url("../../fonts/Monument.ttf") format("truetype-variations");
+  font-weight: 200 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "rawicon2";
+  src: url("../../fonts/rawicon2.eot?li2kwi");
+  src:
+    url("../../fonts/rawicon2.eot?li2kwi#iefix") format("embedded-opentype"),
+    url("../../fonts/rawicon2.ttf?li2kwi") format("truetype"),
+    url("../../fonts/rawicon2.woff?li2kwi") format("woff"),
+    url("../../fonts/rawicon2.svg?li2kwi#rawicon2") format("svg");
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+i {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: "rawicon2" !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-album-collection:before {
+  content: "\e900";
+}
+.icon-album-plus:before {
+  content: "\e901";
+}
+.icon-album-user:before {
+  content: "\e902";
+}
+.icon-arrow-right:before {
+  content: "\e903";
+}
+.icon-artists-line:before {
+  content: "\e904";
+}
+.icon-bars:before {
+  content: "\e905";
+}
+.icon-calendar-down:before {
+  content: "\e906";
+}
+.icon-calendar-up:before {
+  content: "\e907";
+}
+.icon-chart-column:before {
+  content: "\e908";
+}
+.icon-circle-info:before {
+  content: "\e909";
+}
+.icon-download:before {
+  content: "\e90a";
+}
+.icon-folder-music:before {
+  content: "\e90b";
+}
+.icon-gear:before {
+  content: "\e90c";
+}
+.icon-genres:before {
+  content: "\e90d";
+}
+.icon-heart-minus:before {
+  content: "\e90e";
+}
+.icon-heart-plus:before {
+  content: "\e90f";
+}
+.icon-high-definition:before {
+  content: "\e910";
+}
+.icon-key:before {
+  content: "\e911";
+}
+.icon-layer-minus:before {
+  content: "\e912";
+}
+.icon-list-music:before {
+  content: "\e913";
+}
+.icon-minus:before {
+  content: "\e914";
+}
+.icon-music-search:before {
+  content: "\e915";
+}
+.icon-paintbruhs:before {
+  content: "\e916";
+}
+.icon-pause:before {
+  content: "\e917";
+}
+.icon-photo-film-music:before {
+  content: "\e918";
+}
+.icon-play:before {
+  content: "\e919";
+}
+.icon-plus:before {
+  content: "\e91a";
+}
+.icon-refresh:before {
+  content: "\e91b";
+}
+.icon-shuffle:before {
+  content: "\e91c";
+}
+.icon-signal-bars:before {
+  content: "\e91d";
+}
+.icon-sort-down:before {
+  content: "\e91e";
+}
+.icon-sort-up:before {
+  content: "\e91f";
+}
+.icon-target:before {
+  content: "\e920";
+}
+.icon-thumbs-down:before {
+  content: "\e921";
+}
+.icon-thumbs-up:before {
+  content: "\e922";
+}
+.icon-user-music:before {
+  content: "\e923";
+}
+.icon-volume-high:before {
+  content: "\e924";
+}
+.icon-wand-magic-sparkles:before {
+  content: "\e925";
+}
+.icon-waveform-lines:before {
+  content: "\e926";
+}
+
 body {
   font-family: var(--font-text), sans-serif;
   margin: 0;
 }
 
-#settingsCog {
-  margin-left: 8px;
-  cursor: pointer;
-}
-
-#settingsCog:hover {
-  transform: scale(1.1);
-}
-
-#spotifyUserDropdown {
-  position: fixed;
-  top: 10px;
-  right: 20px;
-  z-index: 800;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  background: rgba(255, 255, 255);
-  padding: 6px 10px;
-  border-radius: 20px;
-  transition: background 0.3s;
-}
-
-#settingsDropdown {
-  position: absolute;
-  display: none;
-  top: 0; /* right below the cog */
-  cursor: pointer;
-  padding: 8px 0;
-  left: 70%; /* Position to the right of the parent element */
-  z-index: 900;
-  border: 1px solid #e0e0e0;
-  background: linear-gradient(to bottom, #ffffff, #f2f2f2);
-  border-radius: 5px;
-}
-
-.truncate {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 70px; /* or whatever maximum width you prefer */
-  color: #333;
-}
-
-.profile-img {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-right: 8px; /* Reduced margin for better spacing */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.drop-menu {
-  font-family: var(--font-text), sans-serif;
-  font-size: 10px;
-  border: 1px solid #e0e0e0;
-  margin-top: 8px;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  display: none;
-  background: linear-gradient(to bottom, #ffffff, #f2f2f2);
-  border-radius: 5px; /* Add slight border-radius to match design consistency */
-}
-
-.menu-container {
-  display: flex;
-  align-items: center;
-}
-
-.drop-item {
-  padding: 10px 12px; /* Adjusted padding for better spacing */
-  color: #333;
-  text-decoration: none;
-  display: block;
-  transition:
-    background 0.2s,
-    color 0.2s;
-  border-bottom: 1px solid #eaeaea;
-}
-
-.drop-item:last-child {
-  border-bottom: none;
-}
-
-.drop-item[href*="profile"]:hover {
-  text-decoration: none;
-  color: #fafafa;
-  background-color: #5dab54;
-  border-top-left-radius: 5px;
-  border-top-right-radius: 5px;
-}
-/* Applying specific color styles as per your request */
-.drop-item[href*="stats"]:hover {
-  text-decoration: none;
-  background-color: #f7a1d5;
-  color: #fafafa;
-}
-
-.drop-item[href*="recommendations"]:hover {
-  background-color: #f1db2b;
-  color: #fafafa;
-  text-decoration: none;
-}
-
-.drop-item[href*="playlist"]:hover {
-  text-decoration: none;
-  color: #fafafa;
-  background-color: #9b5de5;
-}
-
-.drop-item[href*="logout"] {
-  background-color: #ca403f;
-  text-decoration: none;
-  color: white;
-}
-
-#modeToggle {
-  width: 100%;
-  text-align: left;
-  background-color: #001220; /* Light background for contrast */
-  color: #fbae3c;
-  font-size: 10px;
-  font-weight: bold;
-  border-color: transparent;
-  cursor: pointer;
-  border-top-left-radius: 5px;
-  border-top-right-radius: 5px;
-}
-
-/* Dark Mode button appearance */
-.dark-mode #modeToggle {
-  background-color: #f1db2b; /* Dark background for contrast */
-  color: #ca403f;
-  /* Dark text */
-}
-
 @media (max-width: 768px) {
-  #spotifyUserDropdown {
-    top: 5px;
-    right: 10px;
-    font-size: 12px;
-    padding: 6px 10px;
-  }
-
-  .profile-img {
-    width: 25px;
-    height: 25px;
-    margin-right: 5px;
-  }
-
-  .truncate {
-    max-width: 60px;
-  }
-
-  .drop-item {
-    padding: 8px 10px;
-  }
-
   .homepage-link {
     height: 45px;
     width: 45px;
   }
 
   @media (max-width: 480px) {
-    #spotifyUserDropdown {
-      top: 5px;
-      right: 5px;
-      font-size: 11px;
-      padding: 5px 8px;
-    }
-
-    .profile-img {
-      width: 20px;
-      height: 20px;
-      margin-right: 5px;
-    }
-
-    .truncate {
-      max-width: 50px;
-    }
-
-    .drop-item {
-      padding: 7px 9px;
-    }
     .homepage-link {
       height: 30px;
       width: 30px;

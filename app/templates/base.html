@@ -85,7 +85,6 @@
     {% block menu %}{% include 'menu.html' %} {% endblock %} {% block body %} {%
     endblock %}{% assets "common_js_bundle" %}
     <script src="{{ ASSET_URL }}"></script>
-    {% endassets %} {% block scripts %} {% endblock %} {% if not config['DEBUG']
-    %} {% endif %}
+    {% endassets %} {% block scripts %} {% endblock %}
   </body>
 </html>

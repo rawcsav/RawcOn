@@ -11,15 +11,6 @@ def verify_session(session):
     return session["tokens"].get("access_token")
 
 
-def fetch_user_data(access_token):
-    headers = {"Authorization": f"Bearer {access_token}"}
-    res = requests.get(current_app.config["ME_URL"], headers=headers)
-    if res.status_code != 200:
-        abort(res.status_code)
-
-    return res.json()
-
-
 def generate_state():
     return "".join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(16))
 
@@ -73,3 +64,11 @@ def refresh_tokens():
     )
 
     return True
+
+
+def fetch_user_data(access_token):
+    headers = {"Authorization": f"Bearer {access_token}"}
+    res = requests.get(current_app.config["ME_URL"], headers=headers)
+    if res.status_code != 200:
+        abort(res.status_code)
+    return res.json()

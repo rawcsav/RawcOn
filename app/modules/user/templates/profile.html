@@ -2,89 +2,127 @@
 <link rel="canonical" href="https://rawcon.rawcsav.com/user/profile" />
 {% endblock %} {% block styles %} {% assets "user_style_bundle" %}
 <link rel="stylesheet" href="{{ ASSET_URL }}" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endassets %} {% endblock %} {% block body %}
-<div class="container">
-  <div class="row d-flex">
-    <div class="col-md-6 flex-fill">
-      <section class="card">
-        <div class="user-info-row">
-          <h3>Hello <em>{{ data.display_name }}</em>!</h3>
-          <div class="text-center mt-4 d-flex justify-content-center page-nav">
-            <a
-              href="{{ url_for('stats.stats') }}"
-              class="btn btn-info stats-btn"
-              >Statistics</a
-            >
-            <a
-              href="{{ url_for('recs.recommendations') }}"
-              class="btn btn-info rec-btn"
-              >Recommendations</a
-            >
-            <a
-              href="{{ url_for('playlist.playlist') }}"
-              class="btn btn-info playlist-btn"
-              >Playlists</a
-            >
-          </div>
-          <div class="text-center mt-4 d-flex justify-content-center page-util">
-            <a href="/logout" class="btn btn-danger">Logout</a>
-            <button id="refresh-button" class="btn btn-success">
-              Refresh Data
-            </button>
-          </div>
-          <div class="text-center mt-2">
-            <small class="text-muted" style="font-size: 0.7rem"
-              >Last Refresh: {{ last_active.strftime('%b %d at %I:%M %p')
-              }}</small
-            >
-          </div>
-          <br />
-        </div>
-        <p class="project-text">
-          Visit Rawc-On on
-          <a
-            href="https://github.com/rawcsav/SpotifyFlask"
-            target="_blank"
-            rel="noopener noreferrer"
-            >GitHub.</a
-          >
+<div class="profile-header">
+  <div id="profile-container">
+    <h1>
+      {% if user_data %} {{ user_data.display_name }} {% else %} {{ user_data.id
+      }} {% endif %}
+    </h1>
+    <div id="profile-metadata">
+      {% if user_data.images and user_data.images[0] %}
+      <a href="{{ user_data.external_urls.spotify }}" target="_blank">
+        <img
+          id="profile-pic"
+          src="{{ user_data.images[0].url }}"
+          alt="User Image"
+        />
+      </a>
+      {% else %}
+      <img
+        id="profile-pic"
+        src="/static/dist/img/user.svg"
+        alt="Placeholder Image"
+      />
+      {% endif %}
+      <div id="metadata">
+        {% if user_data.followers %}
+        <p>
+          <img
+            class="icon"
+            src="/static/dist/img/users.svg"
+            alt="Followers Icon"
+          />
+          Followers: {{ user_data.followers.total }}
         </p>
-      </section>
-    </div>
-    <div class="col-md-6 flex-fill">
-      <section class="card mb-4">
-        <h3>Recent Tracks</h3>
-        <ul class="recent-tracks">
-          {% for track in user_data.recent_tracks %}
-          <li>
-            <div class="recent-wrapper">
-              <img
-                src="{{ track.track.album.images[0].url }}"
-                alt="Cover Art"
-                width="50"
-                height="50"
-              />
-              <div class="recent-info">
-                <strong>{{ track.track.name }}</strong> from
-                <em>{{ track.track.album.name }}</em> by {{
-                track.track.artists[0].name }}
-              </div>
-            </div>
-          </li>
-          {% endfor %}
-        </ul>
-      </section>
+        {% endif %} {% if user_data.country %}
+        <p>
+          <span id="country-flag">{{ user_data.country|country_flag }}</span>
+          Country: {{ user_data.country }}
+        </p>
+        {% endif %}
+        <a class="logout" href="/logout">Logout</a>
+      </div>
     </div>
   </div>
-  <div class="row mt-5 profile-footer"></div>
 </div>
-{% endblock %}{% block scripts %}
-<link
-  rel="stylesheet"
-  href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-  integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-  crossorigin="anonymous"
-/>
+{% if user_data %}
+<div>
+  <h2>Time Period</h2>
+  <select id="timePeriod">
+    <option value="short_term">Short Term (4 weeks)</option>
+    <option value="medium_term">Medium Term (6 months)</option>
+    <option value="long_term">Long Term (Several years)</option>
+  </select>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h2>Top Artists</h2>
+    <div id="topArtists" class="grid-container"></div>
+    <div class="pagination">
+      <button id="prevArtists">&lt; Previous</button>
+      <span id="artistsPageInfo"></span>
+      <button id="nextArtists">Next &gt;</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Top Tracks</h2>
+    <div id="topTracks" class="grid-container"></div>
+    <div class="pagination">
+      <button id="prevTracks">&lt; Previous</button>
+      <span id="tracksPageInfo"></span>
+      <button id="nextTracks">Next &gt;</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Top Genres</h2>
+    <div id="topGenres"></div>
+    <div id="genre-details" style="display: none">
+      <h3 id="genre-title"></h3>
+      <div class="genre-content">
+        <div id="genre-artists">
+          <h4>Top Artists</h4>
+          <ul id="genre-artists-list" class="grid-container"></ul>
+        </div>
+        <div id="genre-tracks">
+          <h4>Top Tracks</h4>
+          <ul id="genre-tracks-list" class="grid-container"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Audio Features</h2>
+    <canvas id="audioFeaturesChart"></canvas>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Playlists</h2>
+  <ul id="playlists"></ul>
+</div>
+{% else %}
+<p>No user data available. Please try refreshing your data.</p>
+{% endif %} {% endblock %}{% block scripts %}
+<script>
+  {% if user_data and period_data and top_genres and audio_features_summary and top_artists_summary and top_tracks_summary and playlist_summary %}
+        const userData = {{ user_data | tojson | safe }};
+        const periodData = {{ period_data | tojson | safe }};
+        const topGenres = {{ top_genres | tojson | safe }};
+        const audioFeaturesSummary = {{ audio_features_summary | tojson | safe }};
+        const topArtistsSummary = {{ top_artists_summary | tojson | safe }};
+        const topTracksSummary = {{ top_tracks_summary | tojson | safe }};
+        const playlistSummary = {{ playlist_summary | tojson | safe }};
+
+        console.log("Script loaded and initial display set");  // Debug log
+    {% else %}
+        console.log("Some required data is missing");
+    {% endif %}
+</script>
 {% assets "user_js_bundle" %}
 <script src="{{ ASSET_URL }}"></script>
 {% endassets %}{% endblock %}

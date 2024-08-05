@@ -10,6 +10,14 @@ from config import ProductionConfig, DevelopmentConfig
 from flask_cors import CORS
 
 
+# Define the custom Jinja2 filter
+def country_flag(country_code):
+    OFFSET = 127397
+    return "".join(chr(ord(char) + OFFSET) for char in country_code.upper())
+
+
+# Register the custom filter with the Flask app's Jinja environment
+
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 cors = CORS()
@@ -18,6 +26,7 @@ cors = CORS()
 def create_app():
     app = Flask(__name__)
     flask_env = os.getenv("FLASK_ENV", "production").lower()
+    app.jinja_env.filters["country_flag"] = country_flag
 
     if flask_env == "development":
         app.config.from_object(DevelopmentConfig)

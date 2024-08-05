@@ -1,39 +1,23 @@
 from datetime import datetime, timedelta
-from functools import wraps
 from urllib.parse import urlencode
-from flask import Blueprint, abort, redirect, render_template, request, session, url_for, jsonify, current_app
+from flask import Blueprint, abort, redirect, render_template, request, session, url_for, current_app
 from flask import make_response
 
 
-from app.modules.auth.auth_util import generate_state, prepare_auth_payload, request_tokens, fetch_user_data
+from app.modules.auth.auth_util import generate_state, prepare_auth_payload, request_tokens
+from util.wrappers import handle_errors
 
 auth_bp = Blueprint("auth", __name__, template_folder="templates", static_folder="static", url_prefix="/")
 
 
 @auth_bp.route("/")
+@handle_errors
 def index():
     return render_template("landing.html")
 
 
-def require_spotify_auth(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        tokens = session.get("tokens")
-        expiry_time = datetime.fromisoformat(tokens.get("expiry_time")) if tokens else None
-
-        if not tokens:
-            return redirect(url_for("auth.index"))
-
-        if expiry_time and expiry_time < datetime.now():
-            session["original_request_url"] = request.url
-            return redirect(url_for("auth.refresh"))
-
-        return f(*args, **kwargs)
-
-    return decorated_function
-
-
 @auth_bp.route("/<loginout>")
+@handle_errors
 def login(loginout):
     # If the path is logout, clear the session and return to the index page.
     if loginout == "logout":
@@ -76,6 +60,7 @@ def login(loginout):
 
 
 @auth_bp.route("/callback")
+@handle_errors
 def callback():
     state = request.args.get("state")
     stored_state = request.cookies.get("spotify_auth_state")
@@ -104,6 +89,7 @@ def callback():
 
 
 @auth_bp.route("/refresh")
+@handle_errors
 def refresh():
     payload = {"grant_type": "refresh_token", "refresh_token": session.get("tokens").get("refresh_token")}
 

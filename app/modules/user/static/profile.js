@@ -1,124 +1,297 @@
-function updateSvgContainerHeight() {
-  const bodyHeight = document.body.scrollHeight; // Get the full scroll height of the body
-  const svgContainer = document.querySelector(".svg-container");
-  svgContainer.style.height = `${bodyHeight}px`; // Update the container height
-}
-
-function getCsrfToken() {
-  return document
-    .querySelector('meta[name="csrf-token"]')
-    .getAttribute("content");
-}
-
+// DOM elements
 document.addEventListener("DOMContentLoaded", function () {
-  const svgUrls = [
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/3673dcf5-01e4-43d2-ac71-ed04a7b56b34",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/amp",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/cd",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/clarinet",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/domra",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/drums_jsuiqf",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/f9cca628-b87a-4880-b2b3-a38e94b48d6f",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/grammy-svgrepo-com",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/gramophone",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/guitar_vqh6f4",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1701529651/randomsvg/headphones_lgdmiw.svg",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1701529651/randomsvg/headphone_pn69ku.svg",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/Layer_1",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/Layer_2",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/Layer_3",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/Layer_30",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/Layer_33",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/Layer_35",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/Layer_36",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/Layer_4",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/Layer_5",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/Layer_6",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/piano",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/piano_hzttv3",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/radio-svgrepo-com",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/shape",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/speaker",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/trombone",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/vinyl_z1naey",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/wave_anpgln",
-    "https://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/xylophone",
-  ];
-  const refreshButton = document.getElementById("refresh-button");
+  const timePeriodSelect = document.getElementById("timePeriod");
+  const topArtistsList = document.getElementById("topArtists");
+  const topTracksList = document.getElementById("topTracks");
+  const topGenresList = document.getElementById("topGenres");
+  const playlistsList = document.getElementById("playlists");
 
-  refreshButton.addEventListener("click", function (event) {
-    window.showLoading();
+  // Pagination elements
+  const prevArtistsBtn = document.getElementById("prevArtists");
+  const nextArtistsBtn = document.getElementById("nextArtists");
+  const prevTracksBtn = document.getElementById("prevTracks");
+  const nextTracksBtn = document.getElementById("nextTracks");
+  const artistsPageInfo = document.getElementById("artistsPageInfo");
+  const tracksPageInfo = document.getElementById("tracksPageInfo");
 
-    event.stopImmediatePropagation();
+  // Genre elements
+  const genreDetails = document.getElementById("genre-details");
+  const genreTitle = document.getElementById("genre-title");
+  const genreArtistsList = document.getElementById("genre-artists-list");
+  const genreTracksList = document.getElementById("genre-tracks-list");
 
-    fetch("/user/refresh-data", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": getCsrfToken(),
-      },
-    })
-      .then((response) => {
-        if (response.ok) {
-          location.reload();
-        } else {
-          throw new Error("Failed to refresh data");
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        window.hideLoading();
+  let audioFeaturesChart;
+  const ITEMS_PER_PAGE = 10;
+  let currentArtistsPage = 1;
+  let currentTracksPage = 1;
+
+  // Function to update the display based on the selected time period
+  function updateDisplay(period) {
+    console.log("Updating display for period:", period);
+    updateTopArtists(period);
+    updateTopTracks(period);
+    updateTopGenres(period);
+    updateAudioFeaturesChart(period);
+  }
+
+  function updateTopArtists(period) {
+    if (topArtistsSummary && topArtistsSummary[period]) {
+      displayArtists(topArtistsSummary[period], currentArtistsPage);
+      updatePagination(
+        topArtistsSummary[period].length,
+        currentArtistsPage,
+        "artists",
+      );
+    } else {
+      topArtistsList.innerHTML = "<p>No data available</p>";
+      updatePagination(0, 1, "artists");
+    }
+  }
+
+  function updateTopTracks(period) {
+    if (topTracksSummary && topTracksSummary[period]) {
+      displayTracks(topTracksSummary[period], currentTracksPage);
+      updatePagination(
+        topTracksSummary[period].length,
+        currentTracksPage,
+        "tracks",
+      );
+    } else {
+      topTracksList.innerHTML = "<p>No data available</p>";
+      updatePagination(0, 1, "tracks");
+    }
+  }
+
+  function displayArtists(artists, page) {
+    const start = (page - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    const artistsToDisplay = artists.slice(start, end);
+
+    topArtistsList.innerHTML = artistsToDisplay
+      .map(
+        (artist) => `
+    <div class="grid-item">
+      <a href="${artist.spotify_url}" target="_blank">
+        <img src="${artist.image_url || "/static/dist/img/default-artist.png"}" alt="${artist.name}" class="artist-image">
+        <p>${artist.name}</p>
+      </a>
+    </div>
+  `,
+      )
+      .join("");
+  }
+
+  function displayTracks(tracks, page) {
+    const start = (page - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    const tracksToDisplay = tracks.slice(start, end);
+
+    topTracksList.innerHTML = tracksToDisplay
+      .map(
+        (track) => `
+    <div class="grid-item">
+      <a href="${track.spotify_url}" target="_blank">
+        <img src="${track.image_url || "/static/dist/img/default-album.png"}" alt="${track.name}" class="track-image">
+        <p>${track.name}</p>
+        <p class="artist-name">${track.artists.join(", ")}</p>
+      </a>
+    </div>
+  `,
+      )
+      .join("");
+  }
+
+  function updatePagination(totalItems, currentPage, type) {
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+    const pageInfo = type === "artists" ? artistsPageInfo : tracksPageInfo;
+    pageInfo.innerHTML = `Page&nbsp;${currentPage}&nbsp;of&nbsp;${totalPages}`;
+    const prevBtn = type === "artists" ? prevArtistsBtn : prevTracksBtn;
+    const nextBtn = type === "artists" ? nextArtistsBtn : nextTracksBtn;
+
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages;
+  }
+
+  function updateTopGenres(period) {
+    if (topGenres && topGenres[period]) {
+      topGenresList.innerHTML = topGenres[period]
+        .map(
+          (genre) => `
+          <a href="#" class="genre-link" data-period="${period}" data-genre="${genre[0]}">
+            ${genre[0]} (${genre[1]})
+          </a>
+        `,
+        )
+        .join(" ");
+      addGenreEventListeners();
+    } else {
+      topGenresList.innerHTML = "No data available";
+    }
+  }
+
+  function addGenreEventListeners() {
+    const genreLinks = document.querySelectorAll(".genre-link");
+    genreLinks.forEach((link) => {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        const period = this.dataset.period;
+        const genre = this.dataset.genre;
+        fetchGenreData(period, genre);
       });
+    });
+  }
+
+  function fetchGenreData(period, genre) {
+    fetch(`/user/genre_data/${period}/${encodeURIComponent(genre)}`)
+      .then((response) => response.json())
+      .then((data) => {
+        displayGenreData(genre, period, data);
+      })
+      .catch((error) => console.error("Error:", error));
+  }
+
+  function displayGenreData(genre, period, data) {
+    genreTitle.textContent = `${genre} (${period.replace("_", " ")})`;
+
+    genreArtistsList.innerHTML = data.top_artists
+      .map(
+        (artist) => `
+        <li class="grid-item">
+          <img src="${
+            artist.images && artist.images.length > 0
+              ? artist.images[0].url
+              : "/static/dist/img/default-artist.png"
+          }" alt="${artist.name}" class="artist-image">
+          <p>${artist.name}</p>
+        </li>
+      `,
+      )
+      .join("");
+
+    genreTracksList.innerHTML = data.top_tracks
+      .map(
+        (track) => `
+        <li class="grid-item">
+          <img src="${
+            track.album && track.album.images && track.album.images.length > 0
+              ? track.album.images[0].url
+              : "/static/dist/img/default-album.png"
+          }" alt="${track.name}" class="track-image">
+          <p>${track.name}</p>
+          <p class="artist-name">${track.artists[0].name}</p>
+        </li>
+      `,
+      )
+      .join("");
+
+    genreDetails.style.display = "block";
+  }
+
+  function updateAudioFeaturesChart(period) {
+    if (audioFeaturesSummary && audioFeaturesSummary[period]) {
+      const features = audioFeaturesSummary[period];
+      const ctx = document
+        .getElementById("audioFeaturesChart")
+        .getContext("2d");
+
+      if (audioFeaturesChart) {
+        audioFeaturesChart.destroy();
+      }
+
+      audioFeaturesChart = new Chart(ctx, {
+        type: "radar",
+        data: {
+          labels: Object.keys(features),
+          datasets: [
+            {
+              label: "Audio Features",
+              data: Object.values(features),
+              backgroundColor: "rgba(29, 185, 84, 0.2)",
+              borderColor: "rgb(29, 185, 84)",
+              pointBackgroundColor: "rgb(29, 185, 84)",
+              pointBorderColor: "#fff",
+              pointHoverBackgroundColor: "#fff",
+              pointHoverBorderColor: "rgb(29, 185, 84)",
+            },
+          ],
+        },
+        options: {
+          elements: {
+            line: {
+              borderWidth: 3,
+            },
+          },
+          scales: {
+            r: {
+              angleLines: {
+                display: false,
+              },
+              suggestedMin: 0,
+              suggestedMax: 1,
+            },
+          },
+        },
+      });
+    } else {
+      console.log("No audio features data available for period:", period);
+    }
+  }
+
+  function displayPlaylists() {
+    if (playlistSummary && playlistSummary.length > 0) {
+      playlistsList.innerHTML = playlistSummary
+        .map(
+          (playlist) =>
+            `<li>${playlist.name} (${
+              playlist.public ? "Public" : "Private"
+            })</li>`,
+        )
+        .join("");
+    } else {
+      playlistsList.innerHTML = "<li>No playlists available</li>";
+    }
+  }
+
+  // Event listeners for pagination
+  prevArtistsBtn.addEventListener("click", () => {
+    if (currentArtistsPage > 1) {
+      currentArtistsPage--;
+      updateTopArtists(timePeriodSelect.value);
+    }
   });
-  const svgPositions = [
-    { class: "svg1", x: "10%", y: "4%" },
-    { class: "svg2", x: "80%", y: "10%" },
-    { class: "svg3", x: "65%", y: "1%" },
-    { class: "svg4", x: "1%", y: "27%" },
-    { class: "svg5", x: "91%", y: "30%" },
-    { class: "svg6", x: "3%", y: "53%" },
-    { class: "svg7", x: "85%", y: "60%" },
-    { class: "svg8", x: "30%", y: "70%" },
-    { class: "svg9", x: "50%", y: "75%" },
-    { class: "svg10", x: "39%", y: "6%" },
-    { class: "svg11", x: "73%", y: "81%" },
-    { class: "svg12", x: "15%", y: "80%" },
-  ];
 
-  const selectedPositions = svgPositions
-    .sort(() => 0.5 - Math.random())
-    .slice(0, 12);
-
-  document.body.style.position = "relative";
-  document.body.style.overflowX = "hidden"; // Prevent horizontal scrolling
-  document.body.style.margin = "0"; // Remove default margin
-
-  // Create a container for the SVG images
-  const svgContainer = document.createElement("div");
-  svgContainer.classList.add("svg-container"); // Add the class for the query selector
-  svgContainer.style.position = "absolute"; // Change to absolute to scroll with content
-  svgContainer.style.width = "100%";
-  // Initial height will be set by updateSvgContainerHeight function
-  svgContainer.style.top = "0";
-  svgContainer.style.left = "0";
-  svgContainer.style.zIndex = "-1"; // Ensure it's behind all other content
-  svgContainer.style.overflow = "hidden"; // Prevent scrollbars if SVGs overflow
-  document.body.prepend(svgContainer); // Insert it as the first child of body
-
-  svgContainer
-    .querySelectorAll(".svg-placeholder")
-    .forEach((el) => el.remove());
-
-  // Create and append SVG images to the svgContainer
-  selectedPositions.forEach((position, index) => {
-    const svgImage = document.createElement("img");
-    svgImage.src = svgUrls[index % svgUrls.length]; // Cycle through SVG URLs
-    svgImage.classList.add("svg-placeholder", position.class);
-    svgImage.style.position = "absolute";
-    svgImage.style.left = position.x;
-    svgImage.style.top = position.y;
-    svgContainer.appendChild(svgImage);
+  nextArtistsBtn.addEventListener("click", () => {
+    const totalArtists = topArtistsSummary[timePeriodSelect.value].length;
+    if (currentArtistsPage < Math.ceil(totalArtists / ITEMS_PER_PAGE)) {
+      currentArtistsPage++;
+      updateTopArtists(timePeriodSelect.value);
+    }
   });
-  updateSvgContainerHeight();
-  window.addEventListener("resize", updateSvgContainerHeight);
+
+  prevTracksBtn.addEventListener("click", () => {
+    if (currentTracksPage > 1) {
+      currentTracksPage--;
+      updateTopTracks(timePeriodSelect.value);
+    }
+  });
+
+  nextTracksBtn.addEventListener("click", () => {
+    const totalTracks = topTracksSummary[timePeriodSelect.value].length;
+    if (currentTracksPage < Math.ceil(totalTracks / ITEMS_PER_PAGE)) {
+      currentTracksPage++;
+      updateTopTracks(timePeriodSelect.value);
+    }
+  });
+
+  // Event listener for time period changes
+  timePeriodSelect.addEventListener("change", (event) => {
+    console.log("Time period changed to:", event.target.value);
+    currentArtistsPage = 1;
+    currentTracksPage = 1;
+    updateDisplay(event.target.value);
+  });
+
+  // Initial display
+  updateDisplay("short_term");
+  displayPlaylists();
 });

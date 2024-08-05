@@ -2,7 +2,8 @@ import json
 from flask import Blueprint, jsonify, render_template, request, session, json
 from app import db
 from app.models.user_models import UserData
-from app.modules.auth.auth import require_spotify_auth, fetch_user_data
+from modules.auth.auth_util import fetch_user_data
+from util.wrappers import require_spotify_auth
 from app.modules.auth.auth_util import verify_session
 from app.modules.recs.recs_util import spotify_search, get_recommendations
 from app.modules.user.user_util import init_session_client, format_track_info
