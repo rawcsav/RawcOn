@@ -10,19 +10,22 @@ h2 {
   color: #1db954;
 }
 
-.audio-features-controls {
-  margin-bottom: 15px;
-}
-.audio-features-controls select,
-.audio-features-controls button {
-  margin-right: 10px;
-}
-#minMaxTracks {
+#hoverInfo,
+#featureDetails {
   margin-top: 15px;
 }
-#minMaxTracks h4 {
-  margin-top: 10px;
-  margin-bottom: 5px;
+#featureDetails table {
+  width: 100%;
+  border-collapse: collapse;
+}
+#featureDetails th,
+#featureDetails td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+#featureDetails th {
+  background-color: #f2f2f2;
 }
 
 h1 {

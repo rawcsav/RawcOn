@@ -150,7 +150,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function displayGenreData(genre, period, data) {
-    genreTitle.textContent = `${genre} (${period.replace("_", " ")})`;
+    genreTitle.textContent = `${genre}`;
 
     genreArtistsList.innerHTML = data.top_artists
       .map(
@@ -213,6 +213,27 @@ document.addEventListener("DOMContentLoaded", function () {
       tempo: [0, 250],
     };
 
+    const featureExplanations = {
+      acousticness:
+        "A confidence measure from 0.0 to 1.0 of whether the track is acoustic.",
+      danceability:
+        "Describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity. 0.0 is least danceable and 1.0 is most danceable.",
+      energy:
+        "Represents a perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy. Scale of 0.0 to 1.0.",
+      instrumentalness:
+        "Predicts whether a track contains no vocals. The closer the instrumentalness value is to 1.0, the greater likelihood the track contains no vocal content.",
+      liveness:
+        "Detects the presence of an audience in the recording. Higher liveness values represent an increased probability that the track was performed live. Scale of 0.0 to 1.0.",
+      speechiness:
+        "Detects the presence of spoken words in a track. Values above 0.66 describe tracks that are probably made entirely of spoken words, values between 0.33 and 0.66 describe tracks that may contain both music and speech, and values below 0.33 most likely represent music and other non-speech-like tracks.",
+      valence:
+        "A measure describing the musical positiveness conveyed by a track. Tracks with high valence sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry). Scale of 0.0 to 1.0.",
+      loudness:
+        "The overall loudness of a track in decibels (dB). Loudness values are averaged across the entire track. Values typically range between -60 and 0 db.",
+      tempo:
+        "The overall estimated tempo of a track in beats per minute (BPM).",
+    };
+
     function normalizeFeature(feature, value) {
       const [min, max] = featureRanges[feature];
       return (value - min) / (max - min);
@@ -259,10 +280,44 @@ document.addEventListener("DOMContentLoaded", function () {
               label: function (context) {
                 const feature = context.label.toLowerCase();
                 const value = denormalizeFeature(feature, context.raw);
-                return `${context.label}: ${value.toFixed(2)}`;
+                const unit =
+                  feature === "loudness"
+                    ? "dB"
+                    : feature === "tempo"
+                      ? "BPM"
+                      : "";
+                return `${context.label}: ${value.toFixed(2)}${unit ? " " + unit : ""}`;
+              },
+              afterLabel: function (context) {
+                const feature = context.label.toLowerCase();
+                return featureExplanations[feature];
               },
             },
           },
+        },
+        onHover: (event, activeElements) => {
+          if (activeElements.length > 0) {
+            const datasetIndex = activeElements[0].datasetIndex;
+            const index = activeElements[0].index;
+            const feature = features[index];
+            let trackInfo;
+
+            if (datasetIndex === 1) {
+              // Min dataset
+              trackInfo = periodData[currentPeriod].min_track[feature];
+            } else if (datasetIndex === 2) {
+              // Max dataset
+              trackInfo = periodData[currentPeriod].max_track[feature];
+            }
+
+            if (trackInfo) {
+              updateMinMaxTrack(feature, trackInfo);
+            } else {
+              clearMinMaxTrack();
+            }
+          } else {
+            clearMinMaxTrack();
+          }
         },
       },
     });
@@ -321,38 +376,26 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       chart.update();
-      updateMinMaxTracks();
+      clearMinMaxTrack();
     }
 
-    function updateMinMaxTracks() {
-      const minMaxContainer = document.getElementById("minMaxTracks");
+    function updateMinMaxTrack(feature, trackInfo) {
+      const minMaxContainer = document.getElementById("minMaxTrack");
+      minMaxContainer.innerHTML = `
+      <h4>${feature}</h4>
+      <p>${trackInfo.name}&nbsp;by&nbsp;${trackInfo.artists[0].name}</p>
+    `;
+    }
+
+    function clearMinMaxTrack() {
+      const minMaxContainer = document.getElementById("minMaxTrack");
       minMaxContainer.innerHTML = "";
-
-      if (showMinMax) {
-        features.forEach((feature) => {
-          const minTrack = periodData[currentPeriod].min_track[feature];
-          const maxTrack = periodData[currentPeriod].max_track[feature];
-
-          const featureInfo = document.createElement("div");
-          featureInfo.innerHTML = `
-          <h4>${feature}</h4>
-          <p>Min: ${minTrack.name} by ${minTrack.artists[0].name}</p>
-          <p>Max: ${maxTrack.name} by ${maxTrack.artists[0].name}</p>
-        `;
-          minMaxContainer.appendChild(featureInfo);
-        });
-      }
     }
 
     // Add controls
     const controlsContainer = document.createElement("div");
     controlsContainer.className = "audio-features-controls";
     controlsContainer.innerHTML = `
-    <select id="timePeriodSelect">
-      <option value="short_term">Short Term</option>
-      <option value="medium_term">Medium Term</option>
-      <option value="long_term">Long Term</option>
-    </select>
     <button id="toggleMinMaxBtn">Toggle Min/Max</button>
   `;
     document
@@ -362,20 +405,18 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("audioFeaturesChart"),
       );
 
-    // Add min/max tracks container
+    // Add min/max track container
     const minMaxContainer = document.createElement("div");
-    minMaxContainer.id = "minMaxTracks";
+    minMaxContainer.id = "minMaxTrack";
     document
       .getElementById("audioFeaturesChart")
       .parentNode.appendChild(minMaxContainer);
 
     // Event listeners
-    document
-      .getElementById("timePeriodSelect")
-      .addEventListener("change", function (e) {
-        currentPeriod = e.target.value;
-        updateChart();
-      });
+    timePeriodSelect.addEventListener("change", function (e) {
+      currentPeriod = e.target.value;
+      updateChart();
+    });
 
     document
       .getElementById("toggleMinMaxBtn")
