@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, jsonify, session
 
 from app.models.user_models import UserData
-from modules.auth.auth_util import fetch_user_data
-from util.wrappers import require_spotify_auth
+from app.modules.auth.auth_util import fetch_user_data
+from app.util.wrappers import require_spotify_auth
 from app.modules.user.user_util import calculate_averages_for_period
 from app.modules.auth.auth_util import verify_session
 

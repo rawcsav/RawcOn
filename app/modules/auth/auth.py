@@ -5,7 +5,7 @@ from flask import make_response
 
 
 from app.modules.auth.auth_util import generate_state, prepare_auth_payload, request_tokens
-from util.wrappers import handle_errors
+from app.util.wrappers import handle_errors
 
 auth_bp = Blueprint("auth", __name__, template_folder="templates", static_folder="static", url_prefix="/")
 

@@ -1,26 +1,22 @@
 import os
-from flask import Flask, current_app, request, Response
+from flask import Flask, request, Response
 from flask_assets import Environment
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_wtf.csrf import CSRFProtect
-
+from itsdangerous import URLSafeTimedSerializer
 from config import ProductionConfig, DevelopmentConfig
 from flask_cors import CORS
-
-
-# Define the custom Jinja2 filter
-def country_flag(country_code):
-    OFFSET = 127397
-    return "".join(chr(ord(char) + OFFSET) for char in country_code.upper())
-
-
-# Register the custom filter with the Flask app's Jinja environment
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 cors = CORS()
+
+
+def country_flag(country_code):
+    OFFSET = 127397
+    return "".join(chr(ord(char) + OFFSET) for char in country_code.upper())
 
 
 def create_app():
@@ -35,20 +31,15 @@ def create_app():
         app.config.from_object(ProductionConfig)
         ProductionConfig.init_app(app)
 
-    assets = Environment(app)
-    CORS(
-        app,
-        origins="*",
-        resources={r"/*": {"origins": "*"}},
-        support_credentials=True,
-        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    )
+    app.serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 
+    assets = Environment(app)
+    CORS(app)
     CSRFProtect(app)
     db.init_app(app)
     Migrate(app, db)
     bcrypt.init_app(app)
-    assets.init_app(app)  # Initialize Flask-Assets
+    assets.init_app(app)
 
     with app.app_context():
         from app.modules.auth import auth
@@ -67,7 +58,7 @@ def create_app():
 
         compile_static_assets(assets)
 
-        @current_app.before_request
+        @app.before_request
         def basic_authentication():
             if request.method.lower() == "options":
                 return Response()

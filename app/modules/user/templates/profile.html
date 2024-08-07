@@ -88,7 +88,9 @@
         </div>
       </div>
       <div class="time-options">
-        <button class="time-option" data-value="short_term">4 weeks</button>
+        <button class="time-option selected" data-value="short_term">
+          4 weeks
+        </button>
         <button class="time-option" data-value="medium_term">6 months</button>
         <button class="time-option" data-value="long_term">All time</button>
       </div>
@@ -132,8 +134,8 @@
       <div class="audio-features">
         <h3>Audio Features</h3>
         <canvas id="audioFeaturesChart"></canvas>
-        <div id="minMaxTracks"></div>
       </div>
+      <div id="minMaxTrack"></div>
     </div>
     {% else %}
     <p>No user data available. Please try refreshing your data.</p>

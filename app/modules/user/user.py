@@ -6,7 +6,7 @@ from pytz import timezone
 from app import db
 from app.models.user_models import UserData
 from ..auth.auth_util import fetch_user_data
-from util.wrappers import require_spotify_auth, handle_errors
+from app.util.wrappers import require_spotify_auth, handle_errors
 from app.modules.auth.auth_util import verify_session
 from .user_util import (
     init_session_client,

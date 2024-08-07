@@ -1,43 +1,39 @@
 document.addEventListener("DOMContentLoaded", function () {
-  let showMinMax = true; // Set this to true by default
   const timeSelector = document.querySelector(".time-selector");
   const timeOptions = document.querySelectorAll(".time-option");
-  timeOptions.forEach((option) => {
-    option.addEventListener("click", () => {
-      timeOptions.forEach((opt) => opt.classList.remove("selected"));
-      option.classList.add("selected");
-      const selectedValue = option.getAttribute("data-value");
-      updateDisplay(selectedValue);
-
-      // Update the chart
-      currentPeriod = selectedValue;
-      if (typeof updateChart === "function") {
-        updateChart();
-      }
-
-      // Reset scroll positions when changing time periods
-      artistsContainer.scrollLeft = 0;
-      tracksContainer.scrollLeft = 0;
-    });
-  });
   const topArtistsList = document.getElementById("topArtists");
   const topTracksList = document.getElementById("topTracks");
   const topGenresList = document.getElementById("topGenres");
   const playlistsList = document.getElementById("playlists");
-
-  const artistsPageInfo = document.getElementById("artistsPageInfo");
-  const tracksPageInfo = document.getElementById("tracksPageInfo");
-
-  // Genre elements
-  const genreDetails = document.getElementById("genre-details");
-  const genreTitle = document.getElementById("genre-title");
-  const genreArtistsList = document.getElementById("genre-artists-list");
-  const genreTracksList = document.getElementById("genre-tracks-list");
+  let chart; // Declare chart variable in a higher scope
 
   let artistsOffset = 0;
   let tracksOffset = 0;
   const ITEMS_PER_LOAD = 20;
-  // Add this function to get the currently selected time period
+  let currentPeriod = "short_term";
+
+  function lazyLoadImages() {
+    const images = document.querySelectorAll("img.lazy-load");
+    const options = {
+      root: null,
+      rootMargin: "0px",
+      threshold: 0.1,
+    };
+
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          img.src = img.dataset.src;
+          img.classList.remove("lazy-load");
+          imageObserver.unobserve(img);
+        }
+      });
+    }, options);
+
+    images.forEach((img) => imageObserver.observe(img));
+  }
+
   function getCurrentTimePeriod() {
     const selectedOption = document.querySelector(".time-option.selected");
     return selectedOption
@@ -54,7 +50,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Update the event listeners for scrolling
   const artistsContainer = topArtistsList.parentElement;
   const tracksContainer = topTracksList.parentElement;
 
@@ -72,7 +67,9 @@ document.addEventListener("DOMContentLoaded", function () {
     topTracksList.innerHTML = "";
     loadMoreArtists(period);
     loadMoreTracks(period);
-    updateTopGenres(period); // Add this line
+    updateTopGenres(period);
+    displayPlaylists(); // Refresh playlists when changing periods
+    lazyLoadImages(); // Reinitialize lazy loading for the new content
   }
 
   function loadMoreArtists(period) {
@@ -104,14 +101,14 @@ document.addEventListener("DOMContentLoaded", function () {
       div.className = "grid-item";
       div.innerHTML = `
         <a href="${artist.spotify_url}" target="_blank" rel="noopener noreferrer">
-          <img src="${artist.image_url || "/static/dist/img/default-artist.png"}" alt="${artist.name}" class="artist-image" loading="lazy">
+          <img src="/static/dist/img/default-artist.svg" data-src="${artist.image_url || "/static/dist/img/default-artist.svg"}" alt="${artist.name}" class="artist-image lazy-load" loading="lazy">
           <p>${artist.name}</p>
         </a>
       `;
-      addInteractions(div);
       fragment.appendChild(div);
     });
     topArtistsList.appendChild(fragment);
+    lazyLoadImages();
   }
 
   function displayTracks(tracks) {
@@ -121,60 +118,16 @@ document.addEventListener("DOMContentLoaded", function () {
       div.className = "grid-item";
       div.innerHTML = `
         <a href="${track.spotify_url}" target="_blank" rel="noopener noreferrer">
-          <img src="${track.image_url || "/static/dist/img/default-album.png"}" alt="${track.name}" class="track-image" loading="lazy">
+          <img src="/static/dist/img/default-track.svg" data-src="${track.image_url || "/static/dist/img/default-track.svg"}" alt="${track.name}" class="track-image lazy-load" loading="lazy">
           <p>${track.name}</p>
           <p class="artist-name">${track.artists.join(", ")}</p>
         </a>
       `;
-      addInteractions(div);
       fragment.appendChild(div);
     });
     topTracksList.appendChild(fragment);
+    lazyLoadImages();
   }
-
-  function addInteractions(element) {
-    element.addEventListener("mouseenter", () => {
-      element.style.transform = "scale(1.05)";
-      element.style.transition = "transform 0.3s ease";
-    });
-    element.addEventListener("mouseleave", () => {
-      element.style.transform = "scale(1)";
-    });
-  }
-
-  function handleScroll(container, loadMoreFunction) {
-    if (
-      container.scrollLeft + container.clientWidth >=
-      container.scrollWidth - 20
-    ) {
-      loadMoreFunction(timePeriodSelect.value);
-    }
-  }
-
-  artistsContainer.addEventListener("scroll", () =>
-    handleScroll(artistsContainer, loadMoreArtists),
-  );
-  tracksContainer.addEventListener("scroll", () =>
-    handleScroll(tracksContainer, loadMoreTracks),
-  );
-
-  timeOptions.forEach((option) => {
-    option.addEventListener("click", () => {
-      timeOptions.forEach((opt) => opt.classList.remove("selected"));
-      option.classList.add("selected");
-      const selectedValue = option.getAttribute("data-value");
-      updateDisplay(selectedValue);
-
-      // Update the chart if it exists
-      if (typeof updateChart === "function") {
-        currentPeriod = selectedValue;
-        updateChart();
-      }
-    });
-  });
-
-  // Initial display
-  updateDisplay("short_term");
 
   function updateTopGenres(period) {
     if (topGenres && topGenres[period]) {
@@ -256,35 +209,19 @@ document.addEventListener("DOMContentLoaded", function () {
     overlay.style.display = "block";
   }
 
-  // Add this function to close the overlay
   function closeGenreOverlay() {
     document.getElementById("genreOverlay").style.display = "none";
   }
 
-  // Add event listener for the close button
   document
     .querySelector(".close-btn")
     .addEventListener("click", closeGenreOverlay);
 
-  // Close the overlay if the user clicks outside of the content
   window.addEventListener("click", function (event) {
     if (event.target == document.getElementById("genreOverlay")) {
       closeGenreOverlay();
     }
   });
-
-  // Modify the addGenreEventListeners function
-  function addGenreEventListeners() {
-    const genreLinks = document.querySelectorAll(".genre-link");
-    genreLinks.forEach((link) => {
-      link.addEventListener("click", function (e) {
-        e.preventDefault();
-        const period = this.dataset.period;
-        const genre = this.dataset.genre;
-        fetchGenreData(period, genre);
-      });
-    });
-  }
 
   function createEnhancedAudioFeaturesChart(audioFeaturesSummary, periodData) {
     const ctx = document.getElementById("audioFeaturesChart").getContext("2d");
@@ -299,8 +236,6 @@ document.addEventListener("DOMContentLoaded", function () {
       "loudness",
       "tempo",
     ];
-    let currentPeriod = "short_term";
-    let showMinMax = false;
 
     const featureRanges = {
       acousticness: [0, 1],
@@ -377,7 +312,7 @@ document.addEventListener("DOMContentLoaded", function () {
               font: 12,
             },
             ticks: {
-              display: false, // Add this line to remove the numbers
+              display: false,
             },
           },
         },
@@ -398,7 +333,7 @@ document.addEventListener("DOMContentLoaded", function () {
               afterLabel: function (context) {
                 const feature = context.label.toLowerCase();
                 const explanation = featureExplanations[feature];
-                return wrapText(explanation, 40); // Wrap explanation text
+                return wrapText(explanation, 40);
               },
             },
           },
@@ -411,10 +346,8 @@ document.addEventListener("DOMContentLoaded", function () {
             let trackInfo;
 
             if (datasetIndex === 1) {
-              // Min dataset
               trackInfo = periodData[currentPeriod].min_track[feature];
             } else if (datasetIndex === 2) {
-              // Max dataset
               trackInfo = periodData[currentPeriod].max_track[feature];
             }
 
@@ -449,6 +382,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function updateChart() {
+      if (!chart) return; // Guard clause in case chart isn't initialized
+
       const avgData = features.map((feature) =>
         normalizeFeature(feature, audioFeaturesSummary[currentPeriod][feature]),
       );
@@ -510,9 +445,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       minMaxContainer.innerHTML = `
         <h4>${feature.charAt(0).toUpperCase() + feature.slice(1)}</h4>
-        <p><strong>Track:</strong> ${trackInfo.name}</p>
-        <p><strong>Artist:</strong> ${trackInfo.artists[0].name}</p>
-        <p><strong>Value:</strong> ${formattedValue}</p>
+        <p><strong>Track: </strong> ${trackInfo.name}</p>
+        <p><strong>Artist: </strong> ${trackInfo.artists[0].name}</p>
+        <p><strong>Value: </strong> ${formattedValue}</p>
       `;
     }
 
@@ -534,7 +469,6 @@ document.addEventListener("DOMContentLoaded", function () {
       minMaxContainer.innerHTML = "";
     }
 
-    // Add controls
     const controlsContainer = document.createElement("div");
     controlsContainer.className = "audio-features-controls";
     document
@@ -544,16 +478,20 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("audioFeaturesChart"),
       );
 
-    // Add min/max track container
-    const minMaxContainer = document.createElement("div");
-    minMaxContainer.id = "minMaxTrack";
-    document
-      .getElementById("audioFeaturesChart")
-      .parentNode.appendChild(minMaxContainer);
-
-    // Initial update
     updateChart();
+
+    timeOptions.forEach((option) => {
+      option.addEventListener("click", () => {
+        timeOptions.forEach((opt) => opt.classList.remove("selected"));
+        option.classList.add("selected");
+        const selectedValue = option.getAttribute("data-value");
+        updateDisplay(selectedValue);
+        currentPeriod = selectedValue;
+        updateChart(); // Always call updateChart
+      });
+    });
   }
+
   function displayPlaylists() {
     const playlistsList = document.getElementById("playlists");
     if (playlistSummary && playlistSummary.length > 0) {
@@ -562,7 +500,7 @@ document.addEventListener("DOMContentLoaded", function () {
           (playlist) => `
       <li>
         <a href="https://open.spotify.com/playlist/${playlist.id}" target="_blank" rel="noopener noreferrer" class="playlist-item">
-          <img src="${playlist.image_url || "/static/dist/img/default-playlist.png"}" alt="${playlist.name}" class="playlist-image">
+          <img src="/static/dist/img/placeholder.png" data-src="${playlist.image_url || "/static/dist/img/default-playlist.png"}" alt="${playlist.name}" class="playlist-image lazy-load" loading="lazy">
           <div class="playlist-info">
             <span class="playlist-name">${playlist.name}</span>
             <span class="playlist-visibility">${playlist.public ? "Public" : "Private"}</span>
@@ -575,6 +513,7 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
       playlistsList.innerHTML = "<li>No playlists available</li>";
     }
+    lazyLoadImages();
   }
 
   function setupPlaylistToggle() {

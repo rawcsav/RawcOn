@@ -44,6 +44,10 @@ class Config(object):
     CLOUD_API_KEY = os.getenv("CLOUDINARY_API_KEY")
     CLOUD_SECRET = os.getenv("CLOUDINARY_SECRET")
 
+    CORS_ORIGINS = "*"
+    CORS_SUPPORTS_CREDENTIALS = True
+    CORS_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+
     SEARCH_ID = os.getenv("SEARCH_ID")
     SEARCH_SECRET = os.getenv("SEARCH_SECRET")
 

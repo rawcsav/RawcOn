@@ -41,3 +41,18 @@ def handle_errors(f):
             return jsonify({"error": str(e)}), 500
 
     return decorated_function
+
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if "tokens" not in session:
+            return redirect(url_for("auth.index"))
+
+        expiry_time = datetime.fromisoformat(session["tokens"]["expiry_time"])
+        if datetime.now() > expiry_time:
+            return redirect(url_for("auth.refresh"))
+
+        return f(*args, **kwargs)
+
+    return decorated
