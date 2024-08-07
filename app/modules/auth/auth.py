@@ -4,7 +4,13 @@ from flask import Blueprint, abort, redirect, render_template, request, session,
 from flask import make_response
 
 
-from app.modules.auth.auth_util import generate_state, prepare_auth_payload, request_tokens
+from app.modules.auth.auth_util import (
+    generate_state,
+    prepare_auth_payload,
+    request_tokens,
+    generate_code_verifier,
+    generate_code_challenge,
+)
 from app.util.wrappers import handle_errors
 
 auth_bp = Blueprint("auth", __name__, template_folder="templates", static_folder="static", url_prefix="/")
@@ -19,13 +25,9 @@ def index():
 @auth_bp.route("/<loginout>")
 @handle_errors
 def login(loginout):
-    # If the path is logout, clear the session and return to the index page.
     if loginout == "logout":
         session.clear()
-        # Optionally, if you want to force re-authentication on Spotify's side next time,
-        # you could set `show_dialog=True` for the next login attempt.
         session["show_dialog"] = True
-        # You also might want to clear the spotify_auth_state cookie if it's not needed anymore.
         response = make_response(redirect(url_for("auth.index")))
         response.set_cookie("spotify_auth_state", "", expires=0, path="/")
         return response
@@ -48,13 +50,15 @@ def login(loginout):
 
     # Check if we're supposed to show the dialog (this would be set upon logout).
     show_dialog = session.pop("show_dialog", False)
-
+    code_verifier = generate_code_verifier()
+    code_challenge = generate_code_challenge(code_verifier)
     # Prepare the payload for authentication.
-    payload = prepare_auth_payload(state, scope, show_dialog=show_dialog)
+    payload = prepare_auth_payload(state, scope, code_challenge, show_dialog=show_dialog)
 
     # Redirect the user to Spotify's authorization URL.
     res = make_response(redirect(f'{current_app.config["AUTH_URL"]}/?{urlencode(payload)}'))
     res.set_cookie("spotify_auth_state", state)
+    res.set_cookie("code_verifier", code_verifier)
 
     return res
 
@@ -69,9 +73,16 @@ def callback():
         abort(400, description="State mismatch")
 
     code = request.args.get("code")
-    payload = {"grant_type": "authorization_code", "code": code, "redirect_uri": current_app.config["REDIRECT_URI"]}
+    code_verifier = request.cookies.get("code_verifier")
+    payload = {
+        "grant_type": "authorization_code",
+        "code": code,
+        "redirect_uri": current_app.config["REDIRECT_URI"],
+        "code_verifier": code_verifier,
+        "client_id": current_app.config["CLIENT_ID"],
+    }
 
-    res_data, error = request_tokens(payload, current_app.config["CLIENT_ID"], current_app.config["CLIENT_SECRET"])
+    res_data, error = request_tokens(payload)
     if error:
         abort(400, description="Error obtaining tokens from Spotify")
 
@@ -91,9 +102,13 @@ def callback():
 @auth_bp.route("/refresh")
 @handle_errors
 def refresh():
-    payload = {"grant_type": "refresh_token", "refresh_token": session.get("tokens").get("refresh_token")}
+    payload = {
+        "grant_type": "refresh_token",
+        "client_id": current_app.config["CLIENT_ID"],
+        "refresh_token": session.get("tokens").get("refresh_token"),
+    }
 
-    res_data, error = request_tokens(payload, current_app.config["CLIENT_ID"], current_app.config["CLIENT_SECRET"])
+    res_data, error = request_tokens(payload)
     if error:
         return redirect(url_for("auth.index"))
 

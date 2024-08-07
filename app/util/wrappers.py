@@ -10,14 +10,11 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 def require_spotify_auth(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        tokens = session.get("tokens")
-        expiry_time = datetime.fromisoformat(tokens.get("expiry_time")) if tokens else None
-
-        if not tokens:
+        if "tokens" not in session:
             return redirect(url_for("auth.index"))
 
-        if expiry_time and expiry_time < datetime.now():
-            session["original_request_url"] = request.url
+        expiry_time = datetime.fromisoformat(session["tokens"]["expiry_time"])
+        if datetime.now() > expiry_time:
             return redirect(url_for("auth.refresh"))
 
         return f(*args, **kwargs)
@@ -41,18 +38,3 @@ def handle_errors(f):
             return jsonify({"error": str(e)}), 500
 
     return decorated_function
-
-
-def token_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if "tokens" not in session:
-            return redirect(url_for("auth.index"))
-
-        expiry_time = datetime.fromisoformat(session["tokens"]["expiry_time"])
-        if datetime.now() > expiry_time:
-            return redirect(url_for("auth.refresh"))
-
-        return f(*args, **kwargs)
-
-    return decorated

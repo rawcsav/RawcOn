@@ -1,3 +1,7 @@
+import base64
+import hashlib
+import os
+import re
 import secrets
 import string
 from datetime import timezone, timedelta, datetime
@@ -15,10 +19,12 @@ def generate_state():
     return "".join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(16))
 
 
-def prepare_auth_payload(state, scope, show_dialog=False):
+def prepare_auth_payload(state, scope, code_challenge, show_dialog=False):
     payload = {
         "client_id": current_app.config["CLIENT_ID"],
         "response_type": "code",
+        "code_challenge_method": "S256",
+        "code_challenge": code_challenge,
         "redirect_uri": current_app.config["REDIRECT_URI"],
         "state": state,
         "scope": scope,
@@ -28,42 +34,12 @@ def prepare_auth_payload(state, scope, show_dialog=False):
     return payload
 
 
-def request_tokens(payload, client_id, client_secret):
-    res = requests.post(current_app.config["TOKEN_URL"], auth=(client_id, client_secret), data=payload)
+def request_tokens(payload):
+    res = requests.post(current_app.config["TOKEN_URL"], data=payload)
     res_data = res.json()
     if res_data.get("error") or res.status_code != 200:
         return None, res.status_code
     return res_data, None
-
-
-def convert_utc_to_est(utc_time):
-    return utc_time.replace(tzinfo=timezone.utc).astimezone(timezone(timedelta(hours=-4)))
-
-
-def refresh_tokens():
-    if "tokens" not in session:
-        return False
-
-    payload = {"grant_type": "refresh_token", "refresh_token": session["tokens"].get("refresh_token")}
-
-    res_data, error = request_tokens(payload, current_app.config["CLIENT_ID"], current_app.config["CLIENT_SECRET"])
-    if error:
-        return False
-
-    new_access_token = res_data.get("access_token")
-    new_refresh_token = res_data.get("refresh_token", session["tokens"]["refresh_token"])
-    expires_in = res_data.get("expires_in")
-    new_expiry_time = datetime.now() + timedelta(seconds=expires_in)
-
-    session["tokens"].update(
-        {
-            "access_token": new_access_token,
-            "refresh_token": new_refresh_token,
-            "expiry_time": new_expiry_time.isoformat(),
-        }
-    )
-
-    return True
 
 
 def fetch_user_data(access_token):
@@ -74,3 +50,16 @@ def fetch_user_data(access_token):
 
     print(res.json())
     return res.json()
+
+
+def generate_code_verifier():
+    code_verifier = base64.urlsafe_b64encode(os.urandom(40)).decode("utf-8")
+    code_verifier = re.sub("[^a-zA-Z0-9]+", "", code_verifier)
+    return code_verifier
+
+
+def generate_code_challenge(code_verifier):
+    code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
+    code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8")
+    code_challenge = code_challenge.replace("=", "")
+    return code_challenge
