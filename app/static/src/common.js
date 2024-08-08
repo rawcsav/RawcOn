@@ -5,6 +5,66 @@ function getCsrfToken() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+  function lazyLoadImages() {
+    const images = document.querySelectorAll("img.lazy-load");
+    const options = {
+      root: null,
+      rootMargin: "0px",
+      threshold: 0.1,
+    };
+
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          img.src = img.dataset.src;
+          img.classList.remove("lazy-load");
+          imageObserver.unobserve(img);
+        }
+      });
+    }, options);
+
+    images.forEach((img) => imageObserver.observe(img));
+  }
+  function displayPlaylists() {
+    const playlistsList = document.getElementById("playlists");
+    // eslint-disable-next-line no-undef
+    if (playlistSummary && playlistSummary.length > 0) {
+      // eslint-disable-next-line no-undef
+      playlistsList.innerHTML = playlistSummary
+        .map(
+          (playlist) => `
+      <li>
+        <a href="https://open.spotify.com/playlist/${playlist.id}" target="_blank" rel="noopener noreferrer" class="playlist-item">
+          <img src="/static/dist/img/default-track.svg" data-src="${playlist.image_url || "/static/dist/img/default-track.svg"}" alt="${playlist.name}" class="playlist-image lazy-load" loading="lazy">
+          <div class="playlist-info">
+            <span class="playlist-name">${playlist.name}</span>
+            <span class="playlist-visibility">${playlist.public ? "Public" : "Private"}</span>
+          </div>
+        </a>
+      </li>
+      `,
+        )
+        .join("");
+    } else {
+      playlistsList.innerHTML = "<li>No playlists available</li>";
+    }
+    lazyLoadImages();
+  }
+
+  function setupPlaylistToggle() {
+    const playlistHeader = document.querySelector(".playlist-header");
+    const playlistsList = document.getElementById("playlists");
+    const toggleArrow = document.querySelector(".toggle-arrow");
+
+    playlistHeader.addEventListener("click", () => {
+      playlistsList.classList.toggle("hidden");
+      toggleArrow.classList.toggle("open");
+    });
+  }
+
+  displayPlaylists();
+  setupPlaylistToggle();
   let ajaxRequestCount = 0;
   let timeoutId; // Ensure timeoutId is declared to manage visibility of loading overlay
   const vinyls = [

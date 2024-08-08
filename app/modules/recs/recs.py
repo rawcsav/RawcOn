@@ -6,7 +6,7 @@ from app.modules.auth.auth_util import fetch_user_data
 from app.util.wrappers import require_spotify_auth
 from app.modules.auth.auth_util import verify_session
 from app.modules.recs.recs_util import spotify_search, get_recommendations
-from app.modules.user.user_util import init_session_client, format_track_info
+from app.modules.user.user_util import init_session_client, format_track_info, get_playlist_summary
 from app.util.database_util import add_artist_to_db
 
 recs_bp = Blueprint("recs", __name__, template_folder="templates", static_folder="static", url_prefix="/recs")
@@ -24,11 +24,14 @@ def recommendations():
     res_data = fetch_user_data(access_token)
 
     user_data_entry = UserData.query.filter_by(spotify_user_id=spotify_user_id).first()
+    playlist_summary = get_playlist_summary(user_data_entry)
 
     if not user_data_entry:
         return jsonify(error="User data not found"), 404
 
-    return render_template("recommendations.html", data=res_data, user_data=user_data_entry)
+    return render_template(
+        "recommendations.html", user_data=res_data, data=user_data_entry, playlist_summary=playlist_summary
+    )
 
 
 @recs_bp.route("/get_recommendations", methods=["POST"])

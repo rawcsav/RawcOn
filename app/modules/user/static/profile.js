@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const topArtistsList = document.getElementById("topArtists");
   const topTracksList = document.getElementById("topTracks");
   const topGenresList = document.getElementById("topGenres");
-  const playlistsList = document.getElementById("playlists");
   let chart; // Declare chart variable in a higher scope
 
   let artistsOffset = 0;
@@ -68,7 +67,6 @@ document.addEventListener("DOMContentLoaded", function () {
     loadMoreArtists(period);
     loadMoreTracks(period);
     updateTopGenres(period);
-    displayPlaylists(); // Refresh playlists when changing periods
     lazyLoadImages(); // Reinitialize lazy loading for the new content
   }
 
@@ -504,44 +502,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  function displayPlaylists() {
-    const playlistsList = document.getElementById("playlists");
-    if (playlistSummary && playlistSummary.length > 0) {
-      playlistsList.innerHTML = playlistSummary
-        .map(
-          (playlist) => `
-      <li>
-        <a href="https://open.spotify.com/playlist/${playlist.id}" target="_blank" rel="noopener noreferrer" class="playlist-item">
-          <img src="/static/dist/img/default-track.svg" data-src="${playlist.image_url || "/static/dist/img/default-track.svg"}" alt="${playlist.name}" class="playlist-image lazy-load" loading="lazy">
-          <div class="playlist-info">
-            <span class="playlist-name">${playlist.name}</span>
-            <span class="playlist-visibility">${playlist.public ? "Public" : "Private"}</span>
-          </div>
-        </a>
-      </li>
-      `,
-        )
-        .join("");
-    } else {
-      playlistsList.innerHTML = "<li>No playlists available</li>";
-    }
-    lazyLoadImages();
-  }
-
-  function setupPlaylistToggle() {
-    const playlistHeader = document.querySelector(".playlist-header");
-    const playlistsList = document.getElementById("playlists");
-    const toggleArrow = document.querySelector(".toggle-arrow");
-
-    playlistHeader.addEventListener("click", () => {
-      playlistsList.classList.toggle("hidden");
-      toggleArrow.classList.toggle("open");
-    });
-  }
-
   // Initial display
   updateDisplay("short_term");
-  displayPlaylists();
-  setupPlaylistToggle();
   createEnhancedAudioFeaturesChart(audioFeaturesSummary, periodData);
 });

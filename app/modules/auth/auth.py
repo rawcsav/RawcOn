@@ -86,29 +86,33 @@ def callback():
 
 
 @auth_bp.route("/refresh")
-@handle_errors
 def refresh():
+    next_url = request.args.get("next") or url_for("user.profile")
+
+    # Implement a cooldown to prevent rapid successive refreshes
+    last_refresh = session.get("last_refresh_time")
+    if last_refresh and datetime.now() - datetime.fromisoformat(last_refresh) < timedelta(seconds=30):
+        current_app.logger.warning("Refresh attempt too soon after last refresh")
+        return redirect(next_url)
+
     payload = {
         "grant_type": "refresh_token",
+        "refresh_token": session["tokens"]["refresh_token"],
         "client_id": current_app.config["CLIENT_ID"],
-        "refresh_token": session.get("tokens").get("refresh_token"),
+        "client_secret": current_app.config["CLIENT_SECRET"],
     }
 
     res_data, error = request_tokens(payload)
     if error:
-        return redirect(url_for("auth.index"))
+        current_app.logger.error(f"Token refresh failed: {error}")
+        return redirect(url_for("auth.login"))
 
-    new_access_token = res_data.get("access_token")
-    new_refresh_token = res_data.get("refresh_token", session["tokens"]["refresh_token"])
-    expires_in = res_data.get("expires_in")
-    new_expiry_time = datetime.now() + timedelta(seconds=expires_in)
+    # Update session with new token info
+    session["tokens"] = {
+        "access_token": res_data["access_token"],
+        "refresh_token": res_data.get("refresh_token", session["tokens"]["refresh_token"]),
+        "expiry_time": (datetime.now() + timedelta(seconds=res_data["expires_in"])).isoformat(),
+    }
+    session["last_refresh_time"] = datetime.now().isoformat()
 
-    session["tokens"].update(
-        {
-            "access_token": new_access_token,
-            "refresh_token": new_refresh_token,
-            "expiry_time": new_expiry_time.isoformat(),
-        }
-    )
-
-    return redirect(session.pop("original_request_url", url_for("user.profile")))
+    return redirect(next_url)

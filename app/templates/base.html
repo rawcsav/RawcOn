@@ -82,9 +82,17 @@
     {% endassets %} {% block styles %}{% endblock %}
   </head>
   <body class="{% if g.is_dark_mode %}dark-mode{% endif %}">
-    {% block menu %}{% include 'menu.html' %} {% endblock %} {% block body %} {%
-    endblock %}{% assets "common_js_bundle" %}
+    <div class="main-div">
+      {% block menu %}{% include 'menu.html' %} {% endblock %} {% block body %}
+      {% endblock %}
+    </div>
+    {% assets "common_js_bundle" %}
     <script src="{{ ASSET_URL }}"></script>
-    {% endassets %} {% block scripts %} {% endblock %}
+    {% endassets %}
+    <script>
+      const userData = {{ user_data | tojson | safe }};
+        const playlistSummary = {{ playlist_summary | tojson | safe }};
+    </script>
+    {% block scripts %} {% endblock %}
   </body>
 </html>

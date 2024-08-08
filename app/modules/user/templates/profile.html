@@ -4,155 +4,93 @@
 <link rel="stylesheet" href="{{ ASSET_URL }}" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endassets %} {% endblock %} {% block body %}
-<div class="main-div">
-  <div class="hidden-profile"></div>
-  <div class="profile-header">
-    <p class="top-brand">rawc-on!™ ~ user profile</p>
-    <div id="profile-container">
-      <a class="user-name" href="{{ user_data.external_urls['spotify']}}">
-        {% if user_data %} {{ user_data.display_name }} {% else %} {{
-        user_data.id }} {% endif %}
-      </a>
-      <div id="profile-metadata">
-        {% if user_data.followers %}
-        <p class="user-followers">
-          <img
-            class="icon"
-            src="/static/dist/img/users.svg"
-            alt="Followers Icon"
-          />
-          {{ user_data.followers.total }}
-        </p>
-        {% endif %} {% if user_data.country %}
-        <p class="user-country">
-          <span id="country-flag">{{ user_data.country|country_flag }}</span>
-          {{ user_data.country }}
-        </p>
-        {% endif %}
-      </div>
-    </div>
-    <div class="nav-container">
-      <div class="profile-nav">
-        <a href="{{ url_for('user.profile') }}">Profile</a>
-      </div>
-      <div class="recommendations-nav">
-        <a href="{{ url_for('recs.recommendations') }}">Recs</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2 class="playlist-header">
-        Playlists
-        <img
-          class="toggle-arrow"
-          src="/static/dist/img/angle-down.svg"
-          alt="toggle open arrow"
-        />
-      </h2>
-      <ul id="playlists" class="hidden"></ul>
-    </div>
-
-    <div class="logo-container">
-      <a href="{{ url_for('auth.index') }}">
-        <img
-          class="logo"
-          src="/static/dist/img/rawcon-corner.svg"
-          alt="RAWCON Logo"
-        />
-      </a>
-    </div>
-    <a class="logout" href="/logout">Logout</a>
-  </div>
-  <div class="user-content">
-    {% if user_data %}
-    <div class="time-selector">
-      <div class="selector-header">
-        <svg
-          class="icon"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <circle cx="12" cy="12" r="10"></circle>
-          <polyline points="12 6 12 12 16 14"></polyline>
-        </svg>
-        <div>
-          <div class="selector-title">Select Time Range</div>
-          <div class="selector-subtitle">
-            Choose your Spotify listening period
-          </div>
+<div class="user-content">
+  {% if user_data %}
+  <div class="time-selector">
+    <div class="selector-header">
+      <svg
+        class="icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
+      <div>
+        <div class="selector-title">Select Time Range</div>
+        <div class="selector-subtitle">
+          Choose your Spotify listening period
         </div>
       </div>
-      <div class="time-options">
-        <button class="time-option selected" data-value="short_term">
-          4 weeks
-        </button>
-        <button class="time-option" data-value="medium_term">6 months</button>
-        <button class="time-option" data-value="long_term">All time</button>
-      </div>
     </div>
-
-    <div class="artists-column">
-      <h3>Top Artists</h3>
-      <div class="scroll-container">
-        <div id="topArtists" class="row-container"></div>
-      </div>
+    <div class="time-options">
+      <button class="time-option selected" data-value="short_term">
+        4 weeks
+      </button>
+      <button class="time-option" data-value="medium_term">6 months</button>
+      <button class="time-option" data-value="long_term">All time</button>
     </div>
+  </div>
 
-    <div class="tracks-column">
-      <h3>Top Tracks</h3>
-      <div class="scroll-container">
-        <div id="topTracks" class="row-container"></div>
-      </div>
+  <div class="artists-column">
+    <h3>Top Artists</h3>
+    <div class="scroll-container">
+      <div id="topArtists" class="row-container"></div>
     </div>
+  </div>
 
-    <div class="genres-column">
-      <h3>Top Genres</h3>
-      <div id="topGenres"></div>
-      <div id="genreOverlay" class="overlay">
-        <div class="overlay-content">
-          <span class="close-btn">&times;</span>
-          <h3 id="genre-title"></h3>
-          <div class="genre-content">
-            <div id="genre-artists">
-              <h4>Top Artists</h4>
-              <ul id="genre-artists-list" class="grid-container"></ul>
-            </div>
-            <div id="genre-tracks">
-              <h4>Top Tracks</h4>
-              <ul id="genre-tracks-list" class="grid-container"></ul>
-            </div>
+  <div class="tracks-column">
+    <h3>Top Tracks</h3>
+    <div class="scroll-container">
+      <div id="topTracks" class="row-container"></div>
+    </div>
+  </div>
+
+  <div class="genres-column">
+    <h3>Top Genres</h3>
+    <div id="topGenres"></div>
+    <div id="genreOverlay" class="overlay">
+      <div class="overlay-content">
+        <span class="close-btn">&times;</span>
+        <h3 id="genre-title"></h3>
+        <div class="genre-content">
+          <div id="genre-artists">
+            <h4>Top Artists</h4>
+            <ul id="genre-artists-list" class="grid-container"></ul>
+          </div>
+          <div id="genre-tracks">
+            <h4>Top Tracks</h4>
+            <ul id="genre-tracks-list" class="grid-container"></ul>
           </div>
         </div>
       </div>
     </div>
-    <div class="features-column">
-      <h3>Audio Features</h3>
-      <div class="features-row">
-        <div class="audio-features">
-          <canvas id="audioFeaturesChart"></canvas>
-        </div>
-        <div id="minMaxTrack"></div>
-      </div>
-    </div>
-    {% else %}
-    <p>No user data available. Please try refreshing your data.</p>
-    {% endif %}
   </div>
+  <div class="features-column">
+    <h3>Audio Features</h3>
+    <div class="features-row">
+      <div class="audio-features">
+        <canvas id="audioFeaturesChart"></canvas>
+      </div>
+      <div id="minMaxTrack"></div>
+    </div>
+  </div>
+  {% else %}
+  <p>No user data available. Please try refreshing your data.</p>
+  {% endif %}
 </div>
 {% endblock %}{% block scripts %}
 <script>
   {% if user_data and period_data and top_genres and audio_features_summary and top_artists_summary and top_tracks_summary and playlist_summary %}
-        const userData = {{ user_data | tojson | safe }};
         const periodData = {{ period_data | tojson | safe }};
         const topGenres = {{ top_genres | tojson | safe }};
         const audioFeaturesSummary = {{ audio_features_summary | tojson | safe }};
         const topArtistsSummary = {{ top_artists_summary | tojson | safe }};
         const topTracksSummary = {{ top_tracks_summary | tojson | safe }};
-        const playlistSummary = {{ playlist_summary | tojson | safe }};
 
         console.log("Script loaded and initial display set");  // Debug log
     {% else %}

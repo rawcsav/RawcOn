@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 import logging
 
@@ -10,16 +10,17 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 def require_spotify_auth(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if "tokens" not in session:
-            return redirect(url_for("auth.index"))
+        now = datetime.now()
+        tokens = session.get('tokens', {})
+        expiry_time = datetime.fromisoformat(tokens.get('expiry_time', '2000-01-01'))
 
-        expiry_time = datetime.fromisoformat(session["tokens"]["expiry_time"])
-        if datetime.now() > expiry_time:
-            return redirect(url_for("auth.refresh"))
+        if now >= expiry_time - timedelta(minutes=5):
+            # Token is expired or will expire soon, refresh it
+            return redirect(url_for('auth.refresh', next=request.url))
 
         return f(*args, **kwargs)
-
     return decorated_function
+
 
 
 from functools import wraps

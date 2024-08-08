@@ -1,14 +1,7 @@
 {% extends 'base.html' %} {% block head %}
 <title>Recommendations</title>
 <link rel="canonical" href="https://rawcon.rawcsav.com/recs/recommendations" />
-{% endblock %} {% block styles %}<link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css"
-  integrity="sha512-qveKnGrvOChbSzAdtSs8p69eoLegyh+1hwOMbmpCViIwj7rn4oJjdmMvWOuyQlTOZgTlZA0N2PXA7iA8/2TUYA=="
-  crossorigin="anonymous"
-  referrerpolicy="no-referrer"
-/>
-{% assets "recs_style_bundle" %}
+{% endblock %} {% block styles %} {% assets "recs_style_bundle" %}
 <link rel="stylesheet" href="{{ ASSET_URL }}" />
 {% endassets %} {% endblock %} {% block body %}
 <div class="top-buttons">
@@ -202,13 +195,6 @@
   id="toast"
   style="display: none; position: absolute; transform: translate(-50%, -50%)"
 ></div>
-{% endblock %}{% block scripts %}
-<script
-  src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"
-  integrity="sha512-UOJe4paV6hYWBnS0c9GnIRH8PLm2nFK22uhfAvsTIqd3uwnWsVri1OPn5fJYdLtGY3wB11LGHJ4yPU1WFJeBYQ=="
-  crossorigin="anonymous"
-  referrerpolicy="no-referrer"
-></script>
-{% assets "recs_js_bundle" %}
+{% endblock %}{% block scripts %} {% assets "recs_js_bundle" %}
 <script src="{{ ASSET_URL }}"></script>
 {% endassets %}{% endblock %}
