@@ -11,16 +11,16 @@ def require_spotify_auth(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         now = datetime.now()
-        tokens = session.get('tokens', {})
-        expiry_time = datetime.fromisoformat(tokens.get('expiry_time', '2000-01-01'))
+        tokens = session.get("tokens", {})
+        expiry_time = datetime.fromisoformat(tokens.get("expiry_time", "2000-01-01"))
 
         if now >= expiry_time - timedelta(minutes=5):
             # Token is expired or will expire soon, refresh it
-            return redirect(url_for('auth.refresh', next=request.url))
+            return redirect(url_for("auth.refresh", next=request.url))
 
         return f(*args, **kwargs)
-    return decorated_function
 
+    return decorated_function
 
 
 from functools import wraps

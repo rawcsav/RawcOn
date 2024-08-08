@@ -40,7 +40,11 @@ def get_playlist_tracks(sp, playlist_id):
 
 
 def get_track_info_list(sp, tracks):
-    track_ids = [track_data["track"]["id"] for track_data in tracks if track_data["track"]["id"] is not None]
+    track_ids = [
+        track_data["track"]["id"]
+        for track_data in tracks
+        if track_data and track_data.get("track") and track_data["track"].get("id")
+    ]
     track_features_dict = get_or_fetch_audio_features(sp, track_ids)
     track_info_list = []
 
@@ -48,13 +52,17 @@ def get_track_info_list(sp, tracks):
         set(
             artist["id"]
             for track_data in tracks
+            if track_data and track_data.get("track") and track_data["track"].get("artists")
             for artist in track_data["track"]["artists"]
-            if artist["id"] is not None
+            if artist.get("id")
         )
     )
     all_artist_info = get_or_fetch_artist_info(sp, unique_artist_ids)
 
     for track_data in tracks:
+        if not track_data or not track_data.get("track"):
+            continue  # Skip this track if it's None or doesn't have 'track' key
+
         track = track_data["track"]
 
         track.pop("available_markets", None)
@@ -64,27 +72,28 @@ def get_track_info_list(sp, tracks):
         track.pop("linked_from", None)
         track.pop("restrictions", None)
 
-        artists = track["artists"]
-        image = track["album"].get("images", [])
+        artists = track.get("artists", [])
+        image = track.get("album", {}).get("images", [])
         cover_art = image[0].get("url") if image else None
 
         artist_info = []
         for artist in artists:
-            artist_id = artist["id"]
-            if artist_id is not None and artist_id in all_artist_info:
+            artist_id = artist.get("id")
+            if artist_id and artist_id in all_artist_info:
                 artist_info.append(all_artist_info[artist_id])
-        audio_features = track_features_dict.get(track["id"], {})
+
+        audio_features = track_features_dict.get(track.get("id"), {})
         is_local = track.get("is_local", False)
 
         track_info = {
-            "id": track["id"],
-            "name": track["name"],
+            "id": track.get("id"),
+            "name": track.get("name"),
             "is_local": is_local,
-            "added_at": track_data.get("added_at", None),
-            "album": track["album"]["name"],
-            "release_date": track["album"]["release_date"],
-            "explicit": track["explicit"],
-            "popularity": None if is_local else track["popularity"],
+            "added_at": track_data.get("added_at"),
+            "album": track.get("album", {}).get("name"),
+            "release_date": track.get("album", {}).get("release_date"),
+            "explicit": track.get("explicit"),
+            "popularity": None if is_local else track.get("popularity"),
             "cover_art": cover_art,
             "artists": artist_info,
             "audio_features": audio_features,
@@ -296,7 +305,7 @@ def get_playlist_details(sp, playlist_id):
 
 
 def update_playlist_data(playlist_id):
-    sp, error = init_session_client(session)
+    sp, error = init_session_client()
     if error:
         return json.dumps(error), 401
 

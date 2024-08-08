@@ -21,36 +21,6 @@ playlist_bp = Blueprint(
 )
 
 
-@playlist_bp.route("/playlist", methods=["GET"])
-@require_spotify_auth
-def playlist():
-    spotify_user_id = session["USER_ID"]
-    access_token = verify_session(session)
-    res_data = fetch_user_data(access_token)
-
-    user_data_entry = UserData.query.filter_by(spotify_user_id=spotify_user_id).first()
-
-    if not user_data_entry:
-        return jsonify(error="User data not found"), 404
-
-    page = request.args.get("page", 1, type=int)
-    per_page = 10  # or any other desired value
-
-    owner_name = session.get("DISPLAY_NAME")
-    start = (page - 1) * per_page
-    end = start + per_page
-    playlists = [
-        playlist
-        for playlist in user_data_entry.playlist_info[start:end]
-        if playlist["owner"] is not None and playlist["owner"] == owner_name
-    ]
-
-    total_playlists = len(user_data_entry.playlist_info)
-    total_pages = -(-total_playlists // per_page)  # This calculates the ceiling of division
-
-    return render_template("playlist.html", data=res_data, playlists=playlists, page=page, total_pages=total_pages)
-
-
 @playlist_bp.route("/playlist/<string:playlist_id>")
 @require_spotify_auth
 def show_playlist(playlist_id):
@@ -73,9 +43,9 @@ def show_playlist(playlist_id):
 
         genre_scores = calculate_genre_weights(playlist_data["genre_counts"], GenreData)
         return render_template(
-            "spec_playlist.html",
+            "playlist.html",
             playlist_id=playlist_id,
-            data=res_data,
+            user_data=res_data,
             playlist_url=playlist_url,
             playlist_data=playlist_data,
             top_10_genre_data=top_10_genre_data,
@@ -87,7 +57,7 @@ def show_playlist(playlist_id):
             genre_scores=genre_scores,
         )
 
-    sp, error = init_session_client(session)
+    sp, error = init_session_client()
     if error:
         return json.dumps(error), 401
 
@@ -135,9 +105,9 @@ def show_playlist(playlist_id):
     top_10_genre_data = dict(sorted_genre_data[:10])
     genre_scores = calculate_genre_weights(playlist_data["genre_counts"], GenreData)
     return render_template(
-        "spec_playlist.html",
+        "playlist.html",
         playlist_id=playlist_id,
-        data=res_data,
+        user_data=res_data,
         playlist_url=playlist_url,
         playlist_data=playlist_data,
         top_10_genre_data=top_10_genre_data,
@@ -163,7 +133,7 @@ def refresh_playlist(playlist_id):
 
 @playlist_bp.route("/like_all_songs/<playlist_id>")
 def like_all_songs(playlist_id):
-    sp, error = init_session_client(session)
+    sp, error = init_session_client()
     if error:
         return json.dumps(error), 401
 
@@ -189,7 +159,7 @@ def like_all_songs(playlist_id):
 
 @playlist_bp.route("/unlike_all_songs/<playlist_id>")
 def unlike_all_songs(playlist_id):
-    sp, error = init_session_client(session)
+    sp, error = init_session_client()
     if error:
         return json.dumps(error), 401
 
@@ -215,7 +185,7 @@ def unlike_all_songs(playlist_id):
 
 @playlist_bp.route("/remove_duplicates/<playlist_id>")
 def remove_duplicates(playlist_id):
-    sp, error = init_session_client(session)
+    sp, error = init_session_client()
     if error:
         return json.dumps(error), 401
 
@@ -261,7 +231,7 @@ RETRY_WAIT_SECONDS = 2
 @playlist_bp.route("/playlist/<string:playlist_id>/reorder", methods=["POST"])
 @require_spotify_auth
 def reorder_playlist(playlist_id):
-    sp, error = init_session_client(session)
+    sp, error = init_session_client()
     if error:
         return jsonify(error=error), 401
 
@@ -313,7 +283,7 @@ def reorder_playlist(playlist_id):
 
 @playlist_bp.route("/get_pl_recommendations/<string:playlist_id>/recommendations", methods=["POST"])
 def get_pl_recommendations(playlist_id):
-    sp, error = init_session_client(session)
+    sp, error = init_session_client()
     if error:
         return jsonify(error=error), 401
 

@@ -1,7 +1,16 @@
+// eslint-disable-next-line no-unused-vars
 function getCsrfToken() {
   return document
     .querySelector('meta[name="csrf-token"]')
     .getAttribute("content");
+}
+
+// eslint-disable-next-line no-unused-vars
+function handlePlaylistClick() {
+  window.showLoading(20000);
+  window.onload = function () {
+    window.hideLoading();
+  };
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -13,6 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
       threshold: 0.1,
     };
 
+    // eslint-disable-next-line no-unused-vars
     const imageObserver = new IntersectionObserver((entries, observer) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -26,6 +36,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     images.forEach((img) => imageObserver.observe(img));
   }
+
+  // eslint-disable-next-line no-unused-vars
+
   function displayPlaylists() {
     const playlistsList = document.getElementById("playlists");
     // eslint-disable-next-line no-undef
@@ -34,16 +47,22 @@ document.addEventListener("DOMContentLoaded", function () {
       playlistsList.innerHTML = playlistSummary
         .map(
           (playlist) => `
-      <li>
-        <a href="https://open.spotify.com/playlist/${playlist.id}" target="_blank" rel="noopener noreferrer" class="playlist-item">
-          <img src="/static/dist/img/default-track.svg" data-src="${playlist.image_url || "/static/dist/img/default-track.svg"}" alt="${playlist.name}" class="playlist-image lazy-load" loading="lazy">
-          <div class="playlist-info">
-            <span class="playlist-name">${playlist.name}</span>
-            <span class="playlist-visibility">${playlist.public ? "Public" : "Private"}</span>
-          </div>
-        </a>
-      </li>
-      `,
+    <li class="playlist-item">
+      <a href="/playlist/playlist/${playlist.id}?playlist_name=${encodeURIComponent(playlist.name)}" class="playlist-option">
+        <div class="image-container">
+          <img src="/static/dist/img/default-track.svg" 
+               data-src="${playlist.image_url || "/static/dist/img/default-track.svg"}" 
+               alt="${playlist.name}" 
+               class="playlist-image lazy-load" 
+               loading="lazy" 
+               onclick="handlePlaylistClick()">
+        </div>
+        <div class="playlist-info">
+          <span class="playlist-name">${playlist.name}</span>
+        </div>
+      </a>
+    </li>
+    `,
         )
         .join("");
     } else {
@@ -138,7 +157,9 @@ document.addEventListener("DOMContentLoaded", function () {
     return vinyls[randomIndex];
   }
 
-  window.showLoading = function (duration = 4000) {
+  let currentVinylImage = null;
+
+  window.showLoading = function (duration = 4000, vinylImage = null) {
     let loadingOverlay = document.getElementById("loading-overlay");
     let vinylElement = document.getElementById("vinyl");
 
@@ -158,7 +179,11 @@ document.addEventListener("DOMContentLoaded", function () {
       loadingOverlay.appendChild(vinylElement);
     }
 
-    vinylElement.style.backgroundImage = `url(${getRandomVinyl()})`;
+    if (!currentVinylImage) {
+      currentVinylImage = vinylImage || getRandomVinyl();
+    }
+
+    vinylElement.style.backgroundImage = `url(${currentVinylImage})`;
     loadingOverlay.style.display = "flex";
     timeoutId = setTimeout(window.hideLoading, duration);
   };
@@ -197,7 +222,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Custom fetch wrapper to track AJAX requests
   window.customFetch = async function (url, options = {}) {
     ajaxRequestCount++;
-    if (ajaxRequestCount === 1 && !window.isArtGenerationRequest) {
+    if (ajaxRequestCount === 1) {
       window.showLoading();
     }
 
@@ -206,7 +231,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return response;
     } finally {
       ajaxRequestCount--;
-      if (ajaxRequestCount === 0 && !window.isArtGenerationRequest) {
+      if (ajaxRequestCount === 0) {
         window.hideLoading();
       }
     }
@@ -235,4 +260,8 @@ document.addEventListener("DOMContentLoaded", function () {
     },
     true,
   ); // Use capture phase for form submission
+
+  window.addEventListener("beforeunload", function () {
+    window.showLoading();
+  });
 });

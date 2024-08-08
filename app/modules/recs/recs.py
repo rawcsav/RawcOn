@@ -36,7 +36,7 @@ def recommendations():
 
 @recs_bp.route("/get_recommendations", methods=["POST"])
 def get_recommendations_route():
-    sp, error = init_session_client(session)
+    sp, error = init_session_client()
     if error:
         return jsonify(error), 401
 
@@ -69,7 +69,7 @@ def get_recommendations_route():
 
 @recs_bp.route("/save_track", methods=["POST"])
 def save_track():
-    sp, error = init_session_client(session)
+    sp, error = init_session_client()
     if error:
         return json.dumps(error), 401
 
@@ -82,7 +82,7 @@ def save_track():
 
 @recs_bp.route("/add_to_playlist", methods=["POST"])
 def add_to_playlist():
-    sp, error = init_session_client(session)
+    sp, error = init_session_client()
     if error:
         return json.dumps(error), 401
 
@@ -94,7 +94,7 @@ def add_to_playlist():
 
 @recs_bp.route("/unsave_track", methods=["POST"])
 def unsave_track():
-    sp, error = init_session_client(session)
+    sp, error = init_session_client()
     if error:
         return json.dumps(error), 401
 
@@ -107,7 +107,7 @@ def unsave_track():
 
 @recs_bp.route("/remove_from_playlist", methods=["POST"])
 def remove_from_playlist():
-    sp, error = init_session_client(session)
+    sp, error = init_session_client()
     if error:
         return json.dumps(error), 401
 
@@ -124,7 +124,7 @@ def search():
     type = request.json.get("type")
     if not query:
         return json.dumps({"error": "No search query provided"}), 400
-    sp, error = init_session_client(session)
+    sp, error = init_session_client()
     if error:
         return json.dumps(error), 401
     results = spotify_search(sp, query, type)

@@ -219,6 +219,15 @@ body {
   transition: opacity 0.5s ease-out; /* 0.5s fade out */
 }
 
+.fade-in {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.fade-in.show {
+  opacity: 1;
+}
+
 #vinyl {
   width: 250px;
   height: 250px;
@@ -320,10 +329,13 @@ body.dark-mode .footer a::after {
   }
 }
 
-.card {
+#playlists {
   max-height: 30vh;
+  overflow-y: auto;
+}
+.card {
   width: 100%;
-  overflow: auto;
+
   border-bottom: 2px solid black;
 }
 
@@ -336,13 +348,13 @@ h3 {
 
 p {
   margin: 0;
-  font-family: Diatype, sans-serif;
+  font-family: var(--font-text), sans-serif;
   font-size: 1.6em;
   font-weight: 400;
 }
 
 h3 {
-  font-family: "Diatype", serif;
+  font-family: var(--font-text), sans-serif;
   margin-bottom: 10px;
   font-size: 2em;
 }
@@ -393,7 +405,7 @@ li {
 .nav-container a,
 .playlist-header {
   text-decoration: none;
-  font-family: Diatype, sans-serif;
+  font-family: var(--font-text), sans-serif;
   font-weight: 500;
   font-size: 1.6em;
   color: var(--color-primary);
@@ -435,13 +447,12 @@ li {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  width: 20%;
   max-width: 20%;
   height: 100vh;
   flex: 1;
-  margin-bottom: 30px;
   border-right: 2px solid black;
   position: fixed;
-
   background-color: var(--color-background);
 }
 
@@ -481,7 +492,7 @@ li {
   color: var(--color-secondary);
   font-size: 1.8em;
   text-decoration: none;
-  font-family: Diatype, sans-serif;
+  font-family: var(--font-text), sans-serif;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -534,6 +545,7 @@ li {
 
 .playlist-name {
   font-weight: bold;
+  text-decoration: none;
 }
 
 .playlist-visibility {
@@ -544,4 +556,21 @@ li {
 .main-div {
   display: flex;
   width: 100vw;
+}
+
+.playlist-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  text-decoration: none;
+  color: var(--color-text);
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    transform 0.3s ease;
+}
+
+.playlist-option:hover {
+  transform: scale(1.05);
 }

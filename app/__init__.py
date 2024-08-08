@@ -44,13 +44,11 @@ def create_app():
     with app.app_context():
         from app.modules.auth import auth
         from app.modules.user import user
-        from app.modules.stats import stats
         from app.modules.recs import recs
         from app.modules.playlists import playlist
 
         app.register_blueprint(auth.auth_bp)
         app.register_blueprint(user.user_bp)
-        app.register_blueprint(stats.stats_bp)
         app.register_blueprint(recs.recs_bp)
         app.register_blueprint(playlist.playlist_bp)
 
