@@ -344,15 +344,18 @@ document.addEventListener("DOMContentLoaded", function () {
             const index = activeElements[0].index;
             const feature = features[index];
             let trackInfo;
+            let datasetLabel;
 
             if (datasetIndex === 1) {
               trackInfo = periodData[currentPeriod].min_track[feature];
+              datasetLabel = "Min";
             } else if (datasetIndex === 2) {
               trackInfo = periodData[currentPeriod].max_track[feature];
+              datasetLabel = "Max";
             }
 
             if (trackInfo) {
-              updateMinMaxTrack(feature, trackInfo);
+              updateMinMaxTrack(feature, trackInfo, datasetLabel);
             } else {
               clearMinMaxTrack();
             }
@@ -362,7 +365,6 @@ document.addEventListener("DOMContentLoaded", function () {
         },
       },
     });
-
     function wrapText(text, maxLength) {
       const words = text.split(" ");
       let lines = [];
@@ -443,12 +445,22 @@ document.addEventListener("DOMContentLoaded", function () {
           : periodData[currentPeriod].max_values[feature];
       const formattedValue = formatFeatureValue(feature, value);
 
+      const albumArt =
+        trackInfo.album.images[0]?.url || "/static/dist/img/default-album.png";
+      const trackUrl = trackInfo.external_urls.spotify;
+
       minMaxContainer.innerHTML = `
-        <h4>${feature.charAt(0).toUpperCase() + feature.slice(1)}</h4>
-        <p><strong>Track: </strong> ${trackInfo.name}</p>
-        <p><strong>Artist: </strong> ${trackInfo.artists[0].name}</p>
-        <p><strong>Value: </strong> ${formattedValue}</p>
-      `;
+    <h4>${feature.charAt(0).toUpperCase() + feature.slice(1)}&nbsp;~&nbsp;${formattedValue}</h4>
+    <div class="track-info">
+      <a href="${trackUrl}" target="_blank" rel="noopener noreferrer">
+        <img src="${albumArt}" alt="${trackInfo.name}" class="album-art">
+      </a>
+      <div class="track-details">
+        <a class="minmax-track" href="${trackUrl}" target="_blank" rel="noopener noreferrer">${trackInfo.name}</a>
+        <p class="minmax-artist">${trackInfo.artists[0].name}</p>
+      </div>
+    </div>
+  `;
     }
 
     function formatFeatureValue(feature, value) {
@@ -500,7 +512,7 @@ document.addEventListener("DOMContentLoaded", function () {
           (playlist) => `
       <li>
         <a href="https://open.spotify.com/playlist/${playlist.id}" target="_blank" rel="noopener noreferrer" class="playlist-item">
-          <img src="/static/dist/img/placeholder.png" data-src="${playlist.image_url || "/static/dist/img/default-playlist.png"}" alt="${playlist.name}" class="playlist-image lazy-load" loading="lazy">
+          <img src="/static/dist/img/default-track.svg" data-src="${playlist.image_url || "/static/dist/img/default-track.svg"}" alt="${playlist.name}" class="playlist-image lazy-load" loading="lazy">
           <div class="playlist-info">
             <span class="playlist-name">${playlist.name}</span>
             <span class="playlist-visibility">${playlist.public ? "Public" : "Private"}</span>

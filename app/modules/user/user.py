@@ -48,7 +48,6 @@ def profile():
             sp, error = init_session_client()
             if error:
                 return error
-
             time_periods = ["short_term", "medium_term", "long_term"]
             (
                 top_tracks,
@@ -106,7 +105,6 @@ def profile():
         top_tracks_summary = {period: get_top_tracks_summary(user_data_entry, period) for period in time_periods[:3]}
         recent_tracks_summary = get_recent_tracks_summary(user_data_entry)
         playlist_summary = get_playlist_summary(user_data_entry)
-
         return render_template(
             "profile.html",
             user_data=res_data,

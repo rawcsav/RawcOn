@@ -4,13 +4,7 @@ from flask import Blueprint, abort, redirect, render_template, request, session,
 from flask import make_response
 
 
-from app.modules.auth.auth_util import (
-    generate_state,
-    prepare_auth_payload,
-    request_tokens,
-    generate_code_verifier,
-    generate_code_challenge,
-)
+from app.modules.auth.auth_util import generate_state, prepare_auth_payload, request_tokens
 from app.util.wrappers import handle_errors
 
 auth_bp = Blueprint("auth", __name__, template_folder="templates", static_folder="static", url_prefix="/")
@@ -28,14 +22,13 @@ def login(loginout):
     if loginout == "logout":
         session.clear()
         session["show_dialog"] = True
-        response = make_response(redirect(url_for("auth.index")))
-        response.set_cookie("spotify_auth_state", "", expires=0, path="/")
-        return response
+        return redirect(url_for("auth.index"))
 
     # If the path is login, handle the login logic.
     state = generate_state()
     scope = " ".join(
         [
+            "user-read-private",
             "user-top-read",
             "user-read-recently-played",
             "playlist-read-private",
@@ -50,15 +43,10 @@ def login(loginout):
 
     # Check if we're supposed to show the dialog (this would be set upon logout).
     show_dialog = session.pop("show_dialog", False)
-    code_verifier = generate_code_verifier()
-    code_challenge = generate_code_challenge(code_verifier)
-    # Prepare the payload for authentication.
-    payload = prepare_auth_payload(state, scope, code_challenge, show_dialog=show_dialog)
-
+    payload = prepare_auth_payload(state, scope, show_dialog=show_dialog)
     # Redirect the user to Spotify's authorization URL.
     res = make_response(redirect(f'{current_app.config["AUTH_URL"]}/?{urlencode(payload)}'))
-    res.set_cookie("spotify_auth_state", state)
-    res.set_cookie("code_verifier", code_verifier)
+    session["spotify_auth_state"] = state
 
     return res
 
@@ -67,18 +55,16 @@ def login(loginout):
 @handle_errors
 def callback():
     state = request.args.get("state")
-    stored_state = request.cookies.get("spotify_auth_state")
+    stored_state = session.get("spotify_auth_state")
 
     if state is None or state != stored_state:
         abort(400, description="State mismatch")
 
     code = request.args.get("code")
-    code_verifier = request.cookies.get("code_verifier")
     payload = {
         "grant_type": "authorization_code",
         "code": code,
         "redirect_uri": current_app.config["REDIRECT_URI"],
-        "code_verifier": code_verifier,
         "client_id": current_app.config["CLIENT_ID"],
     }
 
