@@ -5,17 +5,12 @@ body {
 }
 
 body {
-  background-color: #fafafa;
+  background-color: var(--clr-bgd);
   font-family: Helvagoth-Bold, sans-serif;
   max-width: 100vw;
   overflow-x: hidden;
   overflow-y: scroll;
   width: 100%;
-}
-
-body.dark-mode {
-  background-color: #0c1c30;
-  color: #e9705a;
 }
 
 .top-right-nav {
@@ -77,10 +72,6 @@ body.dark-mode {
   width: 150px;
 }
 
-body.dark-mode .pl-refresh {
-  background-color: #e07657;
-}
-
 .button-group {
   align-items: flex-end;
   display: flex;
@@ -102,10 +93,6 @@ body.dark-mode .pl-refresh {
   font-weight: bold;
   padding: 4px 8px;
   transition: transform 0.3s ease;
-}
-
-body.dark-mode .button-group button {
-  background-color: #623965;
 }
 
 .button-group button:active,
@@ -151,22 +138,11 @@ body.dark-mode .button-group button {
   width: 60%;
 }
 
-body.dark-mode .plfunc-group button,
-body.dark-mode .plorder-group button {
-  background-color: #623965;
-}
-
 #like-all-songs-btn,
 #order-asc-btn,
 #rd-asc-btn {
   background-color: #5dab54;
   color: #fff;
-}
-
-body.dark-mode #like-all-songs-btn,
-body.dark-mode #order-asc-btn,
-body.dark-mode #rd-asc-btn {
-  background-color: #59b485;
 }
 
 #unlike-all-songs-btn,
@@ -176,21 +152,10 @@ body.dark-mode #rd-asc-btn {
   color: #fff;
 }
 
-body.dark-mode #unlike-all-songs-btn,
-body.dark-mode #order-desc-btn,
-body.dark-mode #rd-desc-btn {
-  background-color: #c55469;
-}
-
 #remove-duplicates-btn,
 #shuffle-btn {
   color: #fafafa;
   background-color: #4b8dc2;
-}
-
-body.dark-mode #remove-duplicates-btn,
-body.dark-mode #shuffle-btn {
-  background-color: #5487c4;
 }
 
 .modal {
@@ -212,11 +177,6 @@ body.dark-mode #shuffle-btn {
   width: 70%;
 }
 
-body.dark-mode .modal-content {
-  background-color: #1f2440;
-  color: #c55469;
-}
-
 .data-view {
   opacity: 0;
   transition: opacity 1s;
@@ -234,10 +194,6 @@ h1 {
   text-align: center;
 }
 
-body.dark-mode h1 {
-  color: #fbae3c;
-}
-
 h2 {
   color: #f7893b;
   font-family: Helvagoth-Bold, sans-serif;
@@ -247,10 +203,6 @@ h2 {
   text-decoration: none;
 }
 
-body.dark-mode h2 {
-  color: #fa9845;
-}
-
 p {
   color: #5dab54;
   font-family: Helvagoth-Bold, sans-serif;
@@ -258,10 +210,6 @@ p {
   font-weight: 500;
   margin: 0;
   text-decoration: none;
-}
-
-body.dark-mode p {
-  color: #e9705a;
 }
 
 .homepage-link:hover img,
@@ -433,11 +381,6 @@ body.dark-mode p {
   width: 96%;
 }
 
-body.dark-mode .custom-line {
-  border-bottom: 1px solid #c55469;
-  box-shadow: 0 1px 1px #c55469;
-}
-
 .playlist-text {
   display: flex;
   flex-direction: column;
@@ -599,12 +542,6 @@ canvas#YrPieChart {
   text-align: center;
   text-decoration: none;
   width: 100%;
-}
-
-body.dark-mode .decade-title,
-body.dark-mode .top-artists-title,
-body.dark-mode .utils-title body.dark-mode .gen-titles {
-  color: #fa9845;
 }
 
 .results-container {
@@ -781,10 +718,6 @@ audio {
   width: 100%;
 }
 
-body.dark-mode li {
-  color: #e9705a;
-}
-
 #genre-counts > ul > li:hover {
   background-color: #f5f5f5;
 }
@@ -801,10 +734,6 @@ body.dark-mode li {
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
-}
-
-body.dark-mode .art-gen-prompt {
-  color: #ff506d;
 }
 
 #gen-refresh-icon {

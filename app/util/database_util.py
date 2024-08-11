@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta
+from sqlalchemy.exc import SQLAlchemyError
 
 
 from app import db
@@ -35,16 +36,25 @@ def validate_audio_data(data):
 
 
 def add_artist_to_db(artist_data):
-    new_artist = ArtistData(
-        id=artist_data["id"],
-        name=artist_data["name"],
-        external_url=json.dumps(artist_data["external_urls"]),
-        followers=artist_data.get("followers", {"total": 0})["total"],
-        genres=json.dumps(artist_data["genres"]),
-        images=json.dumps(artist_data["images"]),
-        popularity=artist_data["popularity"],
-    )
-    db.session.merge(new_artist)
+    try:
+        new_artist = ArtistData(
+            id=artist_data["id"],
+            name=artist_data["name"],
+            external_url=json.dumps(artist_data["external_urls"]),
+            followers=artist_data.get("followers", {"total": 0})["total"],
+            genres=json.dumps(artist_data["genres"]),
+            images=json.dumps(artist_data["images"]),
+            popularity=artist_data["popularity"],
+        )
+        db.session.merge(new_artist)
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        print(f"Error adding/updating artist {artist_data['id']}: {str(e)}")
+        # You might want to log this error or handle it in some way
+    except KeyError as e:
+        print(f"Missing key in artist data: {str(e)}")
+        # Handle missing data in the artist_data dictionary
 
 
 def get_or_fetch_artist_info(sp, artist_ids):

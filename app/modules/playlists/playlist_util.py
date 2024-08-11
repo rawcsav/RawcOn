@@ -197,12 +197,19 @@ def get_temporal_stats(track_info_list, playlist_id):
 
     def parse_date_or_default(track, default):
         release_date = track["release_date"]
+
         if release_date:
-            return (
-                datetime.strptime(release_date, "%Y")
-                if len(release_date) == 4
-                else datetime.strptime(release_date, "%Y-%m-%d")
-            )
+            try:
+                # Handle year-only format
+                if len(release_date) == 4 and int(release_date) > 0:
+                    return datetime.strptime(release_date, "%Y")
+                # Handle year-month-day format
+                elif len(release_date) == 10:
+                    return datetime.strptime(release_date, "%Y-%m-%d")
+            except ValueError:
+                # If parsing fails, return the default
+                pass
+
         return default
 
     valid_tracks = [track for track in track_info_list if track.get("id") and not track.get("is_local")]

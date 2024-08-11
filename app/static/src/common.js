@@ -13,6 +13,21 @@ function handlePlaylistClick() {
   };
 }
 
+function updateMenu() {
+  const currentUrl = window.location.href.toLowerCase();
+  const menu = document.querySelector(".nav-container");
+  const items = menu.getElementsByClassName("nav-item");
+
+  for (let item of items) {
+    const keyword = item.dataset.keyword.toLowerCase();
+    if (currentUrl.includes(keyword)) {
+      item.classList.add("active");
+    } else {
+      item.classList.remove("active");
+    }
+  }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   function lazyLoadImages() {
     const images = document.querySelectorAll("img.lazy-load");
@@ -72,13 +87,12 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function setupPlaylistToggle() {
-    const playlistHeader = document.querySelector(".playlist-header");
+    const playlistNav = document.querySelector(".playlist-nav");
     const playlistsList = document.getElementById("playlists");
-    const toggleArrow = document.querySelector(".toggle-arrow");
 
-    playlistHeader.addEventListener("click", () => {
+    playlistNav.addEventListener("click", () => {
       playlistsList.classList.toggle("hidden");
-      toggleArrow.classList.toggle("open");
+      playlistNav.classList.toggle("open");
     });
   }
 
@@ -264,4 +278,10 @@ document.addEventListener("DOMContentLoaded", function () {
   window.addEventListener("beforeunload", function () {
     window.showLoading();
   });
+
+  // Initial update
+  updateMenu();
+
+  // Update on popstate (when user navigates back/forward)
+  window.addEventListener("popstate", updateMenu);
 });

@@ -38,9 +38,10 @@ def profile():
         res_data = fetch_user_data(access_token)
         spotify_user_id = res_data.get("id")
         spotify_user_display_name = res_data.get("display_name")
-
+        user_market = res_data.get("country")
         session["DISPLAY_NAME"] = spotify_user_display_name
         session["USER_ID"] = spotify_user_id
+        session["MARKET"] = user_market
 
         user_data_entry = UserData.query.filter_by(spotify_user_id=spotify_user_id).first()
 

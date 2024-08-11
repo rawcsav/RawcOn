@@ -1,9 +1,9 @@
 body {
   line-height: 1.6;
-  color: var(--color-text);
+  color: var(--clr-txt);
   margin: 0 auto;
   font-family: Diatype, sans-serif;
-  background-color: var(--color-background);
+  background-color: var(--clr-bgd);
   overflow-x: hidden;
   max-width: 100vw;
 }
@@ -106,7 +106,7 @@ select {
   margin-right: 14px;
   margin-bottom: 14px;
   padding: 7px 12px;
-  background-color: var(--color-primary);
+  background-color: var(--clr-base);
   color: white;
   text-decoration: none;
   border-radius: 15px;
@@ -189,7 +189,7 @@ select {
 }
 
 .overlay-content {
-  background-color: #fff;
+  background-color: var(--clr-bgd-dk);
   margin: 5% auto;
   padding: 20px;
   width: 80%;
@@ -208,7 +208,7 @@ select {
 
 .close-btn:hover,
 .close-btn:focus {
-  color: var(--color-text);
+  color: var(--clr-txt);
   text-decoration: none;
   cursor: pointer;
 }
@@ -247,7 +247,7 @@ select {
   background: none;
   border: 2px solid white;
   border-radius: 500px;
-  color: var(--color-primary);
+  color: var(--clr-base);
   cursor: pointer;
   font-size: 1em;
   font-weight: bold;
@@ -262,14 +262,14 @@ select {
 }
 
 .time-option.selected {
-  background-color: var(--color-primary);
-  border-color: var(--color-primary);
+  background-color: var(--clr-base);
+  border-color: var(--clr-base);
   color: white;
 }
 
 #minMaxTrack h4 {
   margin-top: 0;
-  color: var(--color-secondary);
+  color: var(--clr-secondary);
   font-size: 1.5em;
 }
 
@@ -288,7 +288,7 @@ select {
 }
 
 .minmax-artist {
-  color: var(--color-text);
+  color: var(--clr-txt);
   font-style: italic;
   font-size: 1.2em;
 }
@@ -303,7 +303,7 @@ select {
 
 .minmax-track {
   text-decoration: none;
-  color: var(--color-text);
+  color: var(--clr-txt);
   font-size: 1.3em;
 }
 

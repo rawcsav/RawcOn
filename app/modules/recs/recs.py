@@ -49,15 +49,23 @@ def get_recommendations_route():
 
     limit = data.get("limit", 10)
 
-    sliders = {
-        key: tuple(map(int, map(float, data[f"{key}_slider"].split(","))))
-        for key, type_func in zip(
-            ["popularity", "energy", "instrumentalness", "tempo", "danceability", "valence"],
-            [int, float, float, float, float, float],
-        )
-    }
+    sliders = {}
+    for key in ["popularity", "energy", "instrumentalness", "tempo", "danceability", "valence"]:
+        min_key = f"min_{key}"
+        max_key = f"max_{key}"
+        if min_key in data and max_key in data:
+            if key == "popularity":
+                sliders[f"min_{key}"] = int(float(data[min_key]))
+                sliders[f"max_{key}"] = int(float(data[max_key]))
+            elif key == "tempo":
+                sliders[f"min_{key}"] = float(data[min_key])
+                sliders[f"max_{key}"] = float(data[max_key])
+            else:
+                sliders[f"min_{key}"] = float(data[min_key])
+                sliders[f"max_{key}"] = float(data[max_key])
+    user_market = session.get("MARKET", "US")  # Default to "US" if not set
 
-    recommendations_data = get_recommendations(sp, **seeds, limit=limit, **sliders, market="US")
+    recommendations_data = get_recommendations(sp, **seeds, limit=limit, **sliders, market=user_market)
 
     if "error" in recommendations_data:
         print(recommendations_data)

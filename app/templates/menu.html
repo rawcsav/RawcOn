@@ -1,52 +1,52 @@
 <div class="hidden-profile"></div>
-<div class="profile-header">
-  <p class="top-brand">rawc-on!™ ~ user profile</p>
-  <div id="profile-container">
-    <a class="user-name" href="{{ user_data.external_urls['spotify']}}">
-      {% if user_data %} {{ user_data.display_name }} {% else %} {{ user_data.id
-      }} {% endif %}
-    </a>
-    <div id="profile-metadata">
-      {% if user_data.followers %}
-      <p class="user-followers">
-        <img
-          class="icon"
-          src="/static/dist/img/users.svg"
-          alt="Followers Icon"
-        />
-        {{ user_data.followers.total }}
-      </p>
-      {% endif %} {% if user_data.country %}
-      <p class="user-country">
-        <span id="country-flag">{{ user_data.country|country_flag }}</span>
-        {{ user_data.country }}
-      </p>
-      {% endif %}
+<div class="profile-menu">
+  <div class="profile-top-section">
+    <div id="profile-container">
+      <a class="user-name" href="{{ user_data.external_urls['spotify']}}">
+        {% if user_data %} {{ user_data.display_name }} {% else %} {{
+        user_data.id }} {% endif %}
+      </a>
+      <div id="profile-metadata">
+        {% if user_data.followers %}
+        <div class="user-followers">
+          <i class="rawcon-users"></i>
+          <p>{{ user_data.followers.total }}</p>
+        </div>
+        {% endif %} {% if user_data.country %}
+        <div class="user-country">
+          <i class="rawcon-location-dot"></i>
+          <p>{{ user_data.country }}</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="nav-container">
+      <a
+        class="profile-nav nav-item"
+        href="{{ url_for('user.profile') }}"
+        data-keyword="profile"
+      >
+        <i class="rawcon-user-music"></i>
+        Profile
+      </a>
+      <a
+        class="recommendations-nav nav-item"
+        href="{{ url_for('recs.recommendations') }}"
+        data-keyword="recommendations"
+      >
+        <i class="rawcon-list-music"></i>
+        Recs
+      </a>
+      <div class="playlist-nav nav-item" data-keyword="playlist">
+        <i class="rawcon-album-collection"></i>
+        <p class="playlist-header">Playlists</p>
+        <i class="rawcon-sort-down"></i>
+      </div>
     </div>
   </div>
-  <div class="nav-container">
-    <div class="profile-nav">
-      <a href="{{ url_for('user.profile') }}">Profile</a>
-    </div>
-    <div class="recommendations-nav">
-      <a href="{{ url_for('recs.recommendations') }}">Recs</a>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2 class="playlist-header">
-      Playlists
-      <img
-        class="toggle-arrow"
-        src="/static/dist/img/angle-down.svg"
-        alt="toggle open arrow"
-      />
-    </h2>
-    <ul id="playlists" class="hidden"></ul>
-  </div>
-
+  <ul id="playlists" class="hidden"></ul>
   <div class="logo-container">
-    <a href="{{ url_for('auth.index') }}">
+    <a class="logo-redirect" href="{{ url_for('auth.index') }}">
       <img
         class="logo"
         src="/static/dist/img/rawcon-corner.svg"
