@@ -8,6 +8,250 @@ from app.models.user_models import PlaylistData
 from app.modules.user.user_util import init_session_client
 from app.util.database_util import get_or_fetch_audio_features, get_or_fetch_artist_info
 
+import json
+import random
+from flask import jsonify
+from app import db
+from app.models.user_models import UserData, PlaylistData, GenreData
+from app.modules.user.user_util import init_session_client, get_playlist_summary, format_track_info
+from app.modules.recs.recs_util import get_recommendations
+
+
+def get_playlist_data(playlist_id, spotify_user_id):
+    playlist = PlaylistData.query.get(playlist_id)
+    if not playlist:
+        sp, error = init_session_client()
+        if error:
+            return None
+        playlist_data = fetch_and_create_playlist(sp, playlist_id)
+    else:
+        playlist_data = playlist.__dict__
+
+    user_data_entry = UserData.query.filter_by(spotify_user_id=spotify_user_id).first()
+    playlist_summary = get_playlist_summary(user_data_entry)
+
+    genre_scores = calculate_genre_weights(playlist_data["genre_counts"], GenreData)
+
+    return {
+        "playlist_id": playlist_id,
+        "playlist_url": f"https://open.spotify.com/playlist/{playlist_id}",
+        "playlist_data": playlist_data,
+        "top_10_genre_data": dict(
+            sorted(playlist_data["genre_counts"].items(), key=lambda x: x[1]["count"], reverse=True)[:10]
+        ),
+        "year_count": json.dumps(playlist_data.get("temporal_stats", {}).get("year_count", {})),
+        "owner_name": playlist_data["owner"],
+        "total_tracks": playlist_data["total_tracks"],
+        "is_collaborative": playlist_data["collaborative"],
+        "is_public": playlist_data["public"],
+        "genre_scores": genre_scores,
+        "playlist_summary": playlist_summary,
+    }
+
+
+def fetch_and_create_playlist(sp, playlist_id):
+    playlist_info, track_data, genre_counts, top_artists, feature_stats, temporal_stats = get_playlist_details(
+        sp, playlist_id
+    )
+
+    new_playlist = PlaylistData(
+        id=playlist_info["id"],
+        name=playlist_info["name"],
+        owner=playlist_info["owner"],
+        cover_art=playlist_info["cover_art"],
+        public=playlist_info["public"],
+        collaborative=playlist_info["collaborative"],
+        total_tracks=playlist_info["total_tracks"],
+        snapshot_id=playlist_info["snapshot_id"],
+        tracks=track_data,
+        genre_counts=genre_counts,
+        top_artists=top_artists,
+        feature_stats=feature_stats,
+        temporal_stats=temporal_stats,
+    )
+
+    db.session.merge(new_playlist)
+    db.session.commit()
+
+    return new_playlist.__dict__
+
+
+def update_playlist_data(playlist_id):
+    sp, error = init_session_client()
+    if error:
+        return error, 401
+
+    playlist = PlaylistData.query.get(playlist_id)
+    if not playlist:
+        return "Playlist not found", 404
+
+    playlist_info, track_data, genre_counts, top_artists, feature_stats, temporal_stats = get_playlist_details(
+        sp, playlist_id
+    )
+
+    playlist.name = playlist_info["name"]
+    playlist.owner = playlist_info["owner"]
+    playlist.cover_art = playlist_info["cover_art"]
+    playlist.public = playlist_info["public"]
+    playlist.collaborative = playlist_info["collaborative"]
+    playlist.total_tracks = playlist_info["total_tracks"]
+    playlist.snapshot_id = playlist_info["snapshot_id"]
+    playlist.tracks = track_data
+    playlist.genre_counts = genre_counts
+    playlist.top_artists = top_artists
+    playlist.feature_stats = feature_stats
+    playlist.temporal_stats = temporal_stats
+
+    db.session.commit()
+    return "Playlist updated successfully"
+
+
+def like_all_songs(playlist_id):
+    sp, error = init_session_client()
+    if error:
+        return jsonify(error=error), 401
+
+    playlist = PlaylistData.query.get(playlist_id)
+    if not playlist:
+        return "Playlist not found", 404
+
+    track_ids = [track["id"] for track in playlist.tracks if track.get("id")]
+    if not track_ids:
+        return "No valid tracks in the playlist", 400
+
+    try:
+        for i in range(0, len(track_ids), 50):
+            batch = track_ids[i : i + 50]
+            sp.current_user_saved_tracks_add(batch)
+    except Exception as e:
+        return f"Error occurred while liking songs: {str(e)}", 500
+
+    return "All songs liked!"
+
+
+def unlike_all_songs(playlist_id):
+    sp, error = init_session_client()
+    if error:
+        return jsonify(error=error), 401
+
+    playlist = PlaylistData.query.get(playlist_id)
+    if not playlist:
+        return "Playlist not found", 404
+
+    track_ids = [track["id"] for track in playlist.tracks if track.get("id")]
+    if not track_ids:
+        return "No valid tracks in the playlist", 400
+
+    try:
+        for i in range(0, len(track_ids), 50):
+            batch = track_ids[i : i + 50]
+            sp.current_user_saved_tracks_delete(batch)
+    except Exception as e:
+        return f"Error occurred while unliking songs: {str(e)}", 500
+
+    return "All songs unliked!"
+
+
+def remove_duplicates(playlist_id):
+    sp, error = init_session_client()
+    if error:
+        return error, 401
+
+    playlist = PlaylistData.query.get(playlist_id)
+    if not playlist:
+        return "Playlist not found", 404
+
+    snapshot_id = playlist.snapshot_id
+    track_ids = [track["id"] for track in playlist.tracks if track["id"] is not None]
+    all_track_ids = [track["id"] for track in playlist.tracks]
+
+    track_count = {track: track_ids.count(track) for track in set(track_ids)}
+    positions_to_remove = [
+        pos
+        for track_id, count in track_count.items()
+        for pos in [i for i, x in enumerate(all_track_ids) if x == track_id][1:]
+        if count > 1
+    ]
+
+    for i in range(0, len(positions_to_remove), 100):
+        batch = [
+            {"uri": f"spotify:track:{all_track_ids[pos]}", "positions": [pos]}
+            for pos in positions_to_remove[i : i + 100]
+        ]
+        sp.playlist_remove_specific_occurrences_of_items(playlist_id, batch, snapshot_id)
+
+    update_playlist_data(playlist_id)
+    return "Duplicates removed successfully"
+
+
+def reorder_playlist(playlist_id, sorting_criterion):
+    sp, error = init_session_client()
+    if error:
+        return jsonify(error=error), 401
+
+    playlist = PlaylistData.query.get(playlist_id)
+    if not playlist:
+        return jsonify(error="Playlist not found"), 404
+
+    non_local_files = [track for track in playlist.tracks if track["id"] is not None]
+    combined = [(track["id"], track["added_at"], track["release_date"]) for track in non_local_files]
+
+    if sorting_criterion == "Date Added - Ascending":
+        sorted_tracks = sorted(combined, key=lambda x: x[1])
+    elif sorting_criterion == "Date Added - Descending":
+        sorted_tracks = sorted(combined, key=lambda x: x[1], reverse=True)
+    elif sorting_criterion == "Release Date - Ascending":
+        sorted_tracks = sorted(combined, key=lambda x: (x[2] is None, x[2]))
+    elif sorting_criterion == "Release Date - Descending":
+        sorted_tracks = sorted(combined, key=lambda x: (x[2] is None, x[2]), reverse=True)
+    elif sorting_criterion == "Shuffle":
+        random.shuffle(combined)
+        sorted_tracks = combined
+    else:
+        return jsonify(error="Invalid sorting criterion"), 400
+
+    sorted_track_ids = [item[0] for item in sorted_tracks]
+    new_playlist_name = f"Sorted {playlist.name}"
+    new_playlist = sp.user_playlist_create(sp.me()["id"], new_playlist_name)
+    new_playlist_id = new_playlist["id"]
+
+    track_uris = [f"spotify:track:{track_id}" for track_id in sorted_track_ids if track_id is not None]
+    for i in range(0, len(track_uris), 100):
+        batch = track_uris[i : i + 100]
+        sp.user_playlist_add_tracks(sp.me()["id"], new_playlist_id, batch)
+
+    return jsonify(status="Playlist reordered successfully"), 200
+
+
+def get_playlist_recommendations(playlist_id):
+    sp, error = init_session_client()
+    if error:
+        return jsonify(error=error), 401
+
+    playlist = PlaylistData.query.get(playlist_id)
+    if not playlist:
+        return jsonify(error="Playlist not found"), 404
+
+    genre_info = playlist.genre_counts
+    top_artists = playlist.top_artists
+
+    artist_counts = {artist[0]: artist[1] for artist in top_artists}
+    artist_ids = {artist[0]: artist[4] for artist in top_artists}
+
+    top_artist_ids = get_artists_seeds(artist_counts, artist_ids)
+    top_genres = get_genres_seeds(sp, genre_info)
+
+    num_artist_seeds = 5 - len(top_genres)
+    seeds = {"track": None, "artist": top_artist_ids[:num_artist_seeds], "genre": top_genres}
+
+    recommendations_data = get_recommendations(sp, limit=10, market="US", **seeds)
+
+    if "error" in recommendations_data:
+        return jsonify(error=recommendations_data["error"]), 400
+
+    track_info_list = [format_track_info(track) for track in recommendations_data["tracks"]]
+    return jsonify({"recommendations": track_info_list})
+
 
 def get_playlist_info(sp, playlist_id):
     playlist = sp.playlist(playlist_id)
