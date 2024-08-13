@@ -491,17 +491,19 @@ def compute_scores_for_playlist(genre_info, genre_sql):
 
     # Fetch all relevant genres from the genre_sql table
     genres = genre_sql.query.filter(genre_sql.sim_genres.isnot(None), genre_sql.opp_genres.isnot(None)).all()
+    print(f"Number of genres fetched from database: {len(genres)}")
 
     for genre_entry in genres:
         # Skip genres that are already in the playlist
         if genre_entry.genre in genre_info:
+            print(f"Skipping genre {genre_entry.genre} as it's already in genre_info")
             continue
 
-        sim_genres = genre_entry.sim_genres.split(", ")
-        sim_weights = list(map(int, genre_entry.sim_weights.split(", ")))
+        sim_genres = genre_entry.sim_genres.split("|")
+        sim_weights = list(map(int, genre_entry.sim_weights.split("|")))
 
-        opp_genres = genre_entry.opp_genres.split(", ")
-        opp_weights = list(map(int, genre_entry.opp_weights.split(", ")))
+        opp_genres = genre_entry.opp_genres.split("|")
+        opp_weights = list(map(int, genre_entry.opp_weights.split("|")))
 
         # Compute similarity score
         sim_score = sum([genre_info.get(genre, 0) * weight for genre, weight in zip(sim_genres, sim_weights)])
@@ -509,18 +511,25 @@ def compute_scores_for_playlist(genre_info, genre_sql):
         # Compute opposition score
         opp_score = sum([genre_info.get(genre, 0) * weight for genre, weight in zip(opp_genres, opp_weights)])
 
+        print(f"Genre: {genre_entry.genre}, Similarity Score: {sim_score}, Opposition Score: {opp_score}")
+
         results.append(
             {
                 "genre": genre_entry.genre,
                 "similarity_score": sim_score,
                 "opposition_score": opp_score,
-                "spotify_url": genre_entry.spotify_url,  # Including the spotify_url attribute
+                "spotify_url": genre_entry.spotify_url,
             }
         )
+
+    print(f"Number of results before sorting: {len(results)}")
 
     # Sort the results based on similarity_score and opposition_score
     most_similar = sorted(results, key=lambda x: x["similarity_score"], reverse=True)[:10]
     most_opposite = sorted(results, key=lambda x: x["opposition_score"], reverse=True)[:10]
+
+    print(f"Number of most similar genres: {len(most_similar)}")
+    print(f"Number of most opposite genres: {len(most_opposite)}")
 
     return {"most_similar": most_similar, "most_opposite": most_opposite}
 
@@ -529,20 +538,7 @@ def calculate_genre_weights(genre_counts, genre_sql):
     genre_info = {genre: data["count"] for genre, data in genre_counts.items()}
     genre_scores = compute_scores_for_playlist(genre_info, genre_sql)
 
-    total_tracks = sum(genre_info.values())
-    genre_prevalence = {genre: count / total_tracks for genre, count in genre_info.items()}
-
-    sorted_genres = sorted(genre_prevalence.items(), key=lambda x: x[1], reverse=True)[:10]
-
-    # Create a dictionary to store the mapping of genre to closest_genre_stat
-    genre_to_stat_mapping = {}
-
-    for genre, _ in sorted_genres:
-        genre_entry = genre_sql.query.filter_by(genre=genre).first()
-        if genre_entry:
-            genre_to_stat_mapping[genre] = genre_entry.closest_stat_genres
-
-    return genre_to_stat_mapping, genre_scores
+    return genre_scores
 
 
 def get_playlist_details(sp, playlist_id):

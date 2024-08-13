@@ -3,215 +3,221 @@
 {% endblock %} {% block styles %} {% assets "playlist_style_bundle" %}
 <link rel="stylesheet" href="{{ ASSET_URL }}" />
 {% endassets %} {% endblock %} {% block body %}
-<h1 id="playlist-name">{{ playlist_data['name'] }}</h1>
-<div id="summary-stats" class="data-view">
-  <div class="top-section">
-    <div class="plfunc-group">
-      <h3 class="utils-title">Playlist Utilities</h3>
-      <button id="like-all-songs-btn" title="Like all songs in the playlist">
-        <i class="icon-thumbs-up"></i> Like All Songs
-      </button>
-      <button
-        id="unlike-all-songs-btn"
-        title="Unlike all songs in the playlist"
-      >
-        <i class="icon-thumbs-down"></i> Unlike All Songs
-      </button>
-      <br />
-      <button
-        id="remove-duplicates-btn"
-        title="Remove duplicate songs from the playlist"
-      >
-        <i class="icon-layer-minus"></i> Remove Duplicates
-      </button>
-      <br />
-      <button
-        id="recommendations-btn"
-        title="Get recommendations based on this playlist"
-      >
-        <i class="icon-list-music"></i> Track Recs
-      </button>
-    </div>
-    <div class="playlist-container">
-      <a href="{{ playlist_url }}" target="_blank" rel="noopener noreferrer">
-        <img
-          class="playlist-cover"
-          src="{{ playlist_data['cover_art'] }}"
-          alt="Playlist Cover"
-          crossorigin="anonymous"
-        />
-      </a>
-      <div class="playlist-desc">
-        <div class="playlist-text">
-          <p class="total-tracks">{{ total_tracks }} Tracks</p>
-          <p class="is-collaborative">
-            {% if is_collaborative %} Collaborative: Yes {% endif %}
-          </p>
-          <p class="is-public">{{ "Public" if is_public else "Private" }}</p>
-        </div>
-        <form
-          action="{{ url_for('playlist.refresh_playlist', playlist_id=playlist_id) }}"
-          method="post"
+<main class="container">
+  <h1 id="playlist-name">{{ playlist_data['name'] }}</h1>
+  <div id="summary-stats" class="data-view">
+    <div class="top-section">
+      <div class="plfunc-group">
+        <h3 class="utils-title">Playlist Utilities</h3>
+        <button id="like-all-songs-btn" title="Like all songs in the playlist">
+          <i class="rawcon-thumbs-up"></i> Like All Songs
+        </button>
+        <button
+          id="unlike-all-songs-btn"
+          title="Unlike all songs in the playlist"
         >
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-          <button id="refresh-btn" type="submit" class="pl-refresh">
-            <i class="icon-refresh"></i> Refresh Data
-          </button>
-        </form>
+          <i class="rawcon-thumbs-down"></i> Unlike All Songs
+        </button>
+        <br />
+        <button
+          id="remove-duplicates-btn"
+          title="Remove duplicate songs from the playlist"
+        >
+          <i class="rawcon-layer-minus"></i> Remove Duplicates
+        </button>
+        <br />
+        <button
+          id="recommendations-btn"
+          title="Get recommendations based on this playlist"
+        >
+          <i class="rawcon-list-music"></i> Track Recs
+        </button>
+      </div>
+      <div class="playlist-container">
+        <a href="{{ playlist_url }}" target="_blank" rel="noopener noreferrer">
+          <img
+            class="playlist-cover"
+            src="{{ playlist_data['cover_art'] }}"
+            alt="Playlist Cover"
+            crossorigin="anonymous"
+          />
+        </a>
+        <div class="playlist-desc">
+          <div class="playlist-text">
+            <p class="total-tracks">{{ total_tracks }} Tracks</p>
+            <p class="is-collaborative">
+              {% if is_collaborative %} Collaborative: Yes {% endif %}
+            </p>
+            <p class="is-public">{{ "Public" if is_public else "Private" }}</p>
+          </div>
+          <form
+            action="{{ url_for('playlist.refresh_playlist', playlist_id=playlist_id) }}"
+            method="post"
+          >
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button id="refresh-btn" type="submit" class="pl-refresh">
+              <i class="rawcon-arrows-rotate"></i> Refresh Data
+            </button>
+          </form>
+        </div>
+      </div>
+      <div class="plorder-group">
+        <h3 class="utils-title">Playlist Ordering</h3>
+        <button id="order-asc-btn">
+          <i class="rawcon-sort-up"></i> Date Added (Ascending)
+        </button>
+        <button id="order-desc-btn">
+          <i class="rawcon-sort-down"></i> Date Added (Descending)
+        </button>
+        <br />
+        <button id="rd-asc-btn">
+          <i class="rawcon-calendar-up"></i> Release Date (Ascending)
+        </button>
+        <button id="rd-desc-btn">
+          <i class="rawcon-calendar-down"></i> Release Date (Descending)
+        </button>
+        <br />
+
+        <button id="shuffle-btn"><i class="rawcon-shuffle"></i> Shuffle</button>
+      </div>
+      <div id="reorderModal" class="modal">
+        <div class="modal-content">
+          <h4>Confirm Reorder</h4>
+          <p>Ordering will create a new playlist. Do you wish to continue?</p>
+          <button id="confirmReorder" class="btn">Yes</button>
+          <button id="cancelReorder" class="btn">No</button>
+        </div>
       </div>
     </div>
-    <div class="plorder-group">
-      <h3 class="utils-title">Playlist Ordering</h3>
-      <button id="order-asc-btn">
-        <i class="icon-sort-up"></i> Date Added (Ascending)
-      </button>
-      <button id="order-desc-btn">
-        <i class="icon-sort-down"></i> Date Added (Descending)
-      </button>
-      <br />
-      <button id="rd-asc-btn">
-        <i class="icon-calendar-up"></i> Release Date (Ascending)
-      </button>
-      <button id="rd-desc-btn">
-        <i class="icon-calendar-down"></i> Release Date (Descending)
-      </button>
-      <br />
-
-      <button id="shuffle-btn"><i class="icon-shuffle"></i> Shuffle</button>
+    <div class="custom-line"></div>
+    <div class="results-title-spot" style="display: none">
+      <div class="results-container">
+        <div id="results"></div>
+      </div>
     </div>
-    <div id="reorderModal" class="modal">
-      <div class="modal-content">
-        <h4>Confirm Reorder</h4>
-        <p>Ordering will create a new playlist. Do you wish to continue?</p>
-        <button id="confirmReorder" class="btn">Yes</button>
-        <button id="cancelReorder" class="btn">No</button>
+  </div>
+  <div class="bottom-section">
+    <div class="artist-flex">
+      <h3 class="top-artists-title">Top Artists</h3>
+      <div class="artist-list">
+        {% for artist, count, image_url, spotify_url, artist_ids in
+        playlist_data.top_artists %}
+        <li class="artist-item">
+          <div class="artist-container">
+            <a
+              href="{{ spotify_url }}"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                class="artist-image"
+                src="{{ image_url }}"
+                alt="{{ artist }}'s picture"
+                crossorigin="anonymous"
+              />
+            </a>
+            <div class="overlay">
+              <span class="artist-name">{{ artist }}</span>
+              <span class="artist-count">{{ count }} Tracks</span>
+            </div>
+          </div>
+        </li>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="chart-flex">
+      <h3 class="decade-title">Tracks by Decade</h3>
+      <div class="chart-container">
+        <canvas id="YrPieChart" class="year-pie-chart"></canvas>
+        <div class="oldest-newest-tracks">
+          <p class="oldest-track">
+            Oldest: {{ playlist_data['temporal_stats']['oldest_track'] }} by {{
+            playlist_data['temporal_stats']['oldest_track_artist'] }} ({{
+            playlist_data['temporal_stats']['oldest_track_date'] }})
+          </p>
+          <p class="newest-track">
+            Newest: {{ playlist_data['temporal_stats']['newest_track'] }} by {{
+            playlist_data['temporal_stats']['newest_track_artist'] }} ({{
+            playlist_data['temporal_stats']['newest_track_date'] }})
+          </p>
+        </div>
       </div>
     </div>
   </div>
   <div class="custom-line"></div>
-  <div class="results-title-spot" style="display: none">
-    <div class="results-container">
-      <div id="results"></div>
-    </div>
-  </div>
-</div>
-<div class="bottom-section">
-  <div class="artist-flex">
-    <h3 class="top-artists-title">Top Artists</h3>
-    <div class="artist-list">
-      {% for artist, count, image_url, spotify_url, artist_ids in
-      playlist_data.top_artists %}
-      <li class="artist-item">
-        <div class="artist-container">
-          <a href="{{ spotify_url }}" target="_blank" rel="noopener noreferrer">
-            <img
-              class="artist-image"
-              src="{{ image_url }}"
-              alt="{{ artist }}'s picture"
-              crossorigin="anonymous"
-            />
-          </a>
-          <div class="overlay">
-            <span class="artist-name">{{ artist }}</span>
-            <span class="artist-count">{{ count }} Tracks</span>
-          </div>
-        </div>
-      </li>
-      {% endfor %}
-    </div>
-  </div>
-  <div class="chart-flex">
-    <h3 class="decade-title">Tracks by Decade</h3>
-    <div class="chart-container">
-      <canvas id="YrPieChart" class="year-pie-chart"></canvas>
-      <div class="oldest-newest-tracks">
-        <p class="oldest-track">
-          Oldest: {{ playlist_data['temporal_stats']['oldest_track'] }} by {{
-          playlist_data['temporal_stats']['oldest_track_artist'] }} ({{
-          playlist_data['temporal_stats']['oldest_track_date'] }})
-        </p>
-        <p class="newest-track">
-          Newest: {{ playlist_data['temporal_stats']['newest_track'] }} by {{
-          playlist_data['temporal_stats']['newest_track_artist'] }} ({{
-          playlist_data['temporal_stats']['newest_track_date'] }})
-        </p>
+  <div class="genre-title-container">
+    <h2>Genre Info</h2>
+    <div class="genre-container">
+      <div id="genre-counts" class="data-view">
+        <h3 class="gen-titles">Genre Counts</h3>
+        <ul>
+          {% for genre, data in top_10_genre_data.items() %}
+          <li>
+            {{ genre }}: {{ data.count }}
+            <ul class="artist-genre-list" style="display: none">
+              {% for artist in data.artists %}
+              <li>{{ artist }}</li>
+              {% endfor %}
+            </ul>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div id="most-similar" class="data-view">
+        <h3 class="gen-titles">Most Similar</h3>
+        <ul>
+          {% for entry in genre_scores['most_similar'] %}
+          <li>
+            <a href="{{ entry['spotify_url'] }}" target="_blank"
+              >{{ entry['genre'] }}</a
+            >
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- Most Opposite Genres Section -->
+      <div id="most-opposite" class="data-view">
+        <h3 class="gen-titles">Most Opposite</h3>
+        <ul>
+          {% for entry in genre_scores['most_opposite'] %}
+          <li>
+            <a href="{{ entry['spotify_url'] }}" target="_blank"
+              >{{ entry['genre'] }}</a
+            >
+          </li>
+          {% endfor %}
+        </ul>
       </div>
     </div>
   </div>
-</div>
-<div class="custom-line"></div>
-<div class="genre-title-container">
-  <h2>Genre Info</h2>
-  <div class="genre-container">
-    <div id="genre-counts" class="data-view">
-      <h3 class="gen-titles">Genre Counts</h3>
-      <ul>
-        {% for genre, data in top_10_genre_data.items() %}
-        <li>
-          {{ genre }}: {{ data.count }}
-          <ul class="artist-genre-list" style="display: none">
-            {% for artist in data.artists %}
-            <li>{{ artist }}</li>
-            {% endfor %}
-          </ul>
-        </li>
-        {% endfor %}
-      </ul>
-    </div>
-
-    <div id="most-similar" class="data-view">
-      <h3 class="gen-titles">Most Similar</h3>
-      <ul>
-        {% for entry in genre_scores['most_similar'] %}
-        <li>
-          <a href="{{ entry['spotify_url'] }}" target="_blank"
-            >{{ entry['genre'] }}</a
-          >
-        </li>
-        {% endfor %}
-      </ul>
-    </div>
-
-    <!-- Most Opposite Genres Section -->
-    <div id="most-opposite" class="data-view">
-      <h3 class="gen-titles">Most Opposite</h3>
-      <ul>
-        {% for entry in genre_scores['most_opposite'] %}
-        <li>
-          <a href="{{ entry['spotify_url'] }}" target="_blank"
-            >{{ entry['genre'] }}</a
-          >
-        </li>
-        {% endfor %}
-      </ul>
-    </div>
+  <div class="custom-line"></div>
+  <div id="feature-stats" class="data-view">
+    <h2>Feature Stats</h2>
+    <ul>
+      {% for feature, stats in playlist_data.feature_stats.items() %}
+      <li>
+        {{ feature }}:
+        <ul>
+          <li>Min: {{ stats['min'][1] }} ({{ stats['min'][0] }})</li>
+          <li>Max: {{ stats['max'][1] }} ({{ stats['max'][0] }})</li>
+          <li>Avg: {{ stats['avg'] }}</li>
+        </ul>
+      </li>
+      {% endfor %}
+    </ul>
   </div>
-</div>
-<div class="custom-line"></div>
-<div id="feature-stats" class="data-view">
-  <h2>Feature Stats</h2>
-  <ul>
-    {% for feature, stats in playlist_data.feature_stats.items() %}
-    <li>
-      {{ feature }}:
-      <ul>
-        <li>Min: {{ stats['min'][1] }} ({{ stats['min'][0] }})</li>
-        <li>Max: {{ stats['max'][1] }} ({{ stats['max'][0] }})</li>
-        <li>Avg: {{ stats['avg'] }}</li>
-      </ul>
-    </li>
-    {% endfor %}
-  </ul>
-</div>
-<div id="toast" class="toast">
-  <div class="toast-content" id="toastMessage"></div>
-  <span class="close-toast">×</span>
-</div>
-<div
-  id="data-container"
-  data-year-count="{{ year_count }}"
-  data-playlist-id="{{ playlist_id }}"
-></div>
+  <div id="toast" class="toast">
+    <div class="toast-content" id="toastMessage"></div>
+    <span class="close-toast">×</span>
+  </div>
+  <div
+    id="data-container"
+    data-year-count="{{ year_count }}"
+    data-playlist-id="{{ playlist_id }}"
+  ></div>
+</main>
 {% endblock %}{% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% assets "playlist_js_bundle" %}

@@ -76,4 +76,3 @@ class GenreData(db.Model):
     color_rgb = db.Column(db.TEXT, nullable=True)
     x = db.Column(db.Float, nullable=True)
     y = db.Column(db.Float, nullable=True)
-    closest_stat_genres = db.Column(db.TEXT, nullable=True)

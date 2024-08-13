@@ -166,7 +166,7 @@ const recommendationModule = (() => {
           <h2>${trackInfo.trackName}</h2>
           <p>${trackInfo.artist}</p>
         </div>
-        <div class="play-button noselect" id="play_${trackInfo.trackid}"><i class="icon-play"></i></div>
+        <div class="play-button noselect" id="play_${trackInfo.trackid}"><i class="rawcon-play"></i></div>
       </div>
       <div class="dropdown-content">
         <a href="#" class="add-to-saved" data-trackid="${trackInfo.trackid}"><i class="heart-icon icon-heart-plus"></i></a>
@@ -215,16 +215,16 @@ const audioModule = (() => {
           .replace("audio_", "");
         document
           .getElementById(`play_${playingId}`)
-          .querySelector("i").className = "icon-play";
+          .querySelector("i").className = "rawcon-play";
       }
 
       if (audioPlayer.paused) {
         audioPlayer.play();
-        playIcon.className = "icon-pause";
+        playIcon.className = "rawcon-pause";
         currentPlayingAudio = audioPlayer;
       } else {
         audioPlayer.pause();
-        playIcon.className = "icon-play";
+        playIcon.className = "rawcon-play";
         currentPlayingAudio = null;
       }
     });
@@ -246,8 +246,8 @@ const trackActionsModule = (() => {
     })
       .then(() => {
         util.showToast("Track added to playlist successfully!");
-        plusIcon.classList.remove("icon-plus");
-        plusIcon.classList.add("icon-minus", "added");
+        plusIcon.classList.remove("rawcon-album-plus");
+        plusIcon.classList.add("rawcon-layer-minus", "added");
       })
       .catch((error) => {
         util.showToast(
@@ -269,8 +269,8 @@ const trackActionsModule = (() => {
     })
       .then(() => {
         util.showToast("Track removed from playlist successfully!");
-        plusIcon.classList.remove("icon-minus", "added");
-        plusIcon.classList.add("icon-plus");
+        plusIcon.classList.remove("rawcon-layer-minus", "added");
+        plusIcon.classList.add("rawcon-album-plus");
       })
       .catch((error) => {
         util.showToast(
@@ -292,8 +292,7 @@ const trackActionsModule = (() => {
     })
       .then(() => {
         util.showToast("Track saved successfully!");
-        heartIcon.classList.remove("icon-heart-plus");
-        heartIcon.classList.add("icon-heart-minus", "liked");
+        heartIcon.classList.add("liked");
       })
       .catch((error) => {
         util.showToast("An error occurred while saving the track.", "error");
@@ -312,8 +311,7 @@ const trackActionsModule = (() => {
     })
       .then(() => {
         util.showToast("Track unsaved successfully!");
-        heartIcon.classList.remove("icon-heart-minus", "liked");
-        heartIcon.classList.add("icon-heart-plus");
+        heartIcon.classList.remove("liked");
       })
       .catch((error) => {
         util.showToast("An error occurred while unsaving the track.", "error");
@@ -395,7 +393,7 @@ const uiModule = (() => {
           .querySelector(".plus-icon");
         const trackId =
           event.target.closest(".add-to-playlist").dataset.trackid;
-        if (plusIcon.classList.contains("icon-minus")) {
+        if (plusIcon.classList.contains("icon-layer-minus")) {
           trackActionsModule.removeFromPlaylist(playlistId, trackId, plusIcon);
         } else {
           trackActionsModule.addToPlaylist(playlistId, trackId, plusIcon);
@@ -406,7 +404,7 @@ const uiModule = (() => {
           .closest(".add-to-saved")
           .querySelector(".heart-icon");
         const trackId = event.target.closest(".add-to-saved").dataset.trackid;
-        if (heartIcon.classList.contains("icon-heart-minus")) {
+        if (heartIcon.classList.contains("liked")) {
           trackActionsModule.unsaveTrack(trackId, heartIcon);
         } else {
           trackActionsModule.saveTrack(trackId, heartIcon);
