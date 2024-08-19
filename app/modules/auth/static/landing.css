@@ -45,10 +45,10 @@ html {
   text-decoration: none;
 }
 
-.social-icons img {
-  width: 50px;
-  height: 50px;
+.social-icons i {
+  font-size: 50px;
 }
+
 .main-image {
   grid-column: 2;
   grid-row: 2;
@@ -82,4 +82,11 @@ html {
 .login-button:hover {
   transform: scale(1.1);
   transition: ease-in 0.2s;
+}
+
+.corner-logo:hover,
+.social-icons a:hover {
+  transform: scale(1.1);
+  transition: ease-in 0.2s;
+  cursor: pointer;
 }

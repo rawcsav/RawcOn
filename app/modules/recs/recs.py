@@ -82,7 +82,6 @@ def save_track():
         return json.dumps(error), 401
 
     track_id = request.json["track_id"]
-    print(f"track_id: {track_id}")
 
     sp.current_user_saved_tracks_add([track_id])
     return jsonify({"status": "success"})
@@ -107,7 +106,6 @@ def unsave_track():
         return json.dumps(error), 401
 
     track_id = request.json["track_id"]
-    print(f"track_id: {track_id}")
 
     sp.current_user_saved_tracks_delete([track_id])
     return jsonify({"status": "success"})

@@ -84,7 +84,7 @@
   <body class="{% if g.is_dark_mode %}dark-mode{% endif %}">
     <div class="main-div">
       {% block menu %}{% include 'menu.html' %}{% endblock %} {% block body %}
-      {% endblock %}
+      {% endblock %} {% include 'loader.html' %}
     </div>
     {% assets "common_js_bundle" %}
     <script src="{{ ASSET_URL }}"></script>

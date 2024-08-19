@@ -58,6 +58,7 @@ class PlaylistData(db.Model):
     collaborative = db.Column(db.Boolean)
     total_tracks = db.Column(db.Integer)
     snapshot_id = db.Column(db.VARCHAR(255))
+    followers = db.Column(db.VARCHAR(255))
     tracks = db.Column(db.JSON)
     genre_counts = db.Column(db.JSON)
     top_artists = db.Column(db.JSON)

@@ -15,11 +15,7 @@
           autocomplete="off"
         />
         <button type="button" id="universal-search" class="search-btn">
-          <img
-            src="{{ url_for('static', filename='dist/img/search.svg') }}"
-            alt="Search"
-            class="search-icon"
-          />
+          <i class="rawcon-search search-icon"></i>
         </button>
       </div>
       <div id="search-dropdown" class="dropdown-menu">
@@ -31,7 +27,10 @@
       <div id="universal-seeds-container" class="seeds-container">
         <!-- Selected seeds will be displayed here -->
       </div>
-      <div id="seed-counter" class="seed-counter">0/5</div>
+      <div class="seed-counter-container">
+        <div id="seed-counter" class="seed-counter">0/5</div>
+        <i class="rawcon-seed"></i>
+      </div>
     </section>
     <section id="results-section" class="section">
       <div id="results" class="results-container">

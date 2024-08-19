@@ -174,34 +174,45 @@ document.addEventListener("DOMContentLoaded", function () {
     genreTitle.textContent = `${genre}`;
 
     genreArtistsList.innerHTML = data.top_artists
-      .map(
-        (artist) => `
-      <li class="grid-item">
-        <img src="${
+      .map((artist) => {
+        const externalUrl =
+          artist.external_url && artist.external_url.spotify
+            ? artist.external_url.spotify
+            : "#";
+        const imageUrl =
           artist.images && artist.images.length > 0
             ? artist.images[0].url
-            : "/static/dist/img/default-artist.png"
-        }" alt="${artist.name}" class="artist-image">
-        <p>${artist.name}</p>
-      </li>
-    `,
-      )
+            : "/static/dist/img/default-artist.png";
+        return `
+        <li class="grid-item">
+          <a href="${externalUrl}" target="_blank" rel="noopener noreferrer">
+            <img src="${imageUrl}" alt="${artist.name}" class="artist-image">
+            <p>${artist.name}</p>
+          </a>
+        </li>
+      `;
+      })
       .join("");
-
     genreTracksList.innerHTML = data.top_tracks
-      .map(
-        (track) => `
-      <li class="grid-item">
-        <img src="${
+      .map((track) => {
+        const externalUrl =
+          track.external_urls && track.external_urls.spotify
+            ? track.external_urls.spotify
+            : "#";
+        const imageUrl =
           track.album && track.album.images && track.album.images.length > 0
             ? track.album.images[0].url
-            : "/static/dist/img/default-album.png"
-        }" alt="${track.name}" class="track-image">
-        <p>${track.name}</p>
-        <p class="artist-name">${track.artists[0].name}</p>
-      </li>
-    `,
-      )
+            : "/static/dist/img/default-album.png";
+        return `
+        <li class="grid-item">
+          <a href="${externalUrl}" target="_blank" rel="noopener noreferrer">
+            <img src="${imageUrl}" alt="${track.name}" class="track-image">
+            <p>${track.name}</p>
+            <p class="artist-name">${track.artists[0].name}</p>
+          </a>
+        </li>
+      `;
+      })
       .join("");
 
     overlay.style.display = "block";
@@ -502,7 +513,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Initial display
   updateDisplay("short_term");
   createEnhancedAudioFeaturesChart(audioFeaturesSummary, periodData);
 });

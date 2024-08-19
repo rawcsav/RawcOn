@@ -1,3 +1,4 @@
+import time
 from datetime import datetime, timedelta
 from urllib.parse import urlencode
 from flask import Blueprint, abort, redirect, render_template, request, session, url_for, current_app
@@ -26,6 +27,7 @@ def login(loginout):
 
     # If the path is login, handle the login logic.
     state = generate_state()
+    time.sleep(1)
     scope = " ".join(
         [
             "user-read-private",
@@ -56,10 +58,9 @@ def login(loginout):
 def callback():
     state = request.args.get("state")
     stored_state = session.get("spotify_auth_state")
-
     if state is None or state != stored_state:
         abort(400, description="State mismatch")
-
+    print("passed")
     code = request.args.get("code")
     payload = {
         "grant_type": "authorization_code",

@@ -46,6 +46,7 @@ def get_playlist_data(playlist_id, spotify_user_id):
         "is_public": playlist_data["public"],
         "genre_scores": genre_scores,
         "playlist_summary": playlist_summary,
+        "playlist_followers": playlist_data.get("followers", 0),  # Use "followers" and provide a default value
     }
 
 
@@ -178,6 +179,7 @@ def remove_duplicates(playlist_id):
             {"uri": f"spotify:track:{all_track_ids[pos]}", "positions": [pos]}
             for pos in positions_to_remove[i : i + 100]
         ]
+        print(batch)
         sp.playlist_remove_specific_occurrences_of_items(playlist_id, batch, snapshot_id)
 
     update_playlist_data(playlist_id)
@@ -255,7 +257,6 @@ def get_playlist_recommendations(playlist_id):
 
 def get_playlist_info(sp, playlist_id):
     playlist = sp.playlist(playlist_id)
-
     playlist_info = {
         "id": playlist["id"],
         "name": playlist["name"],
@@ -265,6 +266,7 @@ def get_playlist_info(sp, playlist_id):
         "collaborative": playlist["collaborative"],
         "total_tracks": playlist["tracks"]["total"],
         "snapshot_id": playlist["snapshot_id"],
+        "playlist_followers": playlist["followers"]["total"],
     }
 
     return playlist_info
@@ -491,12 +493,10 @@ def compute_scores_for_playlist(genre_info, genre_sql):
 
     # Fetch all relevant genres from the genre_sql table
     genres = genre_sql.query.filter(genre_sql.sim_genres.isnot(None), genre_sql.opp_genres.isnot(None)).all()
-    print(f"Number of genres fetched from database: {len(genres)}")
 
     for genre_entry in genres:
         # Skip genres that are already in the playlist
         if genre_entry.genre in genre_info:
-            print(f"Skipping genre {genre_entry.genre} as it's already in genre_info")
             continue
 
         sim_genres = genre_entry.sim_genres.split("|")
@@ -511,8 +511,6 @@ def compute_scores_for_playlist(genre_info, genre_sql):
         # Compute opposition score
         opp_score = sum([genre_info.get(genre, 0) * weight for genre, weight in zip(opp_genres, opp_weights)])
 
-        print(f"Genre: {genre_entry.genre}, Similarity Score: {sim_score}, Opposition Score: {opp_score}")
-
         results.append(
             {
                 "genre": genre_entry.genre,
@@ -522,14 +520,9 @@ def compute_scores_for_playlist(genre_info, genre_sql):
             }
         )
 
-    print(f"Number of results before sorting: {len(results)}")
-
     # Sort the results based on similarity_score and opposition_score
     most_similar = sorted(results, key=lambda x: x["similarity_score"], reverse=True)[:10]
     most_opposite = sorted(results, key=lambda x: x["opposition_score"], reverse=True)[:10]
-
-    print(f"Number of most similar genres: {len(most_similar)}")
-    print(f"Number of most opposite genres: {len(most_opposite)}")
 
     return {"most_similar": most_similar, "most_opposite": most_opposite}
 
@@ -578,6 +571,7 @@ def update_playlist_data(playlist_id):
     playlist.collaborative = pl_playlist_info["collaborative"]
     playlist.total_tracks = pl_playlist_info["total_tracks"]
     playlist.snapshot_id = pl_playlist_info["snapshot_id"]
+    playlist.followers = pl_playlist_info["playlist_followers"]
     playlist.tracks = pl_track_data
     playlist.genre_counts = pl_genre_counts
     playlist.top_artists = pl_top_artists
@@ -628,5 +622,4 @@ def get_genres_seeds(sp, genre_info, top_n=10):
         if spaced_genre in genre_seeds:
             valid_genres.append(spaced_genre)
 
-    print(valid_genres)
     return valid_genres[:2]

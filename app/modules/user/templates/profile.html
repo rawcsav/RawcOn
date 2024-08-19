@@ -1,26 +1,22 @@
 {% extends 'base.html' %} {% block head %}
 <link rel="canonical" href="https://rawcon.rawcsav.com/user/profile" />
+<title>
+  Rawc-On | {% if user_data.display_name %} {{ user_data.display_name }} {% else
+  %} {{ user_data.id }} {% endif %}
+</title>
 {% endblock %} {% block styles %} {% assets "user_style_bundle" %}
 <link rel="stylesheet" href="{{ ASSET_URL }}" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endassets %} {% endblock %} {% block body %}
 <div class="user-content">
+  <div class="top-logo">
+    <img src="/static/dist/img/rock-on.svg" alt="Rawc-On Top Banner Logo" />
+  </div>
   {% if user_data %}
   <div class="time-selector">
     <div class="selector-header">
-      <svg
-        class="icon"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <circle cx="12" cy="12" r="10"></circle>
-        <polyline points="12 6 12 12 16 14"></polyline>
-      </svg>
-      <div>
+      <i class="rawcon-calendar"> </i>
+      <div class="selector-container">
         <div class="selector-title">Select Time Range</div>
         <div class="selector-subtitle">
           Choose your Spotify listening period

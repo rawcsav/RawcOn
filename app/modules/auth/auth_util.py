@@ -17,7 +17,6 @@ def generate_state():
 
 
 def prepare_auth_payload(state, scope, show_dialog=False):
-    print(show_dialog)
     payload = {
         "client_id": current_app.config["CLIENT_ID"],
         "response_type": "code",

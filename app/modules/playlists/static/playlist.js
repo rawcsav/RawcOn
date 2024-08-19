@@ -349,11 +349,6 @@ const uiModule = (() => {
       .addEventListener("click", () =>
         playlistActionsModule.unlikeAllSongs(playlistId),
       );
-    document
-      .getElementById("remove-duplicates-btn")
-      .addEventListener("click", () =>
-        playlistActionsModule.removeDuplicates(playlistId),
-      );
 
     document
       .getElementById("recommendations-btn")

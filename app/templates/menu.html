@@ -3,19 +3,21 @@
   <div class="profile-top-section">
     <div id="profile-container">
       <a class="user-name" href="{{ user_data.external_urls['spotify']}}">
-        {% if user_data %} {{ user_data.display_name }} {% else %} {{
-        user_data.id }} {% endif %}
+        {% if user_data.display_name %} {{ user_data.display_name }} {% else %}
+        {{ user_data.id }} {% endif %}
       </a>
       <div id="profile-metadata">
         {% if user_data.followers %}
-        <div class="user-followers">
+        <div class="info-item user-followers">
           <i class="rawcon-users"></i>
-          <p>{{ user_data.followers.total }}</p>
+          <span class="info-content"
+            >{{ user_data.followers.total }} Followers</span
+          >
         </div>
         {% endif %} {% if user_data.country %}
-        <div class="user-country">
+        <div class="info-item user-country">
           <i class="rawcon-location-dot"></i>
-          <p>{{ user_data.country }}</p>
+          <span class="info-content">{{ user_data.country }} </span>
         </div>
         {% endif %}
       </div>
@@ -34,25 +36,27 @@
         href="{{ url_for('recs.recommendations') }}"
         data-keyword="recommendations"
       >
-        <i class="rawcon-list-music"></i>
+        <i class="rawcon-music-magnifying-glass"></i>
         Recs
       </a>
       <div class="playlist-nav nav-item" data-keyword="playlist">
-        <i class="rawcon-album-collection"></i>
+        <i class="rawcon-album-collection-circle-user"></i>
         <p class="playlist-header">Playlists</p>
-        <i class="rawcon-sort-down"></i>
+        <i class="rawcon-sort-down playlist-toggle-icon"></i>
       </div>
     </div>
   </div>
-  <ul id="playlists" class="hidden"></ul>
+  <ul id="playlists"></ul>
   <div class="logo-container">
     <a class="logo-redirect" href="{{ url_for('auth.index') }}">
       <img
         class="logo"
-        src="/static/dist/img/rawcon-corner.svg"
+        src="/static/dist/img/rawcon-logo.svg"
         alt="RAWCON Logo"
       />
     </a>
   </div>
-  <a class="logout" href="/logout">Logout</a>
+  <a class="logout" href="/logout">
+    <i class="rawcon-left-from-line"></i>Logout</a
+  >
 </div>
