@@ -5,55 +5,57 @@
 {% endassets %} {% endblock %} {% block body %}
 <main class="container">
   <div class="playlist-container">
+    <h1 id="playlist-name">{{ playlist_data['name'] }}</h1>
     <div class="playlist-details">
-      <h1 id="playlist-name">{{ playlist_data['name'] }}</h1>
       <div class="playlist-desc">
         <div class="playlist-text">
-          <div class="info-item total-followers">
-            <i class="rawcon-users-rectangle"></i>
-            <span class="info-content">{{ playlist_followers }} Followers</span>
-          </div>
-          <div class="info-item total-tracks">
-            <i class="rawcon-waves"></i>
-            <span class="info-content"
-              ><span id="trackCount"></span>{{ total_tracks }} Tracks</span
-            >
-          </div>
-          <div class="info-item is-collaborative">
-            {% if is_collaborative %}
-            <i class="rawcon-users"></i>
-            <span class="info-content">Collaborative</span>
-            {% endif %}
-          </div>
-          <div class="info-item is-public">
-            <i class="rawcon-circle-info"></i>
-            <span class="info-content" id="publicStatus"
-              >{{ "Public" if is_public else "Private" }}</span
-            >
+          <a
+            class="playlist-url"
+            href="{{ playlist_url }}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              class="playlist-cover"
+              src="{{ playlist_data['cover_art'] }}"
+              alt="Playlist Cover"
+              crossorigin="anonymous"
+            />
+          </a>
+          <div class="glance">
+            <div class="playlist-glance total-followers">
+              <i class="rawcon-users-rectangle"></i>
+              {{ playlist_followers }} Followers
+            </div>
+            <div class="playlist-glance total-tracks">
+              <i class="rawcon-waves"></i>
+              {{ total_tracks }} Tracks
+            </div>
+            <div class="playlist-glance is-collaborative">
+              {% if is_collaborative %}
+              <i class="rawcon-users"></i>
+              Collaborative {% endif %}
+            </div>
+            <div class="playlist-glance is-public">
+              <i class="rawcon-lock"></i>
+              {{ "Public" if is_public else "Private" }}
+            </div>
           </div>
         </div>
-        <form
-          action="{{ url_for('playlist.refresh_playlist', playlist_id=playlist_id) }}"
-          method="post"
-        >
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-          <button id="refresh-btn" type="submit" class="pl-refresh">
-            <i class="rawcon-arrows-rotate"></i> Refresh Data
-          </button>
-        </form>
       </div>
     </div>
-    <a href="{{ playlist_url }}" target="_blank" rel="noopener noreferrer">
-      <img
-        class="playlist-cover"
-        src="{{ playlist_data['cover_art'] }}"
-        alt="Playlist Cover"
-        crossorigin="anonymous"
-      />
-    </a>
   </div>
   <div class="plfunc-group">
     <h3 class="utils-title">Playlist Utilities</h3>
+    <form
+      action="{{ url_for('playlist.refresh_playlist', playlist_id=playlist_id) }}"
+      method="post"
+    >
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <button id="refresh-btn" type="submit" class="pl-refresh">
+        <i class="rawcon-arrows-rotate"></i> Refresh Data
+      </button>
+    </form>
     <button id="like-all-songs-btn" title="Like all songs in the playlist">
       <i class="rawcon-thumbs-up"></i> Like All Songs
     </button>
@@ -63,7 +65,8 @@
     <br />
     <button
       id="remove-duplicates-btn"
-      title="Remove duplicate songs from the playlist"
+      title="Remove duplicate songs from the playlist (DISABLED)"
+      disabled
     >
       <i class="rawcon-layer-minus"></i> Remove Duplicates
     </button>

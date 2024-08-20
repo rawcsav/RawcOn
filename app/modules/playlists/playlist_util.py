@@ -3,6 +3,8 @@ from collections import defaultdict
 from datetime import datetime
 
 from flask import session
+from spotipy import SpotifyException
+
 from app import db
 from app.models.user_models import PlaylistData
 from app.modules.user.user_util import init_session_client
@@ -46,7 +48,7 @@ def get_playlist_data(playlist_id, spotify_user_id):
         "is_public": playlist_data["public"],
         "genre_scores": genre_scores,
         "playlist_summary": playlist_summary,
-        "playlist_followers": playlist_data.get("followers", 0),  # Use "followers" and provide a default value
+        "playlist_followers": playlist_data.get("playlist_followers", 0) or 0,
     }
 
 
@@ -186,43 +188,90 @@ def remove_duplicates(playlist_id):
     return "Duplicates removed successfully"
 
 
-def reorder_playlist(playlist_id, sorting_criterion):
-    sp, error = init_session_client()
-    if error:
-        return jsonify(error=error), 401
+from datetime import datetime
 
+
+def reorder_playlist(playlist_id, sorting_criterion):
     playlist = PlaylistData.query.get(playlist_id)
     if not playlist:
         return jsonify(error="Playlist not found"), 404
 
-    non_local_files = [track for track in playlist.tracks if track["id"] is not None]
-    combined = [(track["id"], track["added_at"], track["release_date"]) for track in non_local_files]
+    # Get tracks from the database
+    tracks = playlist.tracks.copy()  # Create a copy to avoid modifying the original
 
+    def safe_date_parse(date_string, format):
+        if not date_string:
+            return datetime.min
+        try:
+            return datetime.strptime(date_string, format)
+        except ValueError:
+            return datetime.min
+
+    # Prepare the sorting key and reverse flag based on the criterion
     if sorting_criterion == "Date Added - Ascending":
-        sorted_tracks = sorted(combined, key=lambda x: x[1])
+        key = lambda x: safe_date_parse(x.get("added_at"), "%Y-%m-%dT%H:%M:%SZ")
+        reverse = False
     elif sorting_criterion == "Date Added - Descending":
-        sorted_tracks = sorted(combined, key=lambda x: x[1], reverse=True)
+        key = lambda x: safe_date_parse(x.get("added_at"), "%Y-%m-%dT%H:%M:%SZ")
+        reverse = True
     elif sorting_criterion == "Release Date - Ascending":
-        sorted_tracks = sorted(combined, key=lambda x: (x[2] is None, x[2]))
+        key = lambda x: (
+            safe_date_parse(x.get("release_date"), "%Y-%m-%d")
+            if x.get("release_date") and len(x.get("release_date", "")) == 10
+            else safe_date_parse(x.get("release_date"), "%Y")
+        )
+        reverse = False
     elif sorting_criterion == "Release Date - Descending":
-        sorted_tracks = sorted(combined, key=lambda x: (x[2] is None, x[2]), reverse=True)
+        key = lambda x: (
+            safe_date_parse(x.get("release_date"), "%Y-%m-%d")
+            if x.get("release_date") and len(x.get("release_date", "")) == 10
+            else safe_date_parse(x.get("release_date"), "%Y")
+        )
+        reverse = True
     elif sorting_criterion == "Shuffle":
-        random.shuffle(combined)
-        sorted_tracks = combined
+        random.shuffle(tracks)
     else:
         return jsonify(error="Invalid sorting criterion"), 400
 
-    sorted_track_ids = [item[0] for item in sorted_tracks]
-    new_playlist_name = f"Sorted {playlist.name}"
-    new_playlist = sp.user_playlist_create(sp.me()["id"], new_playlist_name)
-    new_playlist_id = new_playlist["id"]
+    # Sort the tracks if not shuffling
+    if sorting_criterion != "Shuffle":
+        tracks.sort(key=key, reverse=reverse)
 
-    track_uris = [f"spotify:track:{track_id}" for track_id in sorted_track_ids if track_id is not None]
-    for i in range(0, len(track_uris), 100):
-        batch = track_uris[i : i + 100]
-        sp.user_playlist_add_tracks(sp.me()["id"], new_playlist_id, batch)
+    # Calculate the moves needed to reorder the playlist
+    moves = calculate_reorder_moves(playlist.tracks, tracks)
 
-    return jsonify(status="Playlist reordered successfully"), 200
+    # Reorder the playlist using the Spotify API
+    sp, error = init_session_client()
+    if error:
+        return jsonify(error=error), 401
+
+    try:
+        for move in moves:
+            sp.playlist_reorder_items(
+                playlist_id,
+                range_start=move["range_start"],
+                insert_before=move["insert_before"],
+                range_length=1,
+                snapshot_id=None,
+            )
+    except SpotifyException as e:
+        return jsonify(error=f"Error reordering playlist: {str(e)}"), 400
+
+    # Update the playlist data using the existing function
+    update_result = update_playlist_data(playlist_id)
+    if isinstance(update_result, tuple) and update_result[1] != 200:
+        return jsonify(error=f"Error updating playlist data: {update_result[0]}"), update_result[1]
+
+    return jsonify(status="Playlist reordered and updated successfully"), 200
+
+
+def calculate_reorder_moves(original_tracks, new_order):
+    moves = []
+    for new_index, track in enumerate(new_order):
+        old_index = original_tracks.index(track)
+        if new_index != old_index:
+            moves.append({"range_start": old_index, "insert_before": new_index})
+    return moves
 
 
 def get_playlist_recommendations(playlist_id):

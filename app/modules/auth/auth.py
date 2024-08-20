@@ -23,6 +23,8 @@ def login(loginout):
     if loginout == "logout":
         session.clear()
         session["show_dialog"] = True
+        session.pop("spotify_auth_state", None)
+
         return redirect(url_for("auth.index"))
 
     # If the path is login, handle the login logic.
@@ -82,7 +84,7 @@ def callback():
         "refresh_token": res_data.get("refresh_token"),
         "expiry_time": expiry_time.isoformat(),
     }
-
+    time.sleep(1)
     return redirect(url_for("user.profile"))
 
 

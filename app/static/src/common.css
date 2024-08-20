@@ -86,12 +86,12 @@
 
 @font-face {
   font-family: "rawcon";
-  src: url("../../fonts/rawcon.eot?oy65kh");
+  src: url("../../fonts/rawcon.eot?ets8e6");
   src:
-    url("../../fonts/rawcon.eot?oy65kh#iefix") format("embedded-opentype"),
-    url("../../fonts/rawcon.ttf?oy65kh") format("truetype"),
-    url("../../fonts/rawcon.woff?oy65kh") format("woff"),
-    url("../../fonts/rawcon.svg?oy65kh#rawcon") format("svg");
+    url("../../fonts/rawcon.eot?ets8e6#iefix") format("embedded-opentype"),
+    url("../../fonts/rawcon.ttf?ets8e6") format("truetype"),
+    url("../../fonts/rawcon.woff?ets8e6") format("woff"),
+    url("../../fonts/rawcon.svg?ets8e6#rawcon") format("svg");
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -112,8 +112,38 @@ i {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.rawcon-circle-chevron-up:before {
+  content: "\e98a";
+}
+.rawcon-circle-chevron-down:before {
+  content: "\e98b";
+}
+.rawcon-fire-flame-curved:before {
+  content: "\e98c";
+}
+.rawcon-masks-theater:before {
+  content: "\e98d";
+}
+.rawcon-gauge-high:before {
+  content: "\e98e";
+}
+.rawcon-saxophone:before {
+  content: "\e98f";
+}
+.rawcon-bolt:before {
+  content: "\e990";
+}
+.rawcon-wave-sine:before {
+  content: "\e991";
+}
+.rawcon-guitars:before {
+  content: "\e992";
+}
 .rawcon-satellite-dish:before {
   content: "\e930";
+}
+.rawcon-scale-balanced:before {
+  content: "\e993";
 }
 .rawcon-screwdriver-wrench:before {
   content: "\e931";
@@ -442,6 +472,9 @@ i {
 .rawcon-layer-minus:before {
   content: "\e90d";
 }
+.rawcon-key:before {
+  content: "\e989";
+}
 .rawcon-hd:before {
   content: "\e90f";
 }
@@ -576,12 +609,15 @@ ul {
 
 #profile-container {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-direction: row;
+  height: 10vh;
+  padding-left: var(--space-md);
+  padding-right: var(--space-md);
+  min-height: 10vh;
+  max-height: 10vh;
+  align-items: center;
   gap: var(--space-sm);
   border-bottom: var(--border-width) var(--clr-bgd-dkr);
-  padding-bottom: var(--space-md);
-  width: 100%;
 }
 
 #profile-metadata {
@@ -590,9 +626,9 @@ ul {
   justify-content: space-around;
   width: 80%;
   padding: var(--space-xs);
-  margin: auto;
+  color: var(--clr-bgd);
   border-radius: var(--border-radius);
-  background-color: var(--clr-base-ltr);
+  background-color: var(--clr-base-lt);
   font-size: var(--font-size-xs);
   box-shadow: var(--box-shadow);
 }
@@ -664,8 +700,8 @@ ul {
 .profile-menu {
   align-items: flex-start;
   justify-content: space-between;
-  max-width: 15vw;
-  min-width: 15vw;
+  max-width: 20vw;
+  min-width: 20vw;
   height: 100vh;
   border-right: var(--border-width) var(--clr-bgd-dkr);
   position: fixed;
@@ -676,9 +712,9 @@ ul {
 
 .hidden-profile {
   opacity: 0;
-  width: 15vw;
-  min-width: 15vw;
-  max-width: 15vw;
+  width: 20vw;
+  min-width: 20vw;
+  max-width: 20vw;
   height: 100%;
 }
 
@@ -732,6 +768,34 @@ ul {
   justify-content: center;
 }
 
+.top-banner {
+  width: 80vw;
+  min-width: 80vw;
+  max-width: 80vw;
+  right: 0;
+  position: fixed;
+  background-color: var(--clr-bgd);
+  height: 10vh;
+  max-height: 10vh;
+  min-height: 10vh;
+  display: flex;
+  align-items: center;
+  border-bottom: var(--border-width) var(--clr-bgd-dk);
+  justify-content: flex-end;
+}
+
+.top-banner-link {
+  height: 90%;
+  width: fit-content;
+  padding-right: var(--space-md);
+}
+
+.top-banner img {
+  height: 100%;
+  width: auto;
+  margin-left: auto;
+}
+
 .user-name {
   color: var(--clr-base);
   font-size: var(--font-size-lg);
@@ -739,7 +803,7 @@ ul {
   text-overflow: ellipsis;
   overflow: hidden;
   text-decoration: none;
-  font-family: var(--ff-txt), sans-serif;
+  font-family: var(--ff-accent), sans-serif;
   font-weight: 500;
   width: 100%;
   text-align: center;
@@ -788,7 +852,7 @@ ul {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-sm);
+  padding: var(--space-md);
   text-decoration: none;
   color: var(--clr-txt);
   transition:
@@ -814,7 +878,7 @@ ul {
 .recommendations-nav,
 .playlist-nav {
   display: flex;
-  gap: var(--space-xs);
+  gap: var(--space-sm);
   font-size: var(--font-size-sm);
   align-items: center;
   padding: var(--space-xs);
@@ -892,18 +956,20 @@ ul {
   width: 100%;
   height: 100%;
   opacity: 1;
+  display: flex;
   background-color: rgba(0, 0, 0, 0.9);
   z-index: 1000;
   justify-content: center; /* horizontally center children */
   align-items: center; /* vertically center children */
   transition: opacity 0.5s ease-out; /* 0.5s fade out */
 }
+
 #loading-overlay svg {
-  width: 250px;
-  height: 250px;
+  width: 350px;
+  height: 350px;
   background-repeat: no-repeat;
   background-size: cover;
-  animation: spin 1.5s linear infinite;
+  animation: spin 3s linear infinite;
 }
 
 .info-item {
@@ -916,9 +982,10 @@ ul {
   bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
-  background-color: #333;
-  color: white;
-  padding: 5px 10px;
+  background-color: var(--clr-txt);
+  font-size: var(--font-size-sm);
+  color: var(--clr-bgd);
+  padding: var(--space-xs);
   border-radius: 4px;
   white-space: nowrap;
 }

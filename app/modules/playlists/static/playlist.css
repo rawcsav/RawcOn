@@ -12,8 +12,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 85%;
-  max-width: 85%;
+  min-width: 80%;
+  max-width: 80%;
+  margin-top: 10vh;
 }
 
 h1,
@@ -44,13 +45,13 @@ a:hover {
 
 /* Playlist Header */
 #playlist-name {
-  font-size: var(--font-size-xl);
+  margin-bottom: var(--space-lg);
+  font-size: var(--font-size-xxl);
+  border-bottom: var(--border-width) var(--clr-secondary-ltr);
+  width: 50%;
   color: var(--clr-secondary);
-  font-family: var(--ff-txt);
+  font-family: var(--ff-accent);
   font-weight: 600;
-  padding: var(--space-sm);
-  padding-bottom: 0;
-  border-bottom: var(--border-width) var(--clr-bgd-dkr);
 }
 
 .info-item {
@@ -75,13 +76,15 @@ a:hover {
 
 .playlist-details {
   display: flex;
-  border-radius: var(--border-radius);
   flex-direction: column;
-  border: var(--border-width) var(--clr-bgd-dkr);
+  gap: var(--space-lg);
+  width: 100%;
+  padding: var(--space-md);
 }
 
 .playlist-container {
   display: flex;
+  padding: var(--space-md);
   flex-direction: column;
   align-items: flex-start;
   width: 85%;
@@ -91,24 +94,36 @@ a:hover {
   width: 250px;
   height: 250px;
   object-fit: cover;
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
 }
 
 .playlist-desc {
   display: flex;
+  width: 100%;
+  align-items: center;
   gap: var(--space-md);
 }
 
 .playlist-text {
   display: flex;
+  width: 100%;
   gap: var(--space-md);
-  background-color: var(--clr-secondary-lt);
-  color: var(--clr-bgd);
-  border-radius: var(--border-radius);
+  color: var(--clr-txt);
+  justify-content: space-evenly;
+  padding: var(--space-xs) var(--space-md);
+  font-size: var(--font-size-lg);
+}
+
+.glance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
   justify-content: center;
-  padding: var(--space-sm) var(--space-md);
-  box-shadow: var(--box-shadow);
+}
+
+.playlist-glance {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
 }
 .playlist-text p {
   display: flex;
@@ -145,8 +160,8 @@ button {
   border: none;
   box-shadow: var(--box-shadow);
   font-size: var(--font-size-sm);
-  font-weight: 700;
-  padding: var(--space-sm) var(--space-md);
+  font-weight: 500;
+  padding: var(--space-sm);
   margin: 0;
   justify-content: center;
   align-items: center;
@@ -155,6 +170,12 @@ button {
   gap: var(--space-xs);
   cursor: pointer;
   transition: background-color var(--transition-speed);
+}
+
+button:disabled {
+  background-color: var(--clr-txt-ltr);
+  color: var(--clr-bgd);
+  cursor: not-allowed;
 }
 
 button:hover {

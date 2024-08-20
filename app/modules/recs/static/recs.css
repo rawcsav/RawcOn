@@ -11,15 +11,19 @@ body {
 }
 
 .container {
-  width: 85vw;
-  max-width: 85vw;
+  width: 80vw;
+  max-width: 80vw;
   display: flex;
 }
 
 #search-section {
   padding: var(--space-xl);
+  padding-top: 0;
   padding-bottom: 0;
   height: 10vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 #seeds-section {
@@ -33,20 +37,36 @@ body {
   justify-content: space-between;
 }
 
-header {
-  background-color: var(--clr-secondary);
-  padding: var(--space-xl);
-  text-align: center;
-}
-
 #config-section {
+  margin-top: 10vh;
   flex: 2;
   padding: var(--space-xl);
+  padding-top: var(--space-md);
   border-radius: 0;
-  outline: var(--border-width) var(--clr-bgd-dkr);
+  border: var(--border-width) var(--clr-bgd-dkr);
+  border-top: 0;
   height: fit-content;
 }
 
+#recommendation-form label,
+#get-recommendations {
+  display: flex;
+  gap: var(--space-sm);
+  font-size: var(--font-size-md);
+  align-items: center;
+}
+
+#get-recommendations:hover {
+  border-color: var(--clr-secondary-lt);
+}
+
+#recommendation-form label {
+  margin-bottom: var(--space-xs);
+}
+
+#limit:focus-visible {
+  outline-color: var(--clr-secondary-lt);
+}
 h1,
 h2 {
   margin-bottom: var(--space-xl);
@@ -76,11 +96,11 @@ h2 {
   border-radius: 4px 0 0 4px;
   font-size: var(--font-size-sm);
   border: var(--border-width) black;
+  border-right: 0;
 }
 
 .search-btn {
   border: var(--border-width) black;
-  border-left: none;
   border-radius: 0 4px 4px 0;
   padding: var(--space-sm);
   font-size: var(--font-size-md);
@@ -92,12 +112,16 @@ h2 {
 }
 
 .dropdown-menu {
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+  ]box-shadow: var(--box-shadow);
   max-height: 300px;
   overflow-y: auto;
   position: absolute;
   background-color: var(--clr-bgd);
+}
+
+input:focus-visible {
+  outline: 0;
+  border-color: var(--clr-secondary-lt) !important;
 }
 
 .dropdown-item {
@@ -316,13 +340,18 @@ button:hover {
 
 /* Search Results Styling */
 #search-dropdown {
-  width: 40%;
-  border: 1px solid #ddd;
+  border: 2px solid var(--clr-secondary-lt);
+  display: none;
+  top: 100%;
   border-top: none;
   max-height: 300px;
   overflow-y: auto;
   background-color: var(--clr-bgd);
   box-shadow: var(--box-shadow);
+}
+
+input:focus-visible + .search-btn {
+  border-color: var(--clr-secondary-lt);
 }
 
 .dropdown-item:last-child {
@@ -394,7 +423,6 @@ button:hover {
   overflow-y: auto;
   border-radius: 0;
   flex-grow: 1;
-  border-right: var(--border-width) var(--clr-bgd-dkr);
 }
 
 /* Seed Item */

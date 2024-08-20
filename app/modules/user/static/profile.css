@@ -159,8 +159,8 @@ h4 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 85%;
-  max-width: 85%;
+  min-width: 80vw;
+  max-width: 80vw;
 }
 
 .top-logo {
@@ -283,7 +283,7 @@ h4 {
   font-size: var(--font-size-xxl);
   font-family: var(--ff-accent);
   color: var(--clr-secondary);
-  font-weight: 120;
+  font-weight: 600;
 }
 
 .selector-subtitle {

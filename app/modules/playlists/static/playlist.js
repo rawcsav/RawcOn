@@ -110,6 +110,7 @@ const playlistActionsModule = (() => {
       headers: {
         "Content-Type": "application/json",
         "X-CSRFToken": util.getCsrfToken(),
+        "X-Long-Running": "true",
       },
       body: JSON.stringify({ sorting_criterion: criterion }),
     })
@@ -362,24 +363,6 @@ const uiModule = (() => {
         }
       });
 
-    const reorderButtons = [
-      { id: "order-desc-btn", criterion: "Date Added - Descending" },
-      { id: "order-asc-btn", criterion: "Date Added - Ascending" },
-      { id: "rd-asc-btn", criterion: "Release Date - Ascending" },
-      { id: "rd-desc-btn", criterion: "Release Date - Descending" },
-      { id: "shuffle-btn", criterion: "Shuffle" },
-    ];
-
-    reorderButtons.forEach((button) => {
-      document
-        .getElementById(button.id)
-        .addEventListener("click", () =>
-          showReorderModal(() =>
-            playlistActionsModule.reorderPlaylist(playlistId, button.criterion),
-          ),
-        );
-    });
-
     document.addEventListener("click", (event) => {
       if (event.target.closest(".add-to-playlist")) {
         event.preventDefault();
@@ -418,18 +401,6 @@ const uiModule = (() => {
     });
   };
 
-  const showReorderModal = (callback) => {
-    const modal = document.getElementById("reorderModal");
-    modal.style.display = "block";
-    document.getElementById("confirmReorder").onclick = () => {
-      modal.style.display = "none";
-      callback();
-    };
-    document.getElementById("cancelReorder").onclick = () => {
-      modal.style.display = "none";
-    };
-  };
-
   const setupIntersectionObserver = () => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -446,7 +417,7 @@ const uiModule = (() => {
     });
   };
 
-  return { setupEventListeners, showReorderModal, setupIntersectionObserver };
+  return { setupEventListeners, setupIntersectionObserver };
 })();
 
 // Main initialization

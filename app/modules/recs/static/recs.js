@@ -176,10 +176,12 @@ const uiModule = (() => {
 
   const showDropdown = () => {
     elements.searchDropdown.style.display = "block";
+    elements.searchInput.style.borderBottomLeftRadius = "0";
   };
 
   const hideDropdown = () => {
     elements.searchDropdown.style.display = "none";
+    elements.searchInput.style.borderBottomLeftRadius = "4px";
   };
 
   const displayErrorMessage = (message) => {

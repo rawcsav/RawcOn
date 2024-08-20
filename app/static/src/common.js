@@ -7,6 +7,11 @@ const config = {
 // Get the existing loader element
 const loader = document.querySelector(config.loaderSelector);
 
+// Global variables for request tracking
+let activeRequests = 0;
+let longRunningRequests = new Set();
+const LONG_REQUEST_THRESHOLD = 30000; // 10 seconds
+
 // Helper function to check if features should be enabled on current page
 function shouldEnableFeatures() {
   const currentPath = window.location.pathname.toLowerCase();
@@ -34,6 +39,86 @@ window.hideLoading = function () {
       loader.style.display = "none";
       loader.style.opacity = "1";
     }, fadeOutDuration);
+  }
+};
+
+// Function to show global loader
+function showGlobalLoader(isLongRunning = false) {
+  activeRequests++;
+  window.showLoading(Infinity);
+
+  if (isLongRunning) {
+    return setTimeout(() => {
+      if (longRunningRequests.size > 0) {
+        window.hideLoading();
+      }
+    }, LONG_REQUEST_THRESHOLD);
+  }
+}
+
+// Function to hide global loader
+function hideGlobalLoader(timeoutId = null) {
+  activeRequests--;
+  if (timeoutId) {
+    clearTimeout(timeoutId);
+    longRunningRequests.delete(timeoutId);
+  }
+  if (activeRequests <= 0 && longRunningRequests.size === 0) {
+    activeRequests = 0;
+    window.hideLoading();
+  }
+}
+
+// Intercept all fetch requests
+const originalFetch = window.fetch;
+window.fetch = function (...args) {
+  const isLongRunning =
+    args[1] && args[1].headers && args[1].headers["X-Long-Running"];
+  const timeoutId = showGlobalLoader(isLongRunning);
+  if (isLongRunning) {
+    longRunningRequests.add(timeoutId);
+  }
+
+  return originalFetch.apply(this, args).finally(() => {
+    hideGlobalLoader(timeoutId);
+  });
+};
+
+// Intercept XMLHttpRequest
+(function (open) {
+  XMLHttpRequest.prototype.open = function (...args) {
+    let timeoutId;
+    this.addEventListener("loadstart", () => {
+      const isLongRunning = this.getRequestHeader("X-Long-Running") === "true";
+      timeoutId = showGlobalLoader(isLongRunning);
+      if (isLongRunning) {
+        longRunningRequests.add(timeoutId);
+      }
+    });
+    this.addEventListener("loadend", () => {
+      hideGlobalLoader(timeoutId);
+    });
+    open.apply(this, args);
+  };
+})(XMLHttpRequest.prototype.open);
+
+// Custom fetch wrapper to track AJAX requests
+window.customFetch = async function (url, options = {}) {
+  const isLongRunning =
+    options.headers && options.headers["X-Long-Running"] === "true";
+  const timeoutId = showGlobalLoader(isLongRunning);
+  if (isLongRunning) {
+    longRunningRequests.add(timeoutId);
+  }
+
+  try {
+    const response = await fetch(url, options);
+    return response;
+  } catch (error) {
+    hideGlobalLoader(timeoutId);
+    throw error;
+  } finally {
+    hideGlobalLoader(timeoutId);
   }
 };
 
@@ -112,6 +197,7 @@ function setupPageFeatures() {
       }
     });
   }
+
   function displayPlaylists() {
     const playlistsList = document.getElementById("playlists");
     // eslint-disable-next-line no-undef
@@ -170,14 +256,3 @@ function setupPageFeatures() {
   // Update menu on navigation
   window.addEventListener("popstate", updateMenu);
 }
-
-// Custom fetch wrapper to track AJAX requests
-window.customFetch = async function (url, options = {}) {
-  window.showLoading();
-  try {
-    const response = await fetch(url, options);
-    return response;
-  } finally {
-    window.hideLoading();
-  }
-};
