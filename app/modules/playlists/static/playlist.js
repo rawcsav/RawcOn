@@ -1,17 +1,23 @@
 // Utility functions
+function showToast(message, type = "info") {
+  const toast = document.getElementById("toast");
+  const toastMessage = document.getElementById("toastMessage");
+  toastMessage.textContent = message;
+  toast.className = `toast ${type}`;
+  toast.classList.add("show");
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3000);
+}
+
+// eslint-disable-next-line no-unused-vars
+function getCsrfToken() {
+  return document
+    .querySelector('meta[name="csrf-token"]')
+    .getAttribute("content");
+}
 const util = {
-  getCsrfToken: () =>
-    document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-  showToast: (message, type = "success") => {
-    const toast = document.getElementById("toast");
-    const toastMessage = document.getElementById("toastMessage");
-    toastMessage.textContent = message;
-    toast.className = type;
-    toast.style.display = "block";
-    setTimeout(() => {
-      toast.style.display = "none";
-    }, 5000);
-  },
   toggleDivVisibility: (selector) => {
     const el = document.querySelector(selector);
     el.style.display = el.style.display === "none" ? "block" : "none";
@@ -75,18 +81,18 @@ const playlistActionsModule = (() => {
   const likeAllSongs = (playlistId) => {
     fetch(`/playlist/like_all_songs/${playlistId}`)
       .then((response) => response.text())
-      .then(util.showToast)
+      .then(showToast)
       .catch(() =>
-        util.showToast("An error occurred while liking all songs.", "error"),
+        showToast("An error occurred while liking all songs.", "error"),
       );
   };
 
   const unlikeAllSongs = (playlistId) => {
     fetch(`/playlist/unlike_all_songs/${playlistId}`)
       .then((response) => response.text())
-      .then(util.showToast)
+      .then(showToast)
       .catch((error) =>
-        util.showToast(
+        showToast(
           `An error occurred while unliking all songs: ${error}`,
           "error",
         ),
@@ -95,9 +101,9 @@ const playlistActionsModule = (() => {
 
   const removeDuplicates = (playlistId) => {
     fetch(`/playlist/remove_duplicates/${playlistId}`)
-      .then(() => util.showToast("Successfully removed duplicates."))
+      .then(() => showToast("Successfully removed duplicates."))
       .catch((error) =>
-        util.showToast(
+        showToast(
           `An error occurred while removing duplicates: ${error}`,
           "error",
         ),
@@ -109,21 +115,17 @@ const playlistActionsModule = (() => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-CSRFToken": util.getCsrfToken(),
+        "X-CSRFToken": getCsrfToken(),
         "X-Long-Running": "true",
       },
       body: JSON.stringify({ sorting_criterion: criterion }),
     })
       .then((response) => response.json())
-      .then((response) => {
-        if (response.status === "Playlist reordered successfully") {
-          util.showToast("Playlist reordered successfully.");
-        } else {
-          util.showToast("Failed to reorder playlist.", "error");
-        }
+      .then(() => {
+        showToast("Playlist reordered successfully.");
       })
       .catch((error) =>
-        util.showToast(
+        showToast(
           `An error occurred while reordering the playlist: ${error}`,
           "error",
         ),
@@ -145,7 +147,7 @@ const recommendationModule = (() => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": util.getCsrfToken(),
+            "X-CSRFToken": getCsrfToken(),
           },
         },
       );
@@ -241,17 +243,17 @@ const trackActionsModule = (() => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-CSRFToken": util.getCsrfToken(),
+        "X-CSRFToken": getCsrfToken(),
       },
       body: JSON.stringify({ playlist_id: playlistId, track_id: trackId }),
     })
       .then(() => {
-        util.showToast("Track added to playlist successfully!");
+        showToast("Track added to playlist successfully!");
         plusIcon.classList.remove("rawcon-album-plus");
         plusIcon.classList.add("rawcon-layer-minus", "added");
       })
       .catch((error) => {
-        util.showToast(
+        showToast(
           "An error occurred while adding the track to the playlist.",
           "error",
         );
@@ -264,17 +266,17 @@ const trackActionsModule = (() => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-CSRFToken": util.getCsrfToken(),
+        "X-CSRFToken": getCsrfToken(),
       },
       body: JSON.stringify({ playlist_id: playlistId, track_id: trackId }),
     })
       .then(() => {
-        util.showToast("Track removed from playlist successfully!");
+        showToast("Track removed from playlist successfully!");
         plusIcon.classList.remove("rawcon-layer-minus", "added");
         plusIcon.classList.add("rawcon-album-plus");
       })
       .catch((error) => {
-        util.showToast(
+        showToast(
           "An error occurred while removing the track from the playlist.",
           "error",
         );
@@ -287,16 +289,16 @@ const trackActionsModule = (() => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-CSRFToken": util.getCsrfToken(),
+        "X-CSRFToken": getCsrfToken(),
       },
       body: JSON.stringify({ track_id: trackId }),
     })
       .then(() => {
-        util.showToast("Track saved successfully!");
+        showToast("Track saved successfully!");
         heartIcon.classList.add("liked");
       })
       .catch((error) => {
-        util.showToast("An error occurred while saving the track.", "error");
+        showToast("An error occurred while saving the track.", "error");
         console.error("Error:", error);
       });
   };
@@ -306,16 +308,16 @@ const trackActionsModule = (() => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-CSRFToken": util.getCsrfToken(),
+        "X-CSRFToken": getCsrfToken(),
       },
       body: JSON.stringify({ track_id: trackId }),
     })
       .then(() => {
-        util.showToast("Track unsaved successfully!");
+        showToast("Track unsaved successfully!");
         heartIcon.classList.remove("liked");
       })
       .catch((error) => {
-        util.showToast("An error occurred while unsaving the track.", "error");
+        showToast("An error occurred while unsaving the track.", "error");
         console.error("Error:", error);
       });
   };
@@ -362,7 +364,21 @@ const uiModule = (() => {
           util.toggleDivVisibility(".results-title-spot");
         }
       });
+    const reorderButtons = [
+      { id: "order-desc-btn", criterion: "Date Added - Descending" },
+      { id: "order-asc-btn", criterion: "Date Added - Ascending" },
+      { id: "rd-asc-btn", criterion: "Release Date - Ascending" },
+      { id: "rd-desc-btn", criterion: "Release Date - Descending" },
+      { id: "shuffle-btn", criterion: "Shuffle" },
+    ];
 
+    reorderButtons.forEach((button) => {
+      document
+        .getElementById(button.id)
+        .addEventListener("click", () =>
+          playlistActionsModule.reorderPlaylist(playlistId, button.criterion),
+        );
+    });
     document.addEventListener("click", (event) => {
       if (event.target.closest(".add-to-playlist")) {
         event.preventDefault();
@@ -443,9 +459,4 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Setup intersection observer for animations
   uiModule.setupIntersectionObserver();
-
-  // Setup toast close button
-  document.querySelector(".close-toast").addEventListener("click", function () {
-    this.parentElement.style.display = "none";
-  });
 });

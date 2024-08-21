@@ -4,23 +4,23 @@ const config = {
   featureEnabledKeywords: ["profile", "recommendations", "playlist"],
 };
 
-// Get the existing loader element
+// Constants
+const LONG_REQUEST_THRESHOLD = 30000; // 30 seconds
+
+// DOM Elements
 const loader = document.querySelector(config.loaderSelector);
+const toast = document.getElementById("toast");
+const closeToast = document.querySelector(".close-toast");
 
 // Global variables for request tracking
 let activeRequests = 0;
 let longRunningRequests = new Set();
-const LONG_REQUEST_THRESHOLD = 30000; // 10 seconds
 
-// Helper function to check if features should be enabled on current page
-function shouldEnableFeatures() {
-  const currentPath = window.location.pathname.toLowerCase();
-  return config.featureEnabledKeywords.some((keyword) =>
-    currentPath.includes(keyword),
-  );
+function hideToast() {
+  toast.classList.remove("show");
 }
 
-// Improved showLoading function
+// Loader functions
 window.showLoading = function (duration = 4000) {
   if (loader && loader.style.display !== "flex") {
     loader.style.display = "flex";
@@ -30,7 +30,6 @@ window.showLoading = function (duration = 4000) {
   }
 };
 
-// Improved hideLoading function
 window.hideLoading = function () {
   if (loader) {
     const fadeOutDuration = 500;
@@ -42,10 +41,9 @@ window.hideLoading = function () {
   }
 };
 
-// Function to show global loader
 function showGlobalLoader(isLongRunning = false) {
   activeRequests++;
-  window.showLoading(Infinity);
+  window.showLoading(10000);
 
   if (isLongRunning) {
     return setTimeout(() => {
@@ -56,7 +54,6 @@ function showGlobalLoader(isLongRunning = false) {
   }
 }
 
-// Function to hide global loader
 function hideGlobalLoader(timeoutId = null) {
   activeRequests--;
   if (timeoutId) {
@@ -69,7 +66,15 @@ function hideGlobalLoader(timeoutId = null) {
   }
 }
 
-// Intercept all fetch requests
+// Helper functions
+function shouldEnableFeatures() {
+  const currentPath = window.location.pathname.toLowerCase();
+  return config.featureEnabledKeywords.some((keyword) =>
+    currentPath.includes(keyword),
+  );
+}
+
+// Request interception
 const originalFetch = window.fetch;
 window.fetch = function (...args) {
   const isLongRunning =
@@ -84,7 +89,6 @@ window.fetch = function (...args) {
   });
 };
 
-// Intercept XMLHttpRequest
 (function (open) {
   XMLHttpRequest.prototype.open = function (...args) {
     let timeoutId;
@@ -102,7 +106,6 @@ window.fetch = function (...args) {
   };
 })(XMLHttpRequest.prototype.open);
 
-// Custom fetch wrapper to track AJAX requests
 window.customFetch = async function (url, options = {}) {
   const isLongRunning =
     options.headers && options.headers["X-Long-Running"] === "true";
@@ -122,15 +125,8 @@ window.customFetch = async function (url, options = {}) {
   }
 };
 
-document.addEventListener("DOMContentLoaded", function () {
-  setupLoader();
-  if (shouldEnableFeatures()) {
-    setupPageFeatures();
-  }
-});
-
+// Setup functions
 function setupLoader() {
-  // Show loading on form submission
   document.addEventListener(
     "submit",
     function (event) {
@@ -149,15 +145,12 @@ function setupLoader() {
     true,
   );
 
-  // Show loading on page unload
   window.addEventListener("beforeunload", function () {
     window.showLoading(Infinity);
   });
 
-  // Initial loading
   window.showLoading();
 
-  // Hide loading when page is fully loaded
   window.addEventListener("load", function () {
     window.hideLoading();
   });
@@ -253,6 +246,16 @@ function setupPageFeatures() {
   updateMenu();
   setupPlaylistToggle();
 
-  // Update menu on navigation
   window.addEventListener("popstate", updateMenu);
 }
+
+// Event listeners
+closeToast.addEventListener("click", hideToast);
+
+// Initialize
+document.addEventListener("DOMContentLoaded", function () {
+  setupLoader();
+  if (shouldEnableFeatures()) {
+    setupPageFeatures();
+  }
+});

@@ -1,6 +1,6 @@
 import json
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import session
 from spotipy import SpotifyException
@@ -77,36 +77,6 @@ def fetch_and_create_playlist(sp, playlist_id):
     db.session.commit()
 
     return new_playlist.__dict__
-
-
-def update_playlist_data(playlist_id):
-    sp, error = init_session_client()
-    if error:
-        return error, 401
-
-    playlist = PlaylistData.query.get(playlist_id)
-    if not playlist:
-        return "Playlist not found", 404
-
-    playlist_info, track_data, genre_counts, top_artists, feature_stats, temporal_stats = get_playlist_details(
-        sp, playlist_id
-    )
-
-    playlist.name = playlist_info["name"]
-    playlist.owner = playlist_info["owner"]
-    playlist.cover_art = playlist_info["cover_art"]
-    playlist.public = playlist_info["public"]
-    playlist.collaborative = playlist_info["collaborative"]
-    playlist.total_tracks = playlist_info["total_tracks"]
-    playlist.snapshot_id = playlist_info["snapshot_id"]
-    playlist.tracks = track_data
-    playlist.genre_counts = genre_counts
-    playlist.top_artists = top_artists
-    playlist.feature_stats = feature_stats
-    playlist.temporal_stats = temporal_stats
-
-    db.session.commit()
-    return "Playlist updated successfully"
 
 
 def like_all_songs(playlist_id):
@@ -316,6 +286,7 @@ def get_playlist_info(sp, playlist_id):
         "total_tracks": playlist["tracks"]["total"],
         "snapshot_id": playlist["snapshot_id"],
         "playlist_followers": playlist["followers"]["total"],
+        "last_updated": playlist["tracks"]["items"][0]["added_at"] if playlist["tracks"]["items"] else None,
     }
 
     return playlist_info
@@ -379,7 +350,7 @@ def get_track_info_list(sp, tracks):
 
         audio_features = track_features_dict.get(track.get("id"), {})
         is_local = track.get("is_local", False)
-
+        print(track.get("duration_ms"))
         track_info = {
             "id": track.get("id"),
             "name": track.get("name"),
@@ -388,6 +359,7 @@ def get_track_info_list(sp, tracks):
             "album": track.get("album", {}).get("name"),
             "release_date": track.get("album", {}).get("release_date"),
             "explicit": track.get("explicit"),
+            "duration_ms": track.get("duration_ms"),
             "popularity": None if is_local else track.get("popularity"),
             "cover_art": cover_art,
             "artists": artist_info,
@@ -590,6 +562,16 @@ def get_playlist_details(sp, playlist_id):
     genre_counts, top_artists = get_genre_artists_count(track_info_list)
     audio_feature_stats = get_audio_features_stats(track_info_list)
     temporal_stats = get_temporal_stats(track_info_list, playlist_id)
+
+    # Calculate total length of the playlist
+    total_duration_ms = sum(track.get("duration_ms", 0) for track in track_info_list)
+    total_duration = str(timedelta(milliseconds=total_duration_ms)).split(".")[0]  # format as HH:MM:SS
+    playlist_info["total_duration"] = total_duration
+
+    # Count local tracks
+    local_tracks_count = sum(1 for track in track_info_list if track["is_local"])
+    playlist_info["local_tracks_count"] = local_tracks_count
+
     return playlist_info, track_info_list, genre_counts, top_artists, audio_feature_stats, temporal_stats
 
 
@@ -626,6 +608,9 @@ def update_playlist_data(playlist_id):
     playlist.top_artists = pl_top_artists
     playlist.feature_stats = pl_feature_stats
     playlist.temporal_stats = pl_temporal_stats
+    playlist.total_duration = pl_playlist_info["total_duration"]
+    playlist.last_updated = datetime.strptime(pl_playlist_info["last_updated"], "%Y-%m-%dT%H:%M:%SZ")
+    playlist.local_tracks_count = pl_playlist_info["local_tracks_count"]
 
     try:
         db.session.merge(playlist)

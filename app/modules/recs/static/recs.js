@@ -1,7 +1,22 @@
 // Utility functions
+function showToast(message, type = "info") {
+  const toast = document.getElementById("toast");
+  const toastMessage = document.getElementById("toastMessage");
+  toastMessage.textContent = message;
+  toast.className = `toast ${type}`;
+  toast.classList.add("show");
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3000);
+}
+
+function getCsrfToken() {
+  return document
+    .querySelector('meta[name="csrf-token"]')
+    .getAttribute("content");
+}
 const util = {
-  getCsrfToken: () =>
-    document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
   debounce: (func, delay) => {
     let debounceTimer;
     return function (...args) {
@@ -45,7 +60,7 @@ const searchModule = (() => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": util.getCsrfToken(),
+          "X-CSRFToken": getCsrfToken(),
         },
         body: JSON.stringify({ query, type: "track,artist" }),
       });
@@ -56,9 +71,7 @@ const searchModule = (() => {
       uiModule.displaySearchResults(data);
     } catch (error) {
       console.error("Search error:", error);
-      uiModule.displayErrorMessage(
-        "An error occurred while searching. Please try again.",
-      );
+      showToast("An error occurred while searching. Please try again.");
     }
   };
 
@@ -69,7 +82,7 @@ const searchModule = (() => {
 const seedsModule = (() => {
   const addToSeeds = (item, type) => {
     if (elements.seedsContainer.children.length >= 5) {
-      alert("You can select no more than 5 combined seeds.");
+      showToast("You can select no more than 5 combined seeds.");
       return;
     }
 
@@ -91,6 +104,7 @@ const seedsModule = (() => {
       .addEventListener("click", () => removeSeed(seedElement));
 
     elements.seedsContainer.appendChild(seedElement);
+    showToast(item.name + " added to seeds.");
     updateSeedsInput();
     updateSeedCounter();
   };
@@ -379,7 +393,7 @@ const recommendationModule = (() => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": util.getCsrfToken(),
+          "X-CSRFToken": getCsrfToken(),
         },
         body: JSON.stringify(requestData),
       });
@@ -392,7 +406,7 @@ const recommendationModule = (() => {
       uiModule.displayRecommendations(data.recommendations);
     } catch (error) {
       console.error("Error:", error);
-      uiModule.displayErrorMessage(
+      showToast(
         "An error occurred while getting recommendations. Please try again.",
       );
     }
@@ -453,7 +467,7 @@ const playlistModule = (() => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": util.getCsrfToken(),
+          "X-CSRFToken": getCsrfToken(),
         },
         body: JSON.stringify({ track_id: trackId, playlist_id: playlistId }),
       });
@@ -466,7 +480,9 @@ const playlistModule = (() => {
       );
       plusIcon.classList.add("added");
       elements.playlistModal.style.display = "none";
+      showToast("Track added to playlist successfully.");
     } catch (error) {
+      showToast("Error adding track to playlist. Please try again.");
       console.error("Error:", error);
     }
   };
@@ -479,7 +495,7 @@ const playlistModule = (() => {
       }
       const playlists = await response.json();
       if (playlists.error) {
-        elements.playlistOptions.innerHTML = `<p>Error: ${playlists.error}</p>`;
+        throw new Error(playlists.error);
       } else {
         const playlistsHtml = playlists
           .map(
@@ -496,11 +512,8 @@ const playlistModule = (() => {
         elements.playlistOptions.innerHTML = playlistsHtml;
       }
     } catch (error) {
-      console.error(
-        "There has been a problem with your fetch operation:",
-        error,
-      );
-      elements.playlistOptions.innerHTML = `<p>Failed to load playlists.</p>`;
+      console.error(error);
+      showToast("Failed to load playlists.");
     }
   };
 
@@ -515,16 +528,18 @@ const trackModule = (() => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": util.getCsrfToken(),
+          "X-CSRFToken": getCsrfToken(),
         },
         body: JSON.stringify({ track_id: trackId }),
       });
       if (response.ok) {
         heartIcon.classList.add("liked");
+        showToast("Track liked.");
       } else {
         throw new Error("Error saving the track");
       }
     } catch (error) {
+      showToast("Error saving track. Please try again.");
       console.error("Error:", error);
     }
   };
@@ -535,16 +550,18 @@ const trackModule = (() => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": util.getCsrfToken(),
+          "X-CSRFToken": getCsrfToken(),
         },
         body: JSON.stringify({ track_id: trackId }),
       });
       if (response.ok) {
+        showToast("Track unliked.");
         heartIcon.classList.remove("liked");
       } else {
         throw new Error("Error unsaving the track");
       }
     } catch (error) {
+      showToast("Error unliking track. Please try again.");
       console.error("Error:", error);
     }
   };

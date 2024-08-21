@@ -59,9 +59,12 @@ class PlaylistData(db.Model):
     total_tracks = db.Column(db.Integer)
     snapshot_id = db.Column(db.VARCHAR(255))
     followers = db.Column(db.VARCHAR(255))
+    total_duration = db.Column(db.VARCHAR(10))
+    last_updated = db.Column(db.DateTime)
     tracks = db.Column(db.JSON)
     genre_counts = db.Column(db.JSON)
     top_artists = db.Column(db.JSON)
+    local_tracks_count = db.Column(db.Integer)
     feature_stats = db.Column(db.JSON)
     temporal_stats = db.Column(db.JSON)
 

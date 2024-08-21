@@ -24,85 +24,117 @@
           </a>
           <div class="glance">
             <div class="playlist-glance total-followers">
-              <i class="rawcon-users-rectangle"></i>
-              {{ playlist_followers }} Followers
+              <i class="rawcon-users"></i>
+              <span class="glance-text"
+                >{{ playlist_followers }} Followers</span
+              >
             </div>
+            <div class="playlist-glance last-updated">
+              <i class="rawcon-calendar"></i>
+              <span class="glance-text"
+                >Updated {{ playlist_data['last_updated'].strftime('%b %d, %Y')
+                if playlist_data['last_updated'] else 'Unknown' }}</span
+              >
+            </div>
+            {% if is_collaborative %}
+            <div class="playlist-glance is-collaborative">
+              <i class="rawcon-users"></i>
+              <span class="glance-text">Collaborative</span>
+            </div>
+            {% endif %}
+            <div class="playlist-glance is-public">
+              <i
+                class="{{ 'rawcon-lock-open' if is_public else 'rawcon-lock' }}"
+              ></i>
+              <span class="glance-text"
+                >{{ "Public" if is_public else "Private" }}</span
+              >
+            </div>
+          </div>
+
+          <div class="glance">
             <div class="playlist-glance total-tracks">
               <i class="rawcon-waves"></i>
-              {{ total_tracks }} Tracks
+              <span class="glance-text">{{ total_tracks }} Tracks</span>
             </div>
-            <div class="playlist-glance is-collaborative">
-              {% if is_collaborative %}
-              <i class="rawcon-users"></i>
-              Collaborative {% endif %}
+            <div class="playlist-glance total-duration">
+              <i class="rawcon-timer"></i>
+              <span class="glance-text">
+                {% set duration_parts =
+                playlist_data['total_duration'].split(':') %} {% set hours =
+                duration_parts[0]|int %} {% set minutes = duration_parts[1]|int
+                %} {% if hours > 0 %} {{ hours }} hr {% if minutes > 0 %} {{
+                minutes }} min {% endif %} {% else %} {{ minutes }} min {% endif
+                %}
+              </span>
             </div>
-            <div class="playlist-glance is-public">
-              <i class="rawcon-lock"></i>
-              {{ "Public" if is_public else "Private" }}
+            <div class="playlist-glance local-tracks">
+              <i class="rawcon-floppy-disk"></i>
+              <span class="glance-text"
+                >{{ playlist_data['local_tracks_count'] }} Local Tracks</span
+              >
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <div class="plfunc-group">
-    <h3 class="utils-title">Playlist Utilities</h3>
-    <form
-      action="{{ url_for('playlist.refresh_playlist', playlist_id=playlist_id) }}"
-      method="post"
-    >
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-      <button id="refresh-btn" type="submit" class="pl-refresh">
-        <i class="rawcon-arrows-rotate"></i> Refresh Data
+  <div class="playlist-functions">
+    <div class="playlist-functions-group">
+      <h4 class="utils-title">Utilities</h4>
+      <form
+        action="{{ url_for('playlist.refresh_playlist', playlist_id=playlist_id) }}"
+        method="post"
+      >
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <button id="refresh-btn" type="submit" class="pl-refresh">
+          <i class="rawcon-arrows-rotate"></i> Refresh Data
+        </button>
+      </form>
+      <div class="playlist-btn-group">
+        <button id="like-all-songs-btn" title="Like all songs in the playlist">
+          <i class="rawcon-heart"></i> Like All
+        </button>
+        <button
+          id="unlike-all-songs-btn"
+          title="Unlike all songs in the playlist"
+        >
+          <i class="rawcon-heart-crack"></i> Unlike All
+        </button>
+      </div>
+      <button
+        id="remove-duplicates-btn"
+        title="Remove duplicate songs from the playlist (DISABLED)"
+        disabled
+      >
+        <i class="rawcon-layer-minus"></i> Remove Duplicates
       </button>
-    </form>
-    <button id="like-all-songs-btn" title="Like all songs in the playlist">
-      <i class="rawcon-thumbs-up"></i> Like All Songs
-    </button>
-    <button id="unlike-all-songs-btn" title="Unlike all songs in the playlist">
-      <i class="rawcon-thumbs-down"></i> Unlike All Songs
-    </button>
-    <br />
-    <button
-      id="remove-duplicates-btn"
-      title="Remove duplicate songs from the playlist (DISABLED)"
-      disabled
-    >
-      <i class="rawcon-layer-minus"></i> Remove Duplicates
-    </button>
-    <br />
-    <button
-      id="recommendations-btn"
-      title="Get recommendations based on this playlist"
-    >
-      <i class="rawcon-list-music"></i> Track Recs
-    </button>
-  </div>
-  <div class="plorder-group">
-    <h3 class="utils-title">Playlist Ordering</h3>
-    <button id="order-asc-btn">
-      <i class="rawcon-sort-up"></i> Date Added (Ascending)
-    </button>
-    <button id="order-desc-btn">
-      <i class="rawcon-sort-down"></i> Date Added (Descending)
-    </button>
-    <br />
-    <button id="rd-asc-btn">
-      <i class="rawcon-calendar-up"></i> Release Date (Ascending)
-    </button>
-    <button id="rd-desc-btn">
-      <i class="rawcon-calendar-down"></i> Release Date (Descending)
-    </button>
-    <br />
-
-    <button id="shuffle-btn"><i class="rawcon-shuffle"></i> Shuffle</button>
-  </div>
-  <div id="reorderModal" class="modal">
-    <div class="modal-content">
-      <h4>Confirm Reorder</h4>
-      <p>Ordering will create a new playlist. Do you wish to continue?</p>
-      <button id="confirmReorder" class="btn">Yes</button>
-      <button id="cancelReorder" class="btn">No</button>
+      <button
+        id="recommendations-btn"
+        title="Get recommendations based on this playlist"
+      >
+        <i class="rawcon-list-music"></i> Track Recs
+      </button>
+    </div>
+    <div class="playlist-order-group">
+      <h4 class="utils-title">Ordering</h4>
+      <div class="playlist-btn-group">
+        <button id="order-asc-btn">
+          <i class="rawcon-circle-chevron-up"></i> Date Added (Ascending)
+        </button>
+        <button id="order-desc-btn">
+          <i class="rawcon-circle-chevron-down"></i> Date Added (Descending)
+        </button>
+      </div>
+      <div class="playlist-btn-group">
+        <button id="rd-asc-btn">
+          <i class="rawcon-calendar-up"></i> Release Date (Ascending)
+        </button>
+        <button id="rd-desc-btn">
+          <i class="rawcon-calendar-down"></i> Release Date (Descending)
+        </button>
+      </div>
+      <button id="shuffle-btn"><i class="rawcon-shuffle"></i> Shuffle</button>
     </div>
   </div>
   <div class="results-title-spot" style="display: none">
@@ -110,28 +142,28 @@
       <div id="results"></div>
     </div>
   </div>
-  <div class="artist-flex">
+
+  <div class="artists-column">
     <h3 class="top-artists-title">Top Artists</h3>
-    <div class="artist-list">
-      {% for artist, count, image_url, spotify_url, artist_ids in
-      playlist_data.top_artists %}
-      <li class="artist-item">
-        <div class="artist-container">
+    <div class="scroll-container">
+      <div id="topArtists" class="row-container">
+        {% for artist, count, image_url, spotify_url, artist_ids in
+        playlist_data.top_artists %}
+        <div class="grid-item">
           <a href="{{ spotify_url }}" target="_blank" rel="noopener noreferrer">
             <img
               class="artist-image"
               src="{{ image_url }}"
               alt="{{ artist }}'s picture"
               crossorigin="anonymous"
+              loading="lazy"
             />
           </a>
-          <div class="overlay">
-            <span class="artist-name">{{ artist }}</span>
-            <span class="artist-count">{{ count }} Tracks</span>
-          </div>
+          <p class="artist-name">{{ artist }}</p>
+          <p class="artist-count">{{ count }} Tracks</p>
         </div>
-      </li>
-      {% endfor %}
+        {% endfor %}
+      </div>
     </div>
   </div>
   <div class="chart-flex">
@@ -219,10 +251,6 @@
     data-year-count="{{ year_count }}"
     data-playlist-id="{{ playlist_id }}"
   ></div>
-  <div id="toast" class="toast">
-    <div class="toast-content" id="toastMessage"></div>
-    <span class="close-toast">×</span>
-  </div>
 </main>
 {% endblock %}{% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

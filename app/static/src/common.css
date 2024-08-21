@@ -57,8 +57,8 @@
 @font-face {
   font-family: "Diatype";
   src:
-    url("../../fonts/Diatype.woff2") format("woff2-variations"),
-    url("../../fonts/Diatype.ttf") format("truetype-variations");
+    url("/static/fonts/Diatype.woff2") format("woff2-variations"),
+    url("/static/fonts/Diatype.ttf") format("truetype-variations");
   font-weight: 100 700;
   font-feature-settings:
     "ss04" 1,
@@ -69,8 +69,8 @@
 @font-face {
   font-family: "Lastik";
   src:
-    url("../../fonts/Lastik-VariableVF.woff2") format("woff2-variations"),
-    url("../../fonts/Lastik-VariableVF.ttf") format("truetype-variations");
+    url("/static/fonts/Lastik-VariableVF.woff2") format("woff2-variations"),
+    url("/static/fonts/Lastik-VariableVF.ttf") format("truetype-variations");
   font-weight: 50 100;
   font-display: swap;
 }
@@ -78,20 +78,20 @@
 @font-face {
   font-family: "Monument";
   src:
-    url("../../fonts/Monument.woff2") format("woff2-variations"),
-    url("../../fonts/Monument.ttf") format("truetype-variations");
+    url("/static/fonts/Monument.woff2") format("woff2-variations"),
+    url("/static/fonts/Monument.ttf") format("truetype-variations");
   font-weight: 200 900;
   font-display: swap;
 }
 
 @font-face {
   font-family: "rawcon";
-  src: url("../../fonts/rawcon.eot?ets8e6");
+  src: url("/static/fonts/rawcon.eot?ets8e6");
   src:
-    url("../../fonts/rawcon.eot?ets8e6#iefix") format("embedded-opentype"),
-    url("../../fonts/rawcon.ttf?ets8e6") format("truetype"),
-    url("../../fonts/rawcon.woff?ets8e6") format("woff"),
-    url("../../fonts/rawcon.svg?ets8e6#rawcon") format("svg");
+    url("/static/fonts/rawcon.eot?ets8e6#iefix") format("embedded-opentype"),
+    url("/static/fonts/rawcon.ttf?ets8e6") format("truetype"),
+    url("/static/fonts/rawcon.woff?ets8e6") format("woff"),
+    url("/static/fonts/rawcon.svg?ets8e6#rawcon") format("svg");
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -991,4 +991,61 @@ ul {
 }
 .info-item:hover .info-content {
   display: block;
+}
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--clr-bgd);
+  border-radius: var(--border-radius);
+  padding: var(--space-md);
+  width: 320px;
+  box-shadow:
+    0 4px 6px -1px rgba(var(--clr-bgd-dkr) 0.1),
+    0 2px 4px -1px var(--clr-bgd-dkr);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: all 0.2s ease-out;
+}
+
+.error {
+  border: var(--border-width) solid var(--clr-tertiary-ltr);
+  color: var(--clr-tertiary);
+}
+
+.info {
+  border: var(--border-width) solid var(--clr-base-ltr);
+  color: var(--clr-base);
+}
+
+.success {
+  border: var(--border-width) solid var(--clr-secondary-ltr);
+  color: var(--clr-secondary);
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast-content {
+  flex-grow: 1;
+  margin-right: var(--space-sm);
+  font-size: var(--font-size-md);
+}
+
+.close-toast {
+  color: var(--clr-txt);
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity var(--transition-speed);
+  display: flex;
+}
+
+.close-toast:hover {
+  opacity: 1;
 }
