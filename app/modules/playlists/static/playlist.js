@@ -59,6 +59,7 @@ const chartModule = (() => {
     const labels = Object.keys(yearCountData);
     const data = Object.values(yearCountData);
 
+    // eslint-disable-next-line no-undef
     myPieChart = new Chart(ctx, {
       type: "doughnut",
       data: {
@@ -286,6 +287,7 @@ const chartModule = (() => {
       return value * (max - min) + min;
     }
 
+    // eslint-disable-next-line no-undef
     myAudioFeaturesChart = new Chart(ctx, {
       type: "radar",
       data: {
@@ -483,6 +485,7 @@ margin-top: 10px;"
       score: genre.opposition_score,
     }));
 
+    // eslint-disable-next-line no-undef
     new Chart(ctx, {
       type: "bubble",
       data: {
@@ -547,6 +550,18 @@ margin-top: 10px;"
           },
         },
         plugins: {
+          zoom: {
+            zoom: {
+              wheel: {
+                enabled: true,
+              },
+              pinch: {
+                enabled: true,
+              },
+              mode: "xy",
+            },
+          },
+
           tooltip: {
             callbacks: {
               label: (context) => {

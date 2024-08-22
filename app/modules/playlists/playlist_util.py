@@ -71,6 +71,9 @@ def fetch_and_create_playlist(sp, playlist_id):
         top_artists=top_artists,
         feature_stats=feature_stats,
         temporal_stats=temporal_stats,
+        total_duration=playlist_info["total_duration"],
+        last_updated=datetime.strptime(playlist_info["last_updated"], "%Y-%m-%dT%H:%M:%SZ"),
+        local_tracks_count=playlist_info["local_tracks_count"],
     )
 
     db.session.merge(new_playlist)
@@ -492,37 +495,36 @@ def get_temporal_stats(track_info_list, playlist_id):
     if not track_info_list:
         return {}
 
-    def parse_date_or_default(track, default):
-        release_date = track["release_date"]
+    def parse_date(release_date):
+        if not release_date:
+            return None
+        try:
+            if len(release_date) == 4:
+                return datetime.strptime(release_date, "%Y")
+            elif len(release_date) == 7:
+                return datetime.strptime(release_date, "%Y-%m")
+            elif len(release_date) == 10:
+                return datetime.strptime(release_date, "%Y-%m-%d")
+        except ValueError:
+            return None
 
-        if release_date:
-            try:
-                # Handle year-only format
-                if len(release_date) == 4 and int(release_date) > 0:
-                    return datetime.strptime(release_date, "%Y")
-                # Handle year-month-day format
-                elif len(release_date) == 10:
-                    return datetime.strptime(release_date, "%Y-%m-%d")
-            except ValueError:
-                # If parsing fails, return the default
-                pass
-
-        return default
-
-    valid_tracks = [track for track in track_info_list if track.get("id") and not track.get("is_local")]
+    valid_tracks = [
+        track
+        for track in track_info_list
+        if track.get("id") and not track.get("is_local") and parse_date(track.get("release_date"))
+    ]
 
     if not valid_tracks:
-        return {}  # return empty dict if no valid tracks
+        return {}
 
-    oldest_track = min(valid_tracks, key=lambda x: parse_date_or_default(x, datetime.min))
-    newest_track = max(valid_tracks, key=lambda x: parse_date_or_default(x, datetime.max))
+    oldest_track = min(valid_tracks, key=lambda x: parse_date(x["release_date"]))
+    newest_track = max(valid_tracks, key=lambda x: parse_date(x["release_date"]))
 
     year_count = defaultdict(int)
-
     for track in track_info_list:
         if track["release_date"]:
             year = track["release_date"].split("-")[0]
-            decade = year[:-1] + "0s"  # truncate the last digit and append "0s" for the decade representation
+            decade = year[:-1] + "0s"
             year_count[decade] += 1
 
     temporal_stats = {
@@ -536,7 +538,7 @@ def get_temporal_stats(track_info_list, playlist_id):
         "newest_track_artist": newest_track["artists"][0]["name"] if newest_track["artists"] else "Unknown",
         "oldest_track_url": oldest_track["spotify_url"],
         "newest_track_url": newest_track["spotify_url"],
-        "year_count": year_count,
+        "year_count": dict(year_count),
     }
     return temporal_stats
 
@@ -618,7 +620,9 @@ def get_playlist_details(sp, playlist_id):
 
     # Calculate total length of the playlist
     total_duration_ms = sum(track.get("duration_ms", 0) for track in track_info_list)
-    total_duration = str(timedelta(milliseconds=total_duration_ms)).split(".")[0]  # format as HH:MM:SS
+    total_duration = round(total_duration_ms)  # Round to the nearest whole number of milliseconds
+    total_duration = str(timedelta(milliseconds=total_duration)).split(".")[0]  # format as HH:MM:SS
+
     playlist_info["total_duration"] = total_duration
 
     # Count local tracks
