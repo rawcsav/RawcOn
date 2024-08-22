@@ -37,13 +37,15 @@ def get_playlist_data(playlist_id, spotify_user_id):
         "top_10_genre_data": dict(
             sorted(playlist_data["genre_counts"].items(), key=lambda x: x[1]["count"], reverse=True)[:10]
         ),
-        "year_count": json.dumps(playlist_data.get("temporal_stats", {}).get("year_count", {})),
+        "year_count": json.dumps(playlist_data.get("temporal_stats", {})),
         "owner_name": playlist_data["owner"],
+        "genre_data": json.dumps(playlist_data["genre_counts"]),
         "total_tracks": playlist_data["total_tracks"],
         "is_collaborative": playlist_data["collaborative"],
         "is_public": playlist_data["public"],
         "feature_data": json.dumps(playlist_data.get("feature_stats")),
         "genre_scores": genre_scores,
+        "genre_scores_json": json.dumps(genre_scores),
         "playlist_summary": playlist_summary,
         "playlist_followers": playlist_data.get("playlist_followers", 0) or 0,
         "popularity_distribution": json.dumps(popularity_distribution),
@@ -331,7 +333,6 @@ def get_track_info_list(sp, tracks):
 
         track.pop("available_markets", None)
         track.pop("disc_number", None)
-        track.pop("external_ids", None)
         track.pop("href", None)
         track.pop("linked_from", None)
         track.pop("restrictions", None)
@@ -356,6 +357,7 @@ def get_track_info_list(sp, tracks):
             "album": track.get("album", {}).get("name"),
             "release_date": track.get("album", {}).get("release_date"),
             "explicit": track.get("explicit"),
+            "spotify_url": track.get("external_urls", {}).get("spotify"),
             "duration_ms": track.get("duration_ms"),
             "popularity": None if is_local else track.get("popularity"),
             "cover_art": cover_art,
@@ -389,7 +391,7 @@ def get_genre_artists_count(track_info_list, top_n=10):
 
             for genre in artist_genres:
                 if genre not in genre_info:
-                    genre_info[genre] = {"count": 0, "artists": set()}
+                    genre_info[genre] = {"count": 0, "artists": set(), "x": None, "y": None}
 
                 genre_info[genre]["count"] += 1
                 genre_info[genre]["artists"].add(artist_name)
@@ -401,6 +403,13 @@ def get_genre_artists_count(track_info_list, top_n=10):
                 artist_images[artist_name] = artist_image_url
 
             artist_urls[artist_name] = spotify_url
+
+    # Fetch x and y coordinates for all genres
+    genre_coords = {g.genre: (g.x, g.y) for g in GenreData.query.filter(GenreData.genre.in_(genre_info.keys())).all()}
+
+    # Add x and y coordinates to genre_info
+    for genre, coords in genre_coords.items():
+        genre_info[genre]["x"], genre_info[genre]["y"] = coords
 
     sorted_artists = sorted(artist_counts.items(), key=lambda x: x[1], reverse=True)
     top_artists = [
@@ -430,9 +439,21 @@ def get_audio_features_stats(track_info_list):
             if feature != "id":
                 try:
                     if audio_feature_stats[feature]["min"] is None or value < audio_feature_stats[feature]["min"][1]:
-                        audio_feature_stats[feature]["min"] = (track_info["name"], value)
+                        audio_feature_stats[feature]["min"] = (
+                            track_info["name"],
+                            value,
+                            track_info["spotify_url"],
+                            track_info["artists"][0]["name"],
+                            track_info["cover_art"],
+                        )
                     if audio_feature_stats[feature]["max"] is None or value > audio_feature_stats[feature]["max"][1]:
-                        audio_feature_stats[feature]["max"] = (track_info["name"], value)
+                        audio_feature_stats[feature]["max"] = (
+                            track_info["name"],
+                            value,
+                            track_info["spotify_url"],
+                            track_info["artists"][0]["name"],
+                            track_info["cover_art"],
+                        )
                     audio_feature_stats[feature]["total"] += value
                 except KeyError:
                     print(
@@ -442,9 +463,21 @@ def get_audio_features_stats(track_info_list):
 
         pop = track_info["popularity"]
         if audio_feature_stats["popularity"]["min"] is None or pop < audio_feature_stats["popularity"]["min"][1]:
-            audio_feature_stats["popularity"]["min"] = (track_info["name"], pop)
+            audio_feature_stats["popularity"]["min"] = (
+                track_info["name"],
+                pop,
+                track_info["spotify_url"],
+                track_info["artists"][0]["name"],
+                track_info["cover_art"],
+            )
         if audio_feature_stats["popularity"]["max"] is None or pop > audio_feature_stats["popularity"]["max"][1]:
-            audio_feature_stats["popularity"]["max"] = (track_info["name"], pop)
+            audio_feature_stats["popularity"]["max"] = (
+                track_info["name"],
+                pop,
+                track_info["spotify_url"],
+                track_info["artists"][0]["name"],
+                track_info["cover_art"],
+            )
         audio_feature_stats["popularity"]["total"] += pop
 
     for feature, stats in audio_feature_stats.items():
@@ -501,6 +534,8 @@ def get_temporal_stats(track_info_list, playlist_id):
         "newest_track_image": newest_track["cover_art"],
         "oldest_track_artist": oldest_track["artists"][0]["name"] if oldest_track["artists"] else "Unknown",
         "newest_track_artist": newest_track["artists"][0]["name"] if newest_track["artists"] else "Unknown",
+        "oldest_track_url": oldest_track["spotify_url"],
+        "newest_track_url": newest_track["spotify_url"],
         "year_count": year_count,
     }
     return temporal_stats
@@ -513,7 +548,6 @@ def compute_scores_for_playlist(genre_info, genre_sql):
     genres = genre_sql.query.filter(genre_sql.sim_genres.isnot(None), genre_sql.opp_genres.isnot(None)).all()
 
     for genre_entry in genres:
-        # Skip genres that are already in the playlist
         if genre_entry.genre in genre_info:
             continue
 
@@ -535,6 +569,8 @@ def compute_scores_for_playlist(genre_info, genre_sql):
                 "similarity_score": sim_score,
                 "opposition_score": opp_score,
                 "spotify_url": genre_entry.spotify_url,
+                "x": genre_entry.x,
+                "y": genre_entry.y,
             }
         )
 

@@ -32,20 +32,35 @@ const chartModule = (() => {
   // eslint-disable-next-line no-unused-vars
   let myAudioFeaturesChart;
 
-  const initCharts = (yearCountData, popularityDistribution, featureStats) => {
+  const initCharts = (
+    yearCountData,
+    popularityDistribution,
+    featureStats,
+    genreData,
+    genreScores,
+  ) => {
     initYearPieChart(yearCountData);
     initPopularityChart(popularityDistribution);
     initAudioFeaturesChart(featureStats);
+    initGenreBubbleChart(genreData, genreScores);
   };
 
-  const initYearPieChart = (yearCountData) => {
-    const ctx = document.getElementById("YrPieChart").getContext("2d");
+  const initYearPieChart = (temporalStats) => {
+    console.log("Initializing Year Pie Chart");
+    const yearCountData = temporalStats.year_count;
+
+    const canvas = document.getElementById("YrPieChart");
+    if (!canvas) {
+      console.error("Cannot find canvas element with id 'YrPieChart'");
+      return;
+    }
+
+    const ctx = canvas.getContext("2d");
     const labels = Object.keys(yearCountData);
     const data = Object.values(yearCountData);
 
-    // eslint-disable-next-line no-undef
     myPieChart = new Chart(ctx, {
-      type: "pie",
+      type: "doughnut",
       data: {
         labels: labels,
         datasets: [
@@ -77,6 +92,15 @@ const chartModule = (() => {
             position: "left",
             labels: { boxWidth: 10, padding: 5 },
           },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const label = context.label;
+                const value = context.raw;
+                return `${label}:\u00A0${value}\u00A0tracks`;
+              },
+            },
+          },
         },
       },
     });
@@ -106,29 +130,8 @@ const chartModule = (() => {
     });
 
     // Generate vibrant colors for each bar
-    const colors = [
-      "#FF6B6B",
-      "#4ECDC4",
-      "#45B7D1",
-      "#FFA07A",
-      "#98D8C8",
-      "#F06292",
-      "#AED581",
-      "#7986CB",
-      "#4DB6AC",
-      "#FFD54F",
-      "#9575CD",
-      "#4DD0E1",
-      "#81C784",
-      "#DCE775",
-      "#64B5F6",
-      "#A1887F",
-      "#FF8A65",
-      "#F06292",
-      "#7986CB",
-      "#4DB6AC",
-    ];
 
+    // eslint-disable-next-line no-undef
     new Chart(ctx, {
       type: "bar",
       data: {
@@ -139,10 +142,24 @@ const chartModule = (() => {
           {
             label: "Track Distribution",
             data: buckets.map((b) => b.y),
-            backgroundColor: colors,
-            borderColor: colors.map((c) =>
-              Chart.helpers.color(c).darken(0.2).rgbString(),
-            ),
+            backgroundColor: [
+              "rgba(255, 99, 132, 0.2)",
+              "rgba(255, 159, 64, 0.2)",
+              "rgba(255, 205, 86, 0.2)",
+              "rgba(75, 192, 192, 0.2)",
+              "rgba(54, 162, 235, 0.2)",
+              "rgba(153, 102, 255, 0.2)",
+              "rgba(201, 203, 207, 0.2)",
+            ],
+            borderColor: [
+              "rgb(255, 99, 132)",
+              "rgb(255, 159, 64)",
+              "rgb(255, 205, 86)",
+              "rgb(75, 192, 192)",
+              "rgb(54, 162, 235)",
+              "rgb(153, 102, 255)",
+              "rgb(201, 203, 207)",
+            ],
             borderWidth: 1,
           },
         ],
@@ -357,10 +374,10 @@ const chartModule = (() => {
             let datasetLabel;
 
             if (datasetIndex === 1) {
-              trackInfo = featureStats[feature].min[0];
+              trackInfo = featureStats[feature].min;
               datasetLabel = "Min";
             } else if (datasetIndex === 2) {
-              trackInfo = featureStats[feature].max[0];
+              trackInfo = featureStats[feature].max;
               datasetLabel = "Max";
             }
 
@@ -382,6 +399,24 @@ const chartModule = (() => {
     });
   };
 
+  function updateMinMaxTrack(feature, trackInfo) {
+    const minMaxContainer = document.getElementById("minMaxTrack");
+    const [trackName, value, externalUrl, artistName, coverArt] = trackInfo;
+    const formattedValue = formatFeatureValue(feature, value);
+
+    minMaxContainer.innerHTML = `
+      <h4 class="minmax-track-header">${feature.charAt(0).toUpperCase() + feature.slice(1)}&nbsp;~&nbsp;${formattedValue}</h4>
+      <div class="minmax-track-info">
+      <a href="${externalUrl}" target="_blank" class="minmax-link">
+        <img src="${coverArt}" alt="${trackName}" class="minmax-track-image"></a>
+        <div class="minmax-track-details">
+          <p class="minmax-track">${trackName}</p>
+          <p class="minmax-artist">${artistName}</p>
+        </div>
+      </div>
+    `;
+  }
+
   function wrapText(text, maxLength) {
     const words = text.split(" ");
     let lines = [];
@@ -400,22 +435,6 @@ const chartModule = (() => {
     return lines;
   }
 
-  function updateMinMaxTrack(feature, trackName, datasetLabel, featureData) {
-    const minMaxContainer = document.getElementById("minMaxTrack");
-    const value =
-      datasetLabel === "Min" ? featureData.min[1] : featureData.max[1];
-    const formattedValue = formatFeatureValue(feature, value);
-
-    minMaxContainer.innerHTML = `
-      <h4>${feature.charAt(0).toUpperCase() + feature.slice(1)}&nbsp;~&nbsp;${formattedValue}</h4>
-      <div class="track-info">
-        <div class="track-details">
-          <p class="minmax-track">${trackName}</p>
-        </div>
-      </div>
-    `;
-  }
-
   function formatFeatureValue(feature, value) {
     switch (feature) {
       case "loudness":
@@ -429,8 +448,136 @@ const chartModule = (() => {
 
   function clearMinMaxTrack() {
     const minMaxContainer = document.getElementById("minMaxTrack");
-    minMaxContainer.innerHTML = "";
+    minMaxContainer.innerHTML = `<p>Interact with the chart to explore your playlist audio features.</p><i
+              class="rawcon-arrow-right"
+              style="display: block; margin: auto; text-align: center;
+margin-top: 10px;"
+            ></i>`;
   }
+
+  const initGenreBubbleChart = (genreData, genreScores) => {
+    const ctx = document.getElementById("genreBubbleChart").getContext("2d");
+
+    // Prepare data for the chart
+    const mainGenres = Object.entries(genreData).map(([genre, data]) => ({
+      x: data.x,
+      y: data.y,
+      r: Math.sqrt(data.count) * 2, // Adjust the multiplier to scale bubble sizes
+      label: genre,
+      count: data.count,
+    }));
+
+    const similarGenrePoints = genreScores.most_similar.map((genre) => ({
+      x: genre.x,
+      y: genre.y,
+      r: 5,
+      label: genre.genre,
+      score: genre.similarity_score,
+    }));
+
+    const oppositeGenrePoints = genreScores.most_opposite.map((genre) => ({
+      x: genre.x,
+      y: genre.y,
+      r: 5,
+      label: genre.genre,
+      score: genre.opposition_score,
+    }));
+
+    new Chart(ctx, {
+      type: "bubble",
+      data: {
+        datasets: [
+          {
+            label: "Playlist Genres",
+            data: mainGenres,
+            backgroundColor: ["rgba(54, 162, 235, 0.2)"],
+            borderColor: ["rgb(54, 162, 235)"],
+          },
+          {
+            label: "Similar Genres",
+            data: similarGenrePoints,
+            backgroundColor: "rgba(255, 206, 86, 0.6)",
+            borderColor: "rgba(255, 206, 86, 1)",
+          },
+          {
+            label: "Opposite Genres",
+            data: oppositeGenrePoints,
+            backgroundColor: "rgba(255, 99, 132, 0.6)",
+            borderColor: "rgba(255, 99, 132, 1)",
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            title: {
+              display: false,
+              text: "Texture",
+              font: {
+                size: 14,
+                weight: "bold",
+              },
+            },
+            ticks: {
+              callback: function (value, index, values) {
+                if (index === 0) return "Dense/Atmospheric";
+                if (index === values.length - 1) return "Choppy/Bouncy/Sharp";
+                return "";
+              },
+            },
+          },
+          y: {
+            title: {
+              display: false,
+              text: "Production Style",
+              font: {
+                size: 14,
+                weight: "bold",
+              },
+            },
+            ticks: {
+              callback: function (value, index, values) {
+                if (index === 0) return "Organic/Acoustic";
+                if (index === values.length - 1) return "Synthetic/Mechanized";
+                return "";
+              },
+            },
+          },
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const dataset = context.dataset.label;
+                const label = context.raw.label;
+                if (dataset === "Playlist Genres") {
+                  return `${label}:\u00A0${context.raw.count}\u00A0tracks`;
+                } else if (dataset === "Similar Genres") {
+                  return `${label}`;
+                } else {
+                  return `${label}`;
+                }
+              },
+            },
+          },
+          legend: {
+            position: "top",
+          },
+          title: {
+            display: true,
+            text: "Distribution and Relationships",
+            align: "start",
+            font: {
+              size: 18,
+              weight: "bold",
+            },
+          },
+        },
+      },
+    });
+  };
   return { initCharts };
 })();
 
@@ -800,16 +947,26 @@ document.addEventListener("DOMContentLoaded", function () {
   const playlistId = dataContainer.dataset.playlistId;
   let popDistribution = dataContainer.dataset.popularityDistribution;
   let featureStats = dataContainer.dataset.featureStats;
+  let genreData = dataContainer.dataset.genreData;
+  let genreScores = dataContainer.dataset.genreScores;
 
   try {
     yearCountData = JSON.parse(yearCountData);
     popDistribution = JSON.parse(popDistribution);
     featureStats = JSON.parse(featureStats);
+    genreData = JSON.parse(genreData);
+    genreScores = JSON.parse(genreScores);
   } catch (error) {
     console.error("Error parsing data:", error);
   }
 
-  chartModule.initCharts(yearCountData, popDistribution, featureStats);
+  chartModule.initCharts(
+    yearCountData,
+    popDistribution,
+    featureStats,
+    genreData,
+    genreScores,
+  );
 
   // Setup event listeners
   uiModule.setupEventListeners(playlistId);

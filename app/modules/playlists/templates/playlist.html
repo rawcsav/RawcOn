@@ -167,10 +167,11 @@
     </div>
   </div>
   <div class="genre-title-container">
-    <h2>Genre Info</h2>
+    <h3>Genre Info</h3>
+    <div class="genre-chart"><canvas id="genreBubbleChart"></canvas></div>
     <div class="genre-container">
       <div id="genre-counts" class="data-view">
-        <h3 class="gen-titles">Genre Counts</h3>
+        <h4 class="gen-titles">Top Genres (Frequency)</h4>
         <ul>
           {% for genre, data in top_10_genre_data.items() %}
           <li>
@@ -186,7 +187,7 @@
       </div>
 
       <div id="most-similar" class="data-view">
-        <h3 class="gen-titles">Most Similar</h3>
+        <h4 class="gen-titles">Most Similar</h4>
         <ul>
           {% for entry in genre_scores['most_similar'] %}
           <li>
@@ -200,7 +201,7 @@
 
       <!-- Most Opposite Genres Section -->
       <div id="most-opposite" class="data-view">
-        <h3 class="gen-titles">Most Opposite</h3>
+        <h4 class="gen-titles">Most Opposite</h4>
         <ul>
           {% for entry in genre_scores['most_opposite'] %}
           <li>
@@ -220,20 +221,77 @@
       <div class="chart-container">
         <canvas id="YrPieChart" class="year-pie-chart"></canvas>
         <div class="oldest-newest-tracks">
-          <p class="oldest-track">
-            Oldest: {{ playlist_data['temporal_stats']['oldest_track'] }} by {{
-            playlist_data['temporal_stats']['oldest_track_artist'] }} ({{
-            playlist_data['temporal_stats']['oldest_track_date'] }})
-          </p>
-          <p class="newest-track">
-            Newest: {{ playlist_data['temporal_stats']['newest_track'] }} by {{
-            playlist_data['temporal_stats']['newest_track_artist'] }} ({{
-            playlist_data['temporal_stats']['newest_track_date'] }})
-          </p>
+          <div class="oldest-track">
+            <h4 class="time-track-header">Oldest Track</h4>
+            <div class="time-track-info">
+              <a
+                href="{{ playlist_data['temporal_stats']['oldest_track_url'] }}"
+                target="_blank"
+                class="time-track-link"
+              >
+                <img
+                  src="{{ playlist_data['temporal_stats']['oldest_track_image'] }}"
+                  alt="Oldest track cover"
+                  class="time-track-image"
+                />
+              </a>
+              <div class="time-track-details">
+                <p class="time-track-title">
+                  {{ playlist_data['temporal_stats']['oldest_track'] }}
+                </p>
+                <p class="time-track-artist">
+                  {{ playlist_data['temporal_stats']['oldest_track_artist'] }}
+                </p>
+              </div>
+            </div>
+            <p class="time-track-date">
+              {{ playlist_data['temporal_stats']['oldest_track_date'] }}
+            </p>
+          </div>
+          <div class="newest-track">
+            <h4 class="time-track-header">Newest Track</h4>
+            <div class="time-track-info">
+              <a
+                href="{{ playlist_data['temporal_stats']['newest_track_url'] }}"
+                target="_blank"
+                class="time-track-link"
+              >
+                <img
+                  src="{{ playlist_data['temporal_stats']['newest_track_image'] }}"
+                  alt="Newest track cover"
+                  class="time-track-image"
+                />
+              </a>
+              <div class="time-track-details">
+                <p class="time-track-title">
+                  {{ playlist_data['temporal_stats']['newest_track'] }}
+                </p>
+                <p class="time-track-artist">
+                  {{ playlist_data['temporal_stats']['newest_track_artist'] }}
+                </p>
+              </div>
+            </div>
+            <p class="time-track-date">
+              {{ playlist_data['temporal_stats']['newest_track_date'] }}
+            </p>
+          </div>
         </div>
       </div>
       <div class="chart-container">
-        <div id="minMaxTrack"></div>
+        <div id="minMaxTrack">
+          <p>
+            Interact with the chart to explore your playlist audio features.
+          </p>
+          <i
+            class="rawcon-arrow-right"
+            style="
+              display: block;
+              margin: auto;
+              text-align: center;
+              margin-top: 10px;
+            "
+          ></i>
+        </div>
         <div class="audio-features">
           <canvas id="audioFeaturesChart"></canvas>
         </div>
@@ -249,10 +307,13 @@
     data-popularity-distribution="{{ popularity_distribution }}"
     data-playlist-id="{{ playlist_id }}"
     data-feature-stats="{{ feature_data }}"
+    data-genre-data="{{ genre_data }}"
+    data-genre-scores="{{ genre_scores_json }}"
   ></div>
 </main>
 {% endblock %}{% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% assets "playlist_js_bundle" %}
+
 <script src="{{ ASSET_URL }}"></script>
 {% endassets %}{% endblock %}
