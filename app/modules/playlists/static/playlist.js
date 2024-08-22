@@ -24,12 +24,21 @@ const util = {
   },
 };
 
-// Chart module
 const chartModule = (() => {
   // eslint-disable-next-line no-unused-vars
   let myPieChart;
+  // eslint-disable-next-line no-unused-vars
+  let myPopularityChart;
+  // eslint-disable-next-line no-unused-vars
+  let myAudioFeaturesChart;
 
-  const initChart = (yearCountData) => {
+  const initCharts = (yearCountData, popularityDistribution, featureStats) => {
+    initYearPieChart(yearCountData);
+    initPopularityChart(popularityDistribution);
+    initAudioFeaturesChart(featureStats);
+  };
+
+  const initYearPieChart = (yearCountData) => {
     const ctx = document.getElementById("YrPieChart").getContext("2d");
     const labels = Object.keys(yearCountData);
     const data = Object.values(yearCountData);
@@ -55,7 +64,7 @@ const chartModule = (() => {
       },
       options: {
         cutoutPercentage: 5,
-        responsive: true,
+        responsive: false,
         plugins: {
           title: {
             display: false,
@@ -73,7 +82,356 @@ const chartModule = (() => {
     });
   };
 
-  return { initChart };
+  const initPopularityChart = (popularityData) => {
+    const ctx = document.getElementById("popularityChart");
+
+    const data = popularityData.distribution.filter(
+      (item) => item.popularity > 0,
+    );
+
+    // Prepare data for histogram-like representation
+    const bucketSize = 5;
+    const buckets = Array.from({ length: 20 }, (_, i) => ({
+      x: i * bucketSize + bucketSize / 2,
+      y: 0,
+      count: 0,
+    }));
+
+    data.forEach((item) => {
+      const bucketIndex = Math.floor((item.popularity - 1) / bucketSize);
+      if (bucketIndex >= 0 && bucketIndex < buckets.length) {
+        buckets[bucketIndex].y += item.frequency;
+        buckets[bucketIndex].count += item.count;
+      }
+    });
+
+    // Generate vibrant colors for each bar
+    const colors = [
+      "#FF6B6B",
+      "#4ECDC4",
+      "#45B7D1",
+      "#FFA07A",
+      "#98D8C8",
+      "#F06292",
+      "#AED581",
+      "#7986CB",
+      "#4DB6AC",
+      "#FFD54F",
+      "#9575CD",
+      "#4DD0E1",
+      "#81C784",
+      "#DCE775",
+      "#64B5F6",
+      "#A1887F",
+      "#FF8A65",
+      "#F06292",
+      "#7986CB",
+      "#4DB6AC",
+    ];
+
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: buckets.map(
+          (b) => `${b.x - bucketSize / 2 + 1}-${b.x + bucketSize / 2}`,
+        ),
+        datasets: [
+          {
+            label: "Track Distribution",
+            data: buckets.map((b) => b.y),
+            backgroundColor: colors,
+            borderColor: colors.map((c) =>
+              Chart.helpers.color(c).darken(0.2).rgbString(),
+            ),
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: false,
+        maintainAspectRatio: false,
+        layout: {
+          padding: {
+            top: 20,
+            right: 25,
+            bottom: 20,
+            left: 25,
+          },
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: "Popularity Score Range",
+              font: { size: 16, weight: "bold" },
+            },
+            grid: {
+              display: false,
+            },
+          },
+          y: {
+            title: {
+              display: true,
+              text: "Percentage of Tracks",
+              font: { size: 16, weight: "bold" },
+            },
+            ticks: {
+              callback: (value) => `${(value * 100).toFixed(1)}%`,
+            },
+            grid: {
+              color: "rgba(0, 0, 0, 0.1)",
+            },
+          },
+        },
+        plugins: {
+          title: {
+            display: false,
+            text: "Track Popularity Distribution",
+            font: { size: 24, weight: "bold" },
+            padding: { top: 10, bottom: 30 },
+          },
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: (tooltipItems) => {
+                return `Popularity:\u00A0${tooltipItems[0].label}`;
+              },
+              label: (context) => {
+                const bucketIndex = context.dataIndex;
+                const bucket = buckets[bucketIndex];
+                const percentage = (bucket.y * 100).toFixed(2);
+                return [
+                  `Tracks:\u00A0${bucket.count}`,
+                  `Percentage:\u00A0${percentage}`,
+                ];
+              },
+            },
+          },
+        },
+      },
+    });
+  };
+
+  const initAudioFeaturesChart = (featureStats) => {
+    const ctx = document.getElementById("audioFeaturesChart").getContext("2d");
+    const features = [
+      "acousticness",
+      "danceability",
+      "energy",
+      "instrumentalness",
+      "liveness",
+      "speechiness",
+      "valence",
+      "loudness",
+      "tempo",
+    ];
+
+    const featureRanges = {
+      acousticness: [0, 1],
+      danceability: [0, 1],
+      energy: [0, 1],
+      instrumentalness: [0, 1],
+      liveness: [0, 1],
+      speechiness: [0, 1],
+      valence: [0, 1],
+      loudness: [-60, 0],
+      tempo: [0, 250],
+    };
+
+    const featureExplanations = {
+      acousticness:
+        "A confidence measure from 0.0 to 1.0 of whether the track is acoustic.",
+      danceability:
+        "Describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity. 0.0 is least danceable and 1.0 is most danceable.",
+      energy:
+        "Represents a perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy. Scale of 0.0 to 1.0.",
+      instrumentalness:
+        "Predicts whether a track contains no vocals. The closer the instrumentalness value is to 1.0, the greater likelihood the track contains no vocal content.",
+      liveness:
+        "Detects the presence of an audience in the recording. Higher liveness values represent an increased probability that the track was performed live. Scale of 0.0 to 1.0.",
+      speechiness:
+        "Detects the presence of spoken words in a track. Values above 0.66 describe tracks that are probably made entirely of spoken words, values between 0.33 and 0.66 describe tracks that may contain both music and speech, and values below 0.33 most likely represent music and other non-speech-like tracks.",
+      valence:
+        "A measure describing the musical positiveness conveyed by a track. Tracks with high valence sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry). Scale of 0.0 to 1.0.",
+      loudness:
+        "The overall loudness of a track in decibels (dB). Loudness values are averaged across the entire track. Values typically range between -60 and 0 db.",
+      tempo:
+        "The overall estimated tempo of a track in beats per minute (BPM).",
+    };
+
+    function normalizeFeature(feature, value) {
+      const [min, max] = featureRanges[feature];
+      return (value - min) / (max - min);
+    }
+
+    function denormalizeFeature(feature, value) {
+      const [min, max] = featureRanges[feature];
+      return value * (max - min) + min;
+    }
+
+    myAudioFeaturesChart = new Chart(ctx, {
+      type: "radar",
+      data: {
+        labels: features,
+        datasets: [
+          {
+            label: "Average",
+            data: features.map((feature) =>
+              normalizeFeature(feature, featureStats[feature].avg),
+            ),
+            backgroundColor: "rgba(29, 185, 84, 0.2)",
+            borderColor: "rgb(29, 185, 84)",
+            pointBackgroundColor: "rgb(29, 185, 84)",
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: "rgb(29, 185, 84)",
+          },
+          {
+            label: "Min",
+            data: features.map((feature) =>
+              normalizeFeature(feature, featureStats[feature].min[1]),
+            ),
+            backgroundColor: "rgba(255, 99, 132, 0.2)",
+            borderColor: "rgb(255, 99, 132)",
+            pointBackgroundColor: "rgb(255, 99, 132)",
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: "rgb(255, 99, 132)",
+          },
+          {
+            label: "Max",
+            data: features.map((feature) =>
+              normalizeFeature(feature, featureStats[feature].max[1]),
+            ),
+            backgroundColor: "rgba(54, 162, 235, 0.2)",
+            borderColor: "rgb(54, 162, 235)",
+            pointBackgroundColor: "rgb(54, 162, 235)",
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: "rgb(54, 162, 235)",
+          },
+        ],
+      },
+      options: {
+        scales: {
+          r: {
+            angleLines: { display: false },
+            suggestedMin: 0,
+            suggestedMax: 1,
+            pointLabels: {
+              font: { size: 12 },
+            },
+            ticks: {
+              display: false,
+            },
+          },
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                const feature = context.label.toLowerCase();
+                const value = denormalizeFeature(feature, context.raw);
+                const unit =
+                  feature === "loudness"
+                    ? "dB"
+                    : feature === "tempo"
+                      ? "BPM"
+                      : "";
+                return ` ${value.toFixed(2)}${unit ? " " + unit : ""}`;
+              },
+              afterLabel: function (context) {
+                const feature = context.label.toLowerCase();
+                const explanation = featureExplanations[feature];
+                return wrapText(explanation, 40);
+              },
+            },
+          },
+        },
+        onHover: (event, activeElements) => {
+          if (activeElements.length > 0) {
+            const datasetIndex = activeElements[0].datasetIndex;
+            const index = activeElements[0].index;
+            const feature = features[index];
+            let trackInfo;
+            let datasetLabel;
+
+            if (datasetIndex === 1) {
+              trackInfo = featureStats[feature].min[0];
+              datasetLabel = "Min";
+            } else if (datasetIndex === 2) {
+              trackInfo = featureStats[feature].max[0];
+              datasetLabel = "Max";
+            }
+
+            if (trackInfo) {
+              updateMinMaxTrack(
+                feature,
+                trackInfo,
+                datasetLabel,
+                featureStats[feature],
+              );
+            } else {
+              clearMinMaxTrack();
+            }
+          } else {
+            clearMinMaxTrack();
+          }
+        },
+      },
+    });
+  };
+
+  function wrapText(text, maxLength) {
+    const words = text.split(" ");
+    let lines = [];
+    let currentLine = "";
+
+    words.forEach((word) => {
+      if ((currentLine + word).length <= maxLength) {
+        currentLine += (currentLine ? " " : "") + word;
+      } else {
+        lines.push(currentLine);
+        currentLine = word;
+      }
+    });
+    lines.push(currentLine);
+
+    return lines;
+  }
+
+  function updateMinMaxTrack(feature, trackName, datasetLabel, featureData) {
+    const minMaxContainer = document.getElementById("minMaxTrack");
+    const value =
+      datasetLabel === "Min" ? featureData.min[1] : featureData.max[1];
+    const formattedValue = formatFeatureValue(feature, value);
+
+    minMaxContainer.innerHTML = `
+      <h4>${feature.charAt(0).toUpperCase() + feature.slice(1)}&nbsp;~&nbsp;${formattedValue}</h4>
+      <div class="track-info">
+        <div class="track-details">
+          <p class="minmax-track">${trackName}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  function formatFeatureValue(feature, value) {
+    switch (feature) {
+      case "loudness":
+        return `${value.toFixed(2)} dB`;
+      case "tempo":
+        return `${value.toFixed(2)} BPM`;
+      default:
+        return value.toFixed(2);
+    }
+  }
+
+  function clearMinMaxTrack() {
+    const minMaxContainer = document.getElementById("minMaxTrack");
+    minMaxContainer.innerHTML = "";
+  }
+  return { initCharts };
 })();
 
 // Playlist actions module
@@ -436,23 +794,22 @@ const uiModule = (() => {
   return { setupEventListeners, setupIntersectionObserver };
 })();
 
-// Main initialization
 document.addEventListener("DOMContentLoaded", function () {
   const dataContainer = document.getElementById("data-container");
   let yearCountData = dataContainer.dataset.yearCount;
   const playlistId = dataContainer.dataset.playlistId;
+  let popDistribution = dataContainer.dataset.popularityDistribution;
+  let featureStats = dataContainer.dataset.featureStats;
 
   try {
     yearCountData = JSON.parse(yearCountData);
+    popDistribution = JSON.parse(popDistribution);
+    featureStats = JSON.parse(featureStats);
   } catch (error) {
-    console.error(
-      "yearCountData could not be converted to a dictionary:",
-      error,
-    );
+    console.error("Error parsing data:", error);
   }
 
-  // Initialize chart
-  chartModule.initChart(yearCountData);
+  chartModule.initCharts(yearCountData, popDistribution, featureStats);
 
   // Setup event listeners
   uiModule.setupEventListeners(playlistId);

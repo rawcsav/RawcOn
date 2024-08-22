@@ -214,25 +214,60 @@ button:hover {
     "ital" 12;
 }
 
+.track-stats {
+  padding-top: var(--space-xxl);
+  display: flex;
+  width: 85%;
+  flex-direction: column;
+  padding-bottom: var(--space-xxl);
+}
 /* Chart Section */
 .chart-flex {
-  padding-top: var(--space-xxl);
+  display: flex;
+  width: 100%;
+  gap: var(--space-xxl);
+  flex-direction: column;
 }
 
 .chart-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 2rem;
+  width: 100%;
+  padding: var(--space-xl);
+  gap: var(--space-xxl);
 }
 
 #YrPieChart {
-  max-width: 400px;
+  flex: 4;
   height: auto;
 }
 
+#popularityChart {
+  max-width: 100%;
+  height: 400px;
+}
+
+.audio-features {
+  flex: 4;
+}
+
+#minMaxTrack {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  flex: 2;
+  width: 100%;
+  white-space: pre-wrap;
+}
+
+#minMaxTrack p,
+#minMaxTrack h4 {
+  margin: 0;
+}
 .oldest-newest-tracks {
-  flex: 1;
+  flex: 3;
 }
 
 .oldest-track,

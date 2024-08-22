@@ -166,24 +166,6 @@
       </div>
     </div>
   </div>
-  <div class="chart-flex">
-    <h3 class="decade-title">Tracks by Decade</h3>
-    <div class="chart-container">
-      <canvas id="YrPieChart" class="year-pie-chart"></canvas>
-      <div class="oldest-newest-tracks">
-        <p class="oldest-track">
-          Oldest: {{ playlist_data['temporal_stats']['oldest_track'] }} by {{
-          playlist_data['temporal_stats']['oldest_track_artist'] }} ({{
-          playlist_data['temporal_stats']['oldest_track_date'] }})
-        </p>
-        <p class="newest-track">
-          Newest: {{ playlist_data['temporal_stats']['newest_track'] }} by {{
-          playlist_data['temporal_stats']['newest_track_artist'] }} ({{
-          playlist_data['temporal_stats']['newest_track_date'] }})
-        </p>
-      </div>
-    </div>
-  </div>
   <div class="genre-title-container">
     <h2>Genre Info</h2>
     <div class="genre-container">
@@ -231,25 +213,42 @@
       </div>
     </div>
   </div>
-  <div id="feature-stats" class="data-view">
-    <h2>Feature Stats</h2>
-    <ul>
-      {% for feature, stats in playlist_data.feature_stats.items() %}
-      <li>
-        {{ feature }}:
-        <ul>
-          <li>Min: {{ stats['min'][1] }} ({{ stats['min'][0] }})</li>
-          <li>Max: {{ stats['max'][1] }} ({{ stats['max'][0] }})</li>
-          <li>Avg: {{ stats['avg'] }}</li>
-        </ul>
-      </li>
-      {% endfor %}
-    </ul>
+  <div class="track-stats">
+    <h3 class="decade-title">Track Stats</h3>
+
+    <div class="chart-flex">
+      <div class="chart-container">
+        <canvas id="YrPieChart" class="year-pie-chart"></canvas>
+        <div class="oldest-newest-tracks">
+          <p class="oldest-track">
+            Oldest: {{ playlist_data['temporal_stats']['oldest_track'] }} by {{
+            playlist_data['temporal_stats']['oldest_track_artist'] }} ({{
+            playlist_data['temporal_stats']['oldest_track_date'] }})
+          </p>
+          <p class="newest-track">
+            Newest: {{ playlist_data['temporal_stats']['newest_track'] }} by {{
+            playlist_data['temporal_stats']['newest_track_artist'] }} ({{
+            playlist_data['temporal_stats']['newest_track_date'] }})
+          </p>
+        </div>
+      </div>
+      <div class="chart-container">
+        <div id="minMaxTrack"></div>
+        <div class="audio-features">
+          <canvas id="audioFeaturesChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="popularityChart" class="popularity-chart"></canvas>
+      </div>
+    </div>
   </div>
   <div
     id="data-container"
     data-year-count="{{ year_count }}"
+    data-popularity-distribution="{{ popularity_distribution }}"
     data-playlist-id="{{ playlist_id }}"
+    data-feature-stats="{{ feature_data }}"
   ></div>
 </main>
 {% endblock %}{% block scripts %}

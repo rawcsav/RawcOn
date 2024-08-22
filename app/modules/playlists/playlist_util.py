@@ -1,13 +1,6 @@
-import json
 from collections import defaultdict
-from datetime import datetime, timedelta
-
-from flask import session
+from datetime import timedelta
 from spotipy import SpotifyException
-
-from app import db
-from app.models.user_models import PlaylistData
-from app.modules.user.user_util import init_session_client
 from app.util.database_util import get_or_fetch_audio_features, get_or_fetch_artist_info
 
 import json
@@ -34,6 +27,9 @@ def get_playlist_data(playlist_id, spotify_user_id):
 
     genre_scores = calculate_genre_weights(playlist_data["genre_counts"], GenreData)
 
+    # Add popularity distribution to the returned data
+    popularity_distribution = get_popularity_distribution(playlist_data["tracks"])
+    print(playlist_data.get("feature_stats"))
     return {
         "playlist_id": playlist_id,
         "playlist_url": f"https://open.spotify.com/playlist/{playlist_id}",
@@ -46,14 +42,16 @@ def get_playlist_data(playlist_id, spotify_user_id):
         "total_tracks": playlist_data["total_tracks"],
         "is_collaborative": playlist_data["collaborative"],
         "is_public": playlist_data["public"],
+        "feature_data": json.dumps(playlist_data.get("feature_stats")),
         "genre_scores": genre_scores,
         "playlist_summary": playlist_summary,
         "playlist_followers": playlist_data.get("playlist_followers", 0) or 0,
+        "popularity_distribution": json.dumps(popularity_distribution),
     }
 
 
 def fetch_and_create_playlist(sp, playlist_id):
-    playlist_info, track_data, genre_counts, top_artists, feature_stats, temporal_stats = get_playlist_details(
+    (playlist_info, track_data, genre_counts, top_artists, feature_stats, temporal_stats) = get_playlist_details(
         sp, playlist_id
     )
 
@@ -350,7 +348,6 @@ def get_track_info_list(sp, tracks):
 
         audio_features = track_features_dict.get(track.get("id"), {})
         is_local = track.get("is_local", False)
-        print(track.get("duration_ms"))
         track_info = {
             "id": track.get("id"),
             "name": track.get("name"),
@@ -555,6 +552,26 @@ def calculate_genre_weights(genre_counts, genre_sql):
     return genre_scores
 
 
+def get_popularity_distribution(track_info_list):
+    popularity_counts = {}
+    valid_track_count = 0
+
+    for track in track_info_list:
+        popularity = track.get("popularity")
+        is_local = track.get("is_local", False)
+
+        if popularity is not None and popularity > 0 and not is_local:
+            popularity_counts[popularity] = popularity_counts.get(popularity, 0) + 1
+            valid_track_count += 1
+
+    distribution = [
+        {"popularity": pop, "count": count, "frequency": count / valid_track_count}
+        for pop, count in sorted(popularity_counts.items())
+    ]
+
+    return {"distribution": distribution, "total_tracks": valid_track_count}
+
+
 def get_playlist_details(sp, playlist_id):
     playlist_info = get_playlist_info(sp, playlist_id)
     tracks = get_playlist_tracks(sp, playlist_id)
@@ -571,6 +588,8 @@ def get_playlist_details(sp, playlist_id):
     # Count local tracks
     local_tracks_count = sum(1 for track in track_info_list if track["is_local"])
     playlist_info["local_tracks_count"] = local_tracks_count
+
+    # Get the popularity distribution
 
     return playlist_info, track_info_list, genre_counts, top_artists, audio_feature_stats, temporal_stats
 
