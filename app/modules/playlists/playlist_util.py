@@ -47,7 +47,7 @@ def get_playlist_data(playlist_id, spotify_user_id):
         "genre_scores": genre_scores,
         "genre_scores_json": json.dumps(genre_scores),
         "playlist_summary": playlist_summary,
-        "playlist_followers": playlist_data.get("playlist_followers", 0) or 0,
+        "playlist_followers": playlist_data.get("followers", 0) or 0,
         "popularity_distribution": json.dumps(popularity_distribution),
     }
 

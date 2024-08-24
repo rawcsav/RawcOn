@@ -493,25 +493,25 @@ margin-top: 10px;"
           {
             label: "Playlist Genres",
             data: mainGenres,
-            backgroundColor: ["rgba(54, 162, 235, 0.2)"],
-            borderColor: ["rgb(54, 162, 235)"],
+            backgroundColor: ["rgba(75, 192, 192, 0.5)"],
+            borderColor: ["rgb(75, 192, 192)"],
           },
           {
             label: "Similar Genres",
             data: similarGenrePoints,
-            backgroundColor: "rgba(255, 206, 86, 0.6)",
-            borderColor: "rgba(255, 206, 86, 1)",
+            backgroundColor: "rgba(54, 162, 235, 0.5)",
+            borderColor: "rgb(54, 162, 235)",
           },
           {
             label: "Opposite Genres",
             data: oppositeGenrePoints,
-            backgroundColor: "rgba(255, 99, 132, 0.6)",
+            backgroundColor: "rgba(255, 99, 132, 0.5)",
             borderColor: "rgba(255, 99, 132, 1)",
           },
         ],
       },
       options: {
-        responsive: true,
+        responsive: false,
         maintainAspectRatio: false,
         scales: {
           x: {
@@ -524,11 +524,15 @@ margin-top: 10px;"
               },
             },
             ticks: {
+              align: "start", // Align tick labels to the center
               callback: function (value, index, values) {
                 if (index === 0) return "Dense/Atmospheric";
                 if (index === values.length - 1) return "Choppy/Bouncy/Sharp";
                 return "";
               },
+              crossAlign: "near",
+              maxRotation: 0,
+              autoSkip: false,
             },
           },
           y: {
@@ -541,6 +545,7 @@ margin-top: 10px;"
               },
             },
             ticks: {
+              align: "start", // Align tick labels to the center
               callback: function (value, index, values) {
                 if (index === 0) return "Organic/Acoustic";
                 if (index === values.length - 1) return "Synthetic/Mechanized";
@@ -560,8 +565,10 @@ margin-top: 10px;"
               },
               mode: "xy",
             },
+            pan: {
+              enabled: true,
+            },
           },
-
           tooltip: {
             callbacks: {
               label: (context) => {
@@ -578,12 +585,12 @@ margin-top: 10px;"
             },
           },
           legend: {
-            position: "top",
+            position: "bottom",
           },
           title: {
             display: true,
             text: "Distribution and Relationships",
-            align: "start",
+            align: "center",
             font: {
               size: 18,
               weight: "bold",
@@ -658,6 +665,7 @@ const playlistActionsModule = (() => {
 // Recommendation module
 const recommendationModule = (() => {
   let recommendationsFetched = false;
+  let eventListenersAttached = false;
 
   const getPLRecommendations = async (playlistId) => {
     try {
@@ -674,9 +682,44 @@ const recommendationModule = (() => {
       const data = await response.json();
       util.toggleDivVisibility(".results-title-spot");
       displayRecommendations(data.recommendations);
+
+      if (!eventListenersAttached) {
+        attachEventListeners(playlistId);
+        eventListenersAttached = true;
+      }
+
+      recommendationsFetched = true;
     } catch (error) {
       console.error("Error:", error);
+      showToast("An error occurred while fetching recommendations.", "error");
     }
+  };
+
+  const attachEventListeners = (playlistId) => {
+    const resultsContainer = document.getElementById("results");
+    resultsContainer.addEventListener("click", (event) => {
+      const target = event.target.closest(".add-to-playlist, .add-to-saved");
+      if (!target) return;
+
+      event.preventDefault();
+      const trackId = target.dataset.trackid;
+
+      if (target.classList.contains("add-to-playlist")) {
+        const plusIcon = target.querySelector("i");
+        if (plusIcon.classList.contains("rawcon-circle-minus")) {
+          trackActionsModule.removeFromPlaylist(playlistId, trackId, plusIcon);
+        } else {
+          trackActionsModule.addToPlaylist(playlistId, trackId, plusIcon);
+        }
+      } else if (target.classList.contains("add-to-saved")) {
+        const heartIcon = target.querySelector("i");
+        if (heartIcon.classList.contains("liked")) {
+          trackActionsModule.unsaveTrack(trackId, heartIcon);
+        } else {
+          trackActionsModule.saveTrack(trackId, heartIcon);
+        }
+      }
+    });
   };
 
   const createTrackElement = (trackInfo) => {
@@ -684,16 +727,22 @@ const recommendationModule = (() => {
     div.className = "result-item";
     div.innerHTML = `
       <div class="result-cover-art-container">
-        <img src="${trackInfo.cover_art}" alt="Cover Art" class="result-cover-art">
+        <a href="${trackInfo.trackUrl}" target="_blank" rel="noopener noreferrer">
+          <img src="${trackInfo.cover_art || "/static/dist/img/default-track.svg"}" alt="${trackInfo.name}" class="result-cover-art">
+        </a>        
         <div class="caption">
           <h2>${trackInfo.trackName}</h2>
           <p>${trackInfo.artist}</p>
         </div>
-        <div class="play-button noselect" id="play_${trackInfo.trackid}"><i class="rawcon-play"></i></div>
+        ${
+          trackInfo.preview
+            ? `<div class="preview play-button noselect" id="play_${trackInfo.trackid}"><i class="rawcon-play"></i></div>`
+            : `<div class="no-preview">Preview N/A</div>`
+        }
       </div>
       <div class="dropdown-content">
-        <a href="#" class="add-to-saved" data-trackid="${trackInfo.trackid}"><i class="heart-icon icon-heart-plus"></i></a>
-        <a href="#" class="add-to-playlist" data-trackid="${trackInfo.trackid}"><i class="plus-icon icon-album-plus"></i></a>
+        <a href="#" class="add-to-saved" data-trackid="${trackInfo.trackid}"><i class="rawcon-heart"></i></a>
+        <a href="#" class="add-to-playlist" data-trackid="${trackInfo.trackid}"><i class="rawcon-album-plus"></i></a>
       </div>
       <audio controls class="audio-player" id="audio_${trackInfo.trackid}">
         <source src="${trackInfo.preview}" type="audio/mpeg">
@@ -716,7 +765,6 @@ const recommendationModule = (() => {
   return {
     getPLRecommendations,
     recommendationsFetched,
-    displayRecommendations,
   };
 })();
 
@@ -727,6 +775,12 @@ const audioModule = (() => {
   const setupPlayToggle = (trackId) => {
     const playButton = document.getElementById(`play_${trackId}`);
     const audioPlayer = document.getElementById(`audio_${trackId}`);
+    if (!playButton || !audioPlayer) {
+      console.warn(
+        `Play button or audio player not found for track ${trackId}`,
+      );
+      return;
+    }
     const playIcon = playButton.querySelector("i");
 
     playButton.addEventListener("click", () => {
@@ -770,7 +824,7 @@ const trackActionsModule = (() => {
       .then(() => {
         showToast("Track added to playlist successfully!");
         plusIcon.classList.remove("rawcon-album-plus");
-        plusIcon.classList.add("rawcon-layer-minus", "added");
+        plusIcon.classList.add("rawcon-circle-minus", "added");
       })
       .catch((error) => {
         showToast(
@@ -792,7 +846,7 @@ const trackActionsModule = (() => {
     })
       .then(() => {
         showToast("Track removed from playlist successfully!");
-        plusIcon.classList.remove("rawcon-layer-minus", "added");
+        plusIcon.classList.remove("rawcon-circle-minus", "added");
         plusIcon.classList.add("rawcon-album-plus");
       })
       .catch((error) => {
@@ -879,7 +933,6 @@ const uiModule = (() => {
         event.preventDefault();
         if (!recommendationModule.recommendationsFetched) {
           recommendationModule.getPLRecommendations(playlistId);
-          recommendationModule.recommendationsFetched = true;
         } else {
           util.toggleDivVisibility(".results-title-spot");
         }
@@ -898,32 +951,6 @@ const uiModule = (() => {
         .addEventListener("click", () =>
           playlistActionsModule.reorderPlaylist(playlistId, button.criterion),
         );
-    });
-    document.addEventListener("click", (event) => {
-      if (event.target.closest(".add-to-playlist")) {
-        event.preventDefault();
-        const plusIcon = event.target
-          .closest(".add-to-playlist")
-          .querySelector(".plus-icon");
-        const trackId =
-          event.target.closest(".add-to-playlist").dataset.trackid;
-        if (plusIcon.classList.contains("icon-layer-minus")) {
-          trackActionsModule.removeFromPlaylist(playlistId, trackId, plusIcon);
-        } else {
-          trackActionsModule.addToPlaylist(playlistId, trackId, plusIcon);
-        }
-      } else if (event.target.closest(".add-to-saved")) {
-        event.preventDefault();
-        const heartIcon = event.target
-          .closest(".add-to-saved")
-          .querySelector(".heart-icon");
-        const trackId = event.target.closest(".add-to-saved").dataset.trackid;
-        if (heartIcon.classList.contains("liked")) {
-          trackActionsModule.unsaveTrack(trackId, heartIcon);
-        } else {
-          trackActionsModule.saveTrack(trackId, heartIcon);
-        }
-      }
     });
 
     document.querySelectorAll("#genre-counts > ul > li").forEach((item) => {

@@ -10,6 +10,8 @@ from app.modules.playlists.playlist_util import (
     reorder_playlist,
     get_playlist_recommendations,
 )
+from app.models.user_models import UserData
+from modules.user.user_util import get_playlist_summary
 
 playlist_bp = Blueprint(
     "playlist", __name__, template_folder="templates", static_folder="static", url_prefix="/playlist"
@@ -22,6 +24,7 @@ def show_playlist(playlist_id):
     access_token = verify_session(session)
     spotify_user_id = session["USER_ID"]
     user_data = fetch_user_data(access_token)
+    user_data_entry = UserData.query.filter_by(spotify_user_id=spotify_user_id).first()
 
     playlist_data = get_playlist_data(playlist_id, spotify_user_id)
     if not playlist_data:

@@ -32,9 +32,7 @@ def handle_errors(f):
         try:
             return f(*args, **kwargs)
         except Exception as e:
-            # Log the full exception with traceback
             logging.exception(f"An error occurred in {f.__name__}:")
-            # Return a JSON response with the error message
             return jsonify({"error": str(e)}), 500
 
     return decorated_function

@@ -1,326 +1,425 @@
 {% extends 'base.html' %} {% block head %}
-<title>{{ playlist_data['name'] }}</title>
+  <title>{{ playlist_data['name'] }}</title>
 {% endblock %} {% block styles %} {% assets "playlist_style_bundle" %}
-<link rel="stylesheet" href="{{ ASSET_URL }}" />
+  <link rel="stylesheet" href="{{ ASSET_URL }}" />
 {% endassets %} {% endblock %} {% block body %}
-<main class="container">
-  <div class="playlist-container">
-    <h1 id="playlist-name">{{ playlist_data['name'] }}</h1>
-    <div class="playlist-details">
-      <div class="playlist-desc">
-        <div class="playlist-text">
-          <a
-            class="playlist-url"
-            href="{{ playlist_url }}"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <img
-              class="playlist-cover"
-              src="{{ playlist_data['cover_art'] }}"
-              alt="Playlist Cover"
-              crossorigin="anonymous"
-            />
-          </a>
-          <div class="glance">
-            <div class="playlist-glance total-followers">
-              <i class="rawcon-users"></i>
-              <span class="glance-text"
+  <main class="container">
+    <div class="playlist-container">
+      <h1 id="playlist-name">{{ playlist_data['name'] }}</h1>
+      <div class="playlist-details">
+        <div class="playlist-desc">
+          <div class="playlist-text">
+            <a
+              class="playlist-url"
+              href="{{ playlist_url }}"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                class="playlist-cover"
+                src="{{ playlist_data['cover_art'] }}"
+                alt="Playlist Cover"
+                crossorigin="anonymous"
+              />
+            </a>
+            <div class="glance">
+              <div class="playlist-glance total-followers">
+                <i class="rawcon-users"></i>
+                <span class="glance-text"
                 >{{ playlist_followers }} Followers</span
-              >
-            </div>
-            <div class="playlist-glance last-updated">
-              <i class="rawcon-calendar"></i>
-              <span class="glance-text"
+                >
+              </div>
+              <div class="playlist-glance last-updated">
+                <i class="rawcon-calendar"></i>
+                <span class="glance-text"
                 >Updated {{ playlist_data['last_updated'].strftime('%b %d, %Y')
                 if playlist_data['last_updated'] else 'Unknown' }}</span
-              >
-            </div>
-            {% if is_collaborative %}
-            <div class="playlist-glance is-collaborative">
-              <i class="rawcon-users"></i>
-              <span class="glance-text">Collaborative</span>
-            </div>
-            {% endif %}
-            <div class="playlist-glance is-public">
-              <i
-                class="{{ 'rawcon-lock-open' if is_public else 'rawcon-lock' }}"
-              ></i>
-              <span class="glance-text"
+                >
+              </div>
+              {% if is_collaborative %}
+                <div class="playlist-glance is-collaborative">
+                  <i class="rawcon-users"></i>
+                  <span class="glance-text">Collaborative</span>
+                </div>
+              {% endif %}
+              <div class="playlist-glance is-public">
+                <i
+                  class="{{ 'rawcon-lock-open' if is_public else 'rawcon-lock' }}"
+                ></i>
+                <span class="glance-text"
                 >{{ "Public" if is_public else "Private" }}</span
-              >
+                >
+              </div>
             </div>
-          </div>
 
-          <div class="glance">
-            <div class="playlist-glance total-tracks">
-              <i class="rawcon-waves"></i>
-              <span class="glance-text">{{ total_tracks }} Tracks</span>
-            </div>
-            <div class="playlist-glance total-duration">
-              <i class="rawcon-timer"></i>
-              <span class="glance-text">
-                {% set duration_parts =
-                playlist_data['total_duration'].split(':') %} {% set hours =
-                duration_parts[0]|int %} {% set minutes = duration_parts[1]|int
-                %} {% if hours > 0 %} {{ hours }} hr {% if minutes > 0 %} {{
-                minutes }} min {% endif %} {% else %} {{ minutes }} min {% endif
-                %}
-              </span>
-            </div>
-            <div class="playlist-glance local-tracks">
-              <i class="rawcon-floppy-disk"></i>
-              <span class="glance-text"
+            <div class="glance">
+              <div class="playlist-glance total-tracks">
+                <i class="rawcon-waves"></i>
+                <span class="glance-text">{{ total_tracks }} Tracks</span>
+              </div>
+              <div class="playlist-glance total-duration">
+                <i class="rawcon-timer"></i>
+                <span class="glance-text">
+    {% set duration_parts = playlist_data['total_duration'].split(', ') %}
+                  {% if duration_parts|length > 1 %}
+                    {# We have days #}
+                    {% set days = duration_parts[0].split()[0]|int %}
+                    {% set time_parts = duration_parts[1].split(':') %}
+                  {% else %}
+                    {% set days = 0 %}
+                    {% set time_parts = duration_parts[0].split(':') %}
+                  {% endif %}
+
+                  {% set hours = time_parts[0]|int %}
+    {% set minutes = time_parts[1]|int %}
+
+                  {% if days > 0 %}
+                    {{ days }}d
+                  {% endif %}
+
+                  {% if hours > 0 %}
+                    {{ hours }}hr
+                    {% if minutes > 0 %} {% endif %}
+                  {% endif %}
+
+                  {% if minutes > 0 or (days == 0 and hours == 0) %}
+                    {{ minutes }}min
+                  {% endif %}
+  </span>
+              </div>
+              <div class="playlist-glance local-tracks">
+                <i class="rawcon-floppy-disk"></i>
+                <span class="glance-text"
                 >{{ playlist_data['local_tracks_count'] }} Local Tracks</span
-              >
+                >
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="playlist-functions">
-    <div class="playlist-functions-group">
-      <h4 class="utils-title">Utilities</h4>
-      <form
-        action="{{ url_for('playlist.refresh_playlist', playlist_id=playlist_id) }}"
-        method="post"
-      >
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-        <button id="refresh-btn" type="submit" class="pl-refresh">
-          <i class="rawcon-arrows-rotate"></i> Refresh Data
-        </button>
-      </form>
-      <div class="playlist-btn-group">
-        <button id="like-all-songs-btn" title="Like all songs in the playlist">
-          <i class="rawcon-heart"></i> Like All
-        </button>
-        <button
-          id="unlike-all-songs-btn"
-          title="Unlike all songs in the playlist"
+    <div class="playlist-functions">
+      <div class="playlist-functions-group">
+        <h4 class="utils-title">Utilities</h4>
+        <form
+          action="{{ url_for('playlist.refresh_playlist', playlist_id=playlist_id) }}"
+          method="post"
         >
-          <i class="rawcon-heart-crack"></i> Unlike All
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button id="refresh-btn" type="submit" class="pl-refresh">
+            <i class="rawcon-arrows-rotate"></i> Refresh Data
+          </button>
+        </form>
+        <div class="playlist-btn-group">
+          <button id="like-all-songs-btn" title="Like all songs in the playlist">
+            <i class="rawcon-heart"></i> Like All
+          </button>
+          <button
+            id="unlike-all-songs-btn"
+            title="Unlike all songs in the playlist"
+          >
+            <i class="rawcon-heart-crack"></i> Unlike All
+          </button>
+        </div>
+        <button
+          id="remove-duplicates-btn"
+          title="Remove duplicate songs from the playlist (DISABLED)"
+          disabled
+        >
+          <i class="rawcon-layer-minus"></i> Remove Duplicates
         </button>
       </div>
-      <button
-        id="remove-duplicates-btn"
-        title="Remove duplicate songs from the playlist (DISABLED)"
-        disabled
-      >
-        <i class="rawcon-layer-minus"></i> Remove Duplicates
-      </button>
-      <button
-        id="recommendations-btn"
-        title="Get recommendations based on this playlist"
-      >
-        <i class="rawcon-list-music"></i> Track Recs
-      </button>
-    </div>
-    <div class="playlist-order-group">
-      <h4 class="utils-title">Ordering</h4>
-      <div class="playlist-btn-group">
-        <button id="order-asc-btn">
-          <i class="rawcon-circle-chevron-up"></i> Date Added (Ascending)
-        </button>
-        <button id="order-desc-btn">
-          <i class="rawcon-circle-chevron-down"></i> Date Added (Descending)
-        </button>
+      <div class="playlist-order-group">
+        <h4 class="utils-title">Ordering</h4>
+        <div class="playlist-btn-group">
+          <button id="order-asc-btn">
+            <i class="rawcon-circle-chevron-up"></i> Date Added (Ascending)
+          </button>
+          <button id="order-desc-btn">
+            <i class="rawcon-circle-chevron-down"></i> Date Added (Descending)
+          </button>
+        </div>
+        <div class="playlist-btn-group">
+          <button id="rd-asc-btn">
+            <i class="rawcon-calendar-up"></i> Release Date (Ascending)
+          </button>
+          <button id="rd-desc-btn">
+            <i class="rawcon-calendar-down"></i> Release Date (Descending)
+          </button>
+        </div>
+        <button id="shuffle-btn"><i class="rawcon-shuffle"></i> Shuffle</button>
       </div>
-      <div class="playlist-btn-group">
-        <button id="rd-asc-btn">
-          <i class="rawcon-calendar-up"></i> Release Date (Ascending)
-        </button>
-        <button id="rd-desc-btn">
-          <i class="rawcon-calendar-down"></i> Release Date (Descending)
-        </button>
-      </div>
-      <button id="shuffle-btn"><i class="rawcon-shuffle"></i> Shuffle</button>
     </div>
-  </div>
-  <div class="results-title-spot" style="display: none">
-    <div class="results-container">
-      <div id="results"></div>
-    </div>
-  </div>
 
-  <div class="artists-column">
-    <h3 class="top-artists-title">Top Artists</h3>
-    <div class="scroll-container">
-      <div id="topArtists" class="row-container">
-        {% for artist, count, image_url, spotify_url, artist_ids in
+    <div class="artists-column">
+      <h3 class="top-artists-title">Top Artists</h3>
+      <div class="scroll-container">
+        <div id="topArtists" class="row-container">
+          {% for artist, count, image_url, spotify_url, artist_ids in
         playlist_data.top_artists %}
-        <div class="grid-item">
-          <a href="{{ spotify_url }}" target="_blank" rel="noopener noreferrer">
-            <img
-              class="artist-image"
-              src="{{ image_url }}"
-              alt="{{ artist }}'s picture"
-              crossorigin="anonymous"
-              loading="lazy"
-            />
-          </a>
-          <p class="artist-name">{{ artist }}</p>
-          <p class="artist-count">{{ count }} Tracks</p>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-  </div>
-  <div class="genre-title-container">
-    <h3>Genre Info</h3>
-    <div class="genre-chart"><canvas id="genreBubbleChart"></canvas></div>
-    <div class="genre-container">
-      <div id="genre-counts" class="data-view">
-        <h4 class="gen-titles">Top Genres (Frequency)</h4>
-        <ul>
-          {% for genre, data in top_10_genre_data.items() %}
-          <li>
-            {{ genre }}: {{ data.count }}
-            <ul class="artist-genre-list" style="display: none">
-              {% for artist in data.artists %}
-              <li>{{ artist }}</li>
-              {% endfor %}
-            </ul>
-          </li>
-          {% endfor %}
-        </ul>
-      </div>
-
-      <div id="most-similar" class="data-view">
-        <h4 class="gen-titles">Most Similar</h4>
-        <ul>
-          {% for entry in genre_scores['most_similar'] %}
-          <li>
-            <a href="{{ entry['spotify_url'] }}" target="_blank"
-              >{{ entry['genre'] }}</a
-            >
-          </li>
-          {% endfor %}
-        </ul>
-      </div>
-
-      <!-- Most Opposite Genres Section -->
-      <div id="most-opposite" class="data-view">
-        <h4 class="gen-titles">Most Opposite</h4>
-        <ul>
-          {% for entry in genre_scores['most_opposite'] %}
-          <li>
-            <a href="{{ entry['spotify_url'] }}" target="_blank"
-              >{{ entry['genre'] }}</a
-            >
-          </li>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
-  </div>
-  <div class="track-stats">
-    <h3 class="decade-title">Track Stats</h3>
-
-    <div class="chart-flex">
-      <div class="chart-container">
-        <canvas id="YrPieChart" class="year-pie-chart"></canvas>
-        <div class="oldest-newest-tracks">
-          <div class="oldest-track">
-            <h4 class="time-track-header">Oldest Track</h4>
-            <div class="time-track-info">
-              <a
-                href="{{ playlist_data['temporal_stats']['oldest_track_url'] }}"
-                target="_blank"
-                class="time-track-link"
-              >
+            <div class="grid-item">
+              <a href="{{ spotify_url }}" target="_blank" rel="noopener noreferrer">
                 <img
-                  src="{{ playlist_data['temporal_stats']['oldest_track_image'] }}"
-                  alt="Oldest track cover"
-                  class="time-track-image"
+                  class="artist-image"
+                  src="{{ image_url }}"
+                  alt="{{ artist }}'s picture"
+                  crossorigin="anonymous"
+                  loading="lazy"
                 />
               </a>
-              <div class="time-track-details">
-                <p class="time-track-title">
-                  {{ playlist_data['temporal_stats']['oldest_track'] }}
-                </p>
-                <p class="time-track-artist">
-                  {{ playlist_data['temporal_stats']['oldest_track_artist'] }}
-                </p>
-              </div>
+              <p class="artist-name">{{ artist }}</p>
+              <p class="artist-count">{{ count }} Tracks</p>
             </div>
-            <p class="time-track-date">
-              {{ playlist_data['temporal_stats']['oldest_track_date'] }}
-            </p>
-          </div>
-          <div class="newest-track">
-            <h4 class="time-track-header">Newest Track</h4>
-            <div class="time-track-info">
-              <a
-                href="{{ playlist_data['temporal_stats']['newest_track_url'] }}"
-                target="_blank"
-                class="time-track-link"
-              >
-                <img
-                  src="{{ playlist_data['temporal_stats']['newest_track_image'] }}"
-                  alt="Newest track cover"
-                  class="time-track-image"
-                />
-              </a>
-              <div class="time-track-details">
-                <p class="time-track-title">
-                  {{ playlist_data['temporal_stats']['newest_track'] }}
-                </p>
-                <p class="time-track-artist">
-                  {{ playlist_data['temporal_stats']['newest_track_artist'] }}
-                </p>
-              </div>
-            </div>
-            <p class="time-track-date">
-              {{ playlist_data['temporal_stats']['newest_track_date'] }}
-            </p>
-          </div>
+          {% endfor %}
         </div>
       </div>
-      <div class="chart-container">
-        <div id="minMaxTrack">
-          <p>
-            Interact with the chart to explore your playlist audio features.
-          </p>
-          <i
-            class="rawcon-arrow-right"
-            style="
+    </div>
+    <div class="genre-title-container">
+      <h3>Genre Info</h3>
+      <div class="genre-chart">
+        <canvas id="genreBubbleChart"></canvas>
+      </div>
+      <div class="genre-container">
+        <div id="genre-counts" class="data-view">
+          <h4 class="gen-titles">Top Genres (Frequency)</h4>
+          <ul>
+            {% for genre, data in top_10_genre_data.items() %}
+              <li>
+                {{ genre }}: {{ data.count }}
+                <ul class="artist-genre-list" style="display: none">
+                  {% for artist in data.artists %}
+                    <li>{{ artist }}</li>
+                  {% endfor %}
+                </ul>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div id="most-similar" class="data-view">
+          <h4 class="gen-titles">Most Similar</h4>
+          <ul>
+            {% for entry in genre_scores['most_similar'] %}
+              <li>
+                <a href="{{ entry['spotify_url'] }}" target="_blank"
+                >{{ entry['genre'] }}</a
+                >
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Most Opposite Genres Section -->
+        <div id="most-opposite" class="data-view">
+          <h4 class="gen-titles">Most Opposite</h4>
+          <ul>
+            {% for entry in genre_scores['most_opposite'] %}
+              <li>
+                <a href="{{ entry['spotify_url'] }}" target="_blank"
+                >{{ entry['genre'] }}</a
+                >
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="track-stats">
+      <h3 class="decade-title">Track Stats</h3>
+
+      <div class="chart-flex">
+        <div class="chart-container">
+          <canvas id="YrPieChart" class="year-pie-chart"></canvas>
+          <div class="oldest-newest-tracks">
+            <div class="oldest-track">
+              <h4 class="time-track-header">Oldest Track</h4>
+              <div class="time-track-info">
+                <a
+                  href="{{ playlist_data['temporal_stats']['oldest_track_url'] }}"
+                  target="_blank"
+                  class="time-track-link"
+                >
+                  <img
+                    src="{{ playlist_data['temporal_stats']['oldest_track_image'] }}"
+                    alt="Oldest track cover"
+                    class="time-track-image"
+                  />
+                </a>
+                <div class="time-track-details">
+                  <p class="time-track-title">
+                    {{ playlist_data['temporal_stats']['oldest_track'] }}
+                  </p>
+                  <p class="time-track-artist">
+                    {{ playlist_data['temporal_stats']['oldest_track_artist'] }}
+                  </p>
+                </div>
+              </div>
+              <p class="time-track-date">
+                {{ playlist_data['temporal_stats']['oldest_track_date'] }}
+              </p>
+            </div>
+            <div class="newest-track">
+              <h4 class="time-track-header">Newest Track</h4>
+              <div class="time-track-info">
+                <a
+                  href="{{ playlist_data['temporal_stats']['newest_track_url'] }}"
+                  target="_blank"
+                  class="time-track-link"
+                >
+                  <img
+                    src="{{ playlist_data['temporal_stats']['newest_track_image'] }}"
+                    alt="Newest track cover"
+                    class="time-track-image"
+                  />
+                </a>
+                <div class="time-track-details">
+                  <p class="time-track-title">
+                    {{ playlist_data['temporal_stats']['newest_track'] }}
+                  </p>
+                  <p class="time-track-artist">
+                    {{ playlist_data['temporal_stats']['newest_track_artist'] }}
+                  </p>
+                </div>
+              </div>
+              <p class="time-track-date">
+                {{ playlist_data['temporal_stats']['newest_track_date'] }}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <div id="minMaxTrack">
+            <p>
+              Interact with the chart to explore your playlist audio features.
+            </p>
+            <i
+              class="rawcon-arrow-right"
+              style="
               display: block;
               margin: auto;
               text-align: center;
               margin-top: 10px;
             "
-          ></i>
+            ></i>
+          </div>
+          <div class="audio-features">
+            <canvas id="audioFeaturesChart"></canvas>
+          </div>
         </div>
-        <div class="audio-features">
-          <canvas id="audioFeaturesChart"></canvas>
+        <div class="chart-container">
+          <canvas id="popularityChart" class="popularity-chart"></canvas>
         </div>
-      </div>
-      <div class="chart-container">
-        <canvas id="popularityChart" class="popularity-chart"></canvas>
       </div>
     </div>
-  </div>
-  <div
-    id="data-container"
-    data-year-count="{{ year_count }}"
-    data-popularity-distribution="{{ popularity_distribution }}"
-    data-playlist-id="{{ playlist_id }}"
-    data-feature-stats="{{ feature_data }}"
-    data-genre-data="{{ genre_data }}"
-    data-genre-scores="{{ genre_scores_json }}"
-  ></div>
-</main>
+    <div class="recommendations-container">
+      <h3 class="recommendations-title">Recommendations</h3>
+      <div class="rec-desc">
+        <button
+          id="recommendations-btn"
+          title="Get recommendations based on this playlist"
+        >
+          <i class="rawcon-list-music"></i> Track Recs
+        </button>
+        <div class="results-title-spot" style="display: none">
+          <div class="results-container">
+            <div id="results"></div>
+          </div>
+        </div>
+        <section class="how-it-works">
+          <h4 class=rec-desc-title">How Playlist Recommendations Work</h4>
+          <div class="process-flow">
+            <div class="step">
+              <h4>1. Data Extraction and Analysis</h4>
+              <p>
+                We use Spotify's Web API to fetch detailed information about your
+                playlist, including track metadata, audio features, and artist
+                information.
+              </p>
+              <p class="technical-note">
+                Key data points: track IDs, artist IDs, genre labels, audio
+                features (tempo, energy, danceability, etc.)
+              </p>
+            </div>
+            <div class="step">
+              <h4>2. Feature Engineering</h4>
+              <p>
+                The system aggregates and normalizes the extracted data to create
+                a comprehensive profile of your playlist.
+              </p>
+              <p class="technical-note">
+                Techniques used: genre frequency analysis, audio feature
+                averaging, artist popularity weighting
+              </p>
+            </div>
+            <div class="step">
+              <h4>3. Seed Generation</h4>
+              <p>
+                Based on the profile, we select the most representative elements
+                to use as seeds for the recommendation algorithm.
+              </p>
+              <p class="technical-note">
+                Typically includes: top 1-2 genres, 2-3 artist IDs, and 1-2 track
+                IDs
+              </p>
+            </div>
+            <div class="step">
+              <h4>4. Recommendation Query</h4>
+              <p>
+                We use Spotify's Get Recommendations API endpoint, inputting our
+                generated seeds and setting target audio feature values based on
+                your playlist's profile.
+              </p>
+              <p class="technical-note">
+                API call includes: seed_genres, seed_artists, seed_tracks, and
+                target_* parameters for relevant audio features
+              </p>
+            </div>
+            <div class="step">
+              <h4>5. Results Processing</h4>
+              <p>
+                The recommended tracks are filtered to remove any already in your
+                playlist and ranked based on relevance to your playlist's profile.
+              </p>
+              <p class="technical-note">
+                Involves: duplicate checking, similarity scoring, and diversity
+                balancing
+              </p>
+            </div>
+            <div class="step">
+              <h4>6. Presentation</h4>
+              <p>
+                The top-ranked recommendations are prepared for display, including
+                fetching additional metadata like album art and preview URLs.
+              </p>
+              <p class="technical-note">
+                Final output: JSON object with track details, ready for frontend
+                rendering
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+    <div
+      id="data-container"
+      data-year-count="{{ year_count }}"
+      data-popularity-distribution="{{ popularity_distribution }}"
+      data-playlist-id="{{ playlist_id }}"
+      data-feature-stats="{{ feature_data }}"
+      data-genre-data="{{ genre_data }}"
+      data-genre-scores="{{ genre_scores_json }}"
+    ></div>
+  </main>
 {% endblock %}{% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
-<script
-  src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"
-  integrity="sha512-wUYbRPLV5zs6IqvWd88HIqZU/b8TBx+I8LEioQ/UC0t5EMCLApqhIAnUg7EsAzdbhhdgW07TqYDdH3QEXRcPOQ=="
-  crossorigin="anonymous"
-  referrerpolicy="no-referrer"
-></script>
-{% assets "playlist_js_bundle" %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"
+    integrity="sha512-wUYbRPLV5zs6IqvWd88HIqZU/b8TBx+I8LEioQ/UC0t5EMCLApqhIAnUg7EsAzdbhhdgW07TqYDdH3QEXRcPOQ=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
+  {% assets "playlist_js_bundle" %}
 
-<script src="{{ ASSET_URL }}"></script>
-{% endassets %}{% endblock %}
+    <script src="{{ ASSET_URL }}"></script>
+  {% endassets %}{% endblock %}
