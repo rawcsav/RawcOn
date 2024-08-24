@@ -9,16 +9,10 @@ const LONG_REQUEST_THRESHOLD = 30000; // 30 seconds
 
 // DOM Elements
 const loader = document.querySelector(config.loaderSelector);
-const toast = document.getElementById("toast");
-const closeToast = document.querySelector(".close-toast");
 
 // Global variables for request tracking
 let activeRequests = 0;
 let longRunningRequests = new Set();
-
-function hideToast() {
-  toast.classList.remove("show");
-}
 
 // Loader functions
 window.showLoading = function (duration = 4000) {
@@ -250,7 +244,6 @@ function setupPageFeatures() {
 }
 
 // Event listeners
-closeToast.addEventListener("click", hideToast);
 
 // Initialize
 document.addEventListener("DOMContentLoaded", function () {

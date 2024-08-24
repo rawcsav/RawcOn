@@ -1,14 +1,43 @@
-// Utility functions
+const toastContainer = document.getElementById("toastContainer");
+
 function showToast(message, type = "info") {
-  const toast = document.getElementById("toast");
-  const toastMessage = document.getElementById("toastMessage");
-  toastMessage.textContent = message;
+  const toast = document.createElement("div");
   toast.className = `toast ${type}`;
+  toast.textContent = message;
+
+  toast.addEventListener("click", () => {
+    closeToast(toast);
+  });
+
+  toastContainer.appendChild(toast);
+
+  // Trigger reflow
+  toast.offsetHeight;
+
   toast.classList.add("show");
 
+  // Auto close after 3 seconds
   setTimeout(() => {
-    toast.classList.remove("show");
+    closeToast(toast);
   }, 3000);
+}
+
+function closeToast(toast) {
+  // Clear the timeout to prevent multiple close attempts
+  if (toast.timeoutId) {
+    clearTimeout(toast.timeoutId);
+  }
+
+  // Only proceed if the toast is still in the DOM
+  if (toast.parentNode === toastContainer) {
+    toast.classList.remove("show");
+    setTimeout(() => {
+      // Check again before removing, in case it was removed during the transition
+      if (toast.parentNode === toastContainer) {
+        toastContainer.removeChild(toast);
+      }
+    }, 300); // Wait for the transition to finish
+  }
 }
 
 function getCsrfToken() {

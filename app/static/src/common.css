@@ -701,6 +701,7 @@ ul {
   align-items: flex-start;
   justify-content: space-between;
   max-width: 20vw;
+  z-index: 101;
   min-width: 20vw;
   height: 100vh;
   border-right: var(--border-width) var(--clr-bgd-dkr);
@@ -777,6 +778,7 @@ ul {
   background-color: var(--clr-bgd);
   height: 10vh;
   max-height: 10vh;
+  z-index: 100;
   min-height: 10vh;
   display: flex;
   align-items: center;
@@ -986,6 +988,7 @@ ul {
   font-size: var(--font-size-sm);
   color: var(--clr-bgd);
   padding: var(--space-xs);
+
   border-radius: 4px;
   white-space: nowrap;
 }
@@ -993,59 +996,37 @@ ul {
   display: block;
 }
 
-.toast {
+.toast-container {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
-  background: var(--clr-bgd);
-  border-radius: var(--border-radius);
-  padding: var(--space-md);
-  width: 320px;
-  box-shadow:
-    0 4px 6px -1px rgba(var(--clr-bgd-dkr) 0.1),
-    0 2px 4px -1px var(--clr-bgd-dkr);
+  color: var(--clr-bgd);
+  bottom: 20px;
+  right: 20px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column-reverse;
+  gap: 10px;
+}
+.toast {
+  padding: 12px 20px;
+  border-radius: 4px;
+  color: white;
   opacity: 0;
-  transform: translateY(16px);
-  transition: all 0.2s ease-out;
+  transform: translateY(50px);
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
-
-.error {
-  border: var(--border-width) solid var(--clr-tertiary-ltr);
-  color: var(--clr-tertiary);
-}
-
-.info {
-  border: var(--border-width) solid var(--clr-base-ltr);
-  color: var(--clr-base);
-}
-
-.success {
-  border: var(--border-width) solid var(--clr-secondary-ltr);
-  color: var(--clr-secondary);
-}
-
 .toast.show {
   opacity: 1;
   transform: translateY(0);
 }
-
-.toast-content {
-  flex-grow: 1;
-  margin-right: var(--space-sm);
-  font-size: var(--font-size-md);
+.success {
+  background-color: var(--clr-secondary);
 }
-
-.close-toast {
-  color: var(--clr-txt);
-  opacity: 0.5;
-  cursor: pointer;
-  transition: opacity var(--transition-speed);
-  display: flex;
+.error {
+  background-color: var(--clr-tertiary);
 }
-
-.close-toast:hover {
-  opacity: 1;
+.info {
+  background-color: var(--clr-base);
+}
+.warning {
+  background-color: #ff9800;
 }
