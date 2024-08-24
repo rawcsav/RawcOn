@@ -1,12 +1,12 @@
 # app/modules/user/user_util.py
 
 import json
-from collections import defaultdict
+from collections import defaultdict, deque
 from datetime import datetime, timedelta
 
 from spotipy import Spotify
 from flask import current_app, session, redirect
-from app.models.user_models import UserData
+from app.models.user_models import UserData, GenreData
 from app import db
 from app.modules.auth.auth import refresh
 from app.util.database_util import get_or_fetch_artist_info, get_or_fetch_audio_features
@@ -416,3 +416,76 @@ def get_user_data():
     res_data = fetch_user_data(access_token)
     spotify_user_id = res_data.get("id")
     return UserData.query.filter_by(spotify_user_id=spotify_user_id).first()
+
+
+def get_genre_bubble_chart_data(user_data):
+    time_periods = ["short_term", "medium_term", "long_term"]
+    genre_data = {period: {} for period in time_periods}
+
+    for period in time_periods:
+        period_genres = user_data.sorted_genres_by_period.get(period, [])
+        for genre, count in period_genres:
+            genre_info = GenreData.query.filter_by(genre=genre).first()
+            if genre_info:
+                genre_data[period][genre] = {"x": genre_info.x, "y": genre_info.y, "count": count}
+
+    result = [
+        {
+            "period": period,
+            "data": [
+                {"genre": genre, "x": data["x"], "y": data["y"], "r": data["count"]}  # Use count for bubble size
+                for genre, data in period_data.items()
+            ],
+        }
+        for period, period_data in genre_data.items()
+    ]
+
+    return result
+
+
+def get_audio_features_evolution(user_data):
+    features = [
+        "acousticness",
+        "danceability",
+        "energy",
+        "instrumentalness",
+        "liveness",
+        "loudness",
+        "speechiness",
+        "tempo",
+        "valence",
+        "popularity",
+    ]
+    periods = ["long_term", "medium_term", "short_term"]  # Ordered from oldest to most recent
+
+    evolution_data = {feature: [] for feature in features}
+    labels = []
+
+    window_size = 10  # Size of the moving average window
+    windows = {feature: deque(maxlen=window_size) for feature in features}
+
+    for period in periods:
+        tracks = user_data.top_tracks.get(period, {}).get("items", [])
+        for track in tracks:
+            track_id = track["id"]
+            if track_id in user_data.audio_features:
+                labels.append(f"{period}")  # You could make this more descriptive if needed
+                for feature in features:
+                    if feature == "popularity":
+                        value = track.get("popularity", 0) / 100  # Normalize popularity
+                    elif feature == "loudness":
+                        value = (
+                            user_data.audio_features[track_id].get("loudness", -60) + 60
+                        ) / 60  # Normalize loudness
+                    elif feature == "tempo":
+                        value = user_data.audio_features[track_id].get("tempo", 0) / 250  # Normalize tempo
+                    else:
+                        value = user_data.audio_features[track_id].get(feature, 0)
+
+                    windows[feature].append(value)
+                    evolution_data[feature].append(sum(windows[feature]) / len(windows[feature]))
+
+    return {
+        "labels": labels,
+        "datasets": [{"label": feature.capitalize(), "data": evolution_data[feature]} for feature in features],
+    }

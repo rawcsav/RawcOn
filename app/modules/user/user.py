@@ -22,6 +22,8 @@ from .user_util import (
     get_playlist_summary,
     calculate_averages_for_period,
     get_user_data,
+    get_genre_bubble_chart_data,
+    get_audio_features_evolution,
 )
 
 user_bp = Blueprint("user", __name__, template_folder="templates", static_folder="static", url_prefix="/user")
@@ -256,6 +258,32 @@ def playlists():
         user_data = get_user_data()
         playlist_summary = get_playlist_summary(user_data)
         return jsonify(playlist_summary)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@user_bp.route("/genre_bubble_chart")
+@handle_errors
+@require_spotify_auth
+def genre_bubble_chart():
+    try:
+        user_data = get_user_data()
+        bubble_chart_data = get_genre_bubble_chart_data(user_data)
+        return jsonify(bubble_chart_data)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@user_bp.route("/audio_features_evolution")
+@handle_errors
+@require_spotify_auth
+def audio_features_evolution():
+    try:
+        user_data = get_user_data()
+        evolution_data = get_audio_features_evolution(user_data)
+        return jsonify(evolution_data)
     except Exception as e:
         print(f"An error occurred: {e}")
         return jsonify({"error": str(e)}), 500

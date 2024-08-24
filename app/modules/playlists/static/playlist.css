@@ -48,7 +48,7 @@ h3 {
   margin-bottom: var(--space-lg);
   color: var(--clr-secondary);
   font-size: var(--font-size-xxl);
-  border-bottom: var(--border-width) var(--clr-secondary-ltr);
+  border-bottom: var(--border-width) var(--clr-secondary);
   width: 50%;
 }
 
@@ -501,20 +501,8 @@ button:hover {
   gap: var(--space-lg);
 }
 
-.result-item {
-  overflow: hidden;
-  transition: transform var(--transition-speed);
-}
-
 .result-item:hover {
   transform: translateY(-5px);
-}
-
-.result-cover-art-container {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: var(--space-lg);
 }
 
 .result-cover-art-container a {
@@ -625,16 +613,13 @@ button:hover {
 }
 
 .result-cover-art-container {
+  width: 100%;
   display: flex;
   gap: var(--space-md);
   justify-content: space-between;
   align-items: center;
 }
 
-.play-button i {
-  font-size: var(--font-size-lg);
-  color: var(--clr-txt-lt);
-}
 .caption p {
   font-size: var(--font-size-md);
   color: var(--clr-secondary-dkr);
@@ -659,11 +644,11 @@ button:hover {
 }
 
 .result-item {
+  overflow: hidden;
   background-color: var(--clr-bgd);
   margin: 0;
   padding-bottom: 0;
   width: 100%;
-  overflow: hidden;
   border-bottom: var(--border-width) var(--clr-bgd-dkr);
   transition:
     transform var(--transition-speed),

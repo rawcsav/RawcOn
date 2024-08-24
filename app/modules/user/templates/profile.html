@@ -10,6 +10,7 @@
 {% endassets %} {% endblock %} {% block body %}
 <div class="user-content">
   {% if user_data %}
+
   <div class="time-selector">
     <div class="selector-header">
       <i class="rawcon-calendar"> </i>
@@ -71,6 +72,12 @@
       </div>
       <div id="minMaxTrack"></div>
     </div>
+    <div class="chart-container">
+      <canvas id="audioFeaturesEvolutionChart"></canvas>
+    </div>
+  </div>
+  <div class="chart-container">
+    <canvas id="genreBubbleChart"></canvas>
   </div>
   {% else %}
   <p>No user data available. Please try refreshing your data.</p>

@@ -383,3 +383,7 @@ h3 {
 .minmax-track:hover {
   text-decoration: underline;
 }
+
+.chart-container {
+  width: 100%;
+}

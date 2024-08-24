@@ -164,6 +164,72 @@ document.addEventListener("DOMContentLoaded", function () {
       })
       .catch((error) => console.error("Error:", error));
   }
+  function createGenreBubbleChart() {
+    fetch("/user/genre_bubble_chart")
+      .then((response) => response.json())
+      .then((data) => {
+        const ctx = document
+          .getElementById("genreBubbleChart")
+          .getContext("2d");
+
+        const datasets = data.map((period) => ({
+          label: period.period,
+          data: period.data,
+          backgroundColor: getRandomColor(0.7),
+          borderColor: getRandomColor(1),
+          borderWidth: 1,
+        }));
+
+        new Chart(ctx, {
+          type: "bubble",
+          data: {
+            datasets: datasets,
+          },
+          options: {
+            responsive: true,
+            title: {
+              display: true,
+              text: "Genres by Period",
+            },
+            scales: {
+              x: {
+                type: "linear",
+                position: "bottom",
+                title: {
+                  display: true,
+                  text: "Energy", // Replace with actual x-axis meaning
+                },
+              },
+              y: {
+                type: "linear",
+                position: "left",
+                title: {
+                  display: true,
+                  text: "Danceability", // Replace with actual y-axis meaning
+                },
+              },
+            },
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return `${context.raw.genre} (Count: ${context.raw.r})`;
+                  },
+                },
+              },
+            },
+          },
+        });
+      })
+      .catch((error) => console.error("Error:", error));
+  }
+
+  function getRandomColor(opacity) {
+    const r = Math.floor(Math.random() * 255);
+    const g = Math.floor(Math.random() * 255);
+    const b = Math.floor(Math.random() * 255);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
 
   function displayGenreData(genre, period, data) {
     const overlay = document.getElementById("genreOverlay");
@@ -513,6 +579,92 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  function createAudioFeaturesEvolutionChart() {
+    fetch("/user/audio_features_evolution")
+      .then((response) => response.json())
+      .then((data) => {
+        const ctx = document
+          .getElementById("audioFeaturesEvolutionChart")
+          .getContext("2d");
+
+        const colors = [
+          "rgb(255, 99, 132)",
+          "rgb(54, 162, 235)",
+          "rgb(255, 206, 86)",
+          "rgb(75, 192, 192)",
+          "rgb(153, 102, 255)",
+          "rgb(255, 159, 64)",
+          "rgb(199, 199, 199)",
+          "rgb(83, 102, 255)",
+          "rgb(40, 159, 64)",
+          "rgb(210, 30, 30)",
+        ];
+
+        const datasets = data.datasets.map((dataset, index) => ({
+          ...dataset,
+          borderColor: colors[index],
+          backgroundColor: colors[index]
+            .replace("rgb", "rgba")
+            .replace(")", ", 0.2)"),
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          fill: false,
+          tension: 0.4, // Add some curve to the lines
+        }));
+
+        new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: data.labels,
+            datasets: datasets,
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: "Audio Features Evolution Over Time",
+              },
+              legend: {
+                position: "right",
+              },
+            },
+            scales: {
+              x: {
+                display: true,
+                title: {
+                  display: true,
+                  text: "Tracks (Most Recent to Oldest)",
+                },
+                ticks: {
+                  display: false, // Hide x-axis labels for cleaner look
+                },
+              },
+              y: {
+                display: true,
+                title: {
+                  display: true,
+                  text: "Feature Value",
+                },
+                suggestedMin: 0,
+                suggestedMax: 1,
+              },
+            },
+            interaction: {
+              mode: "index",
+              intersect: false,
+            },
+            hover: {
+              mode: "nearest",
+              intersect: true,
+            },
+          },
+        });
+      });
+  }
+  createGenreBubbleChart();
+  createAudioFeaturesEvolutionChart();
   updateDisplay("short_term");
   createEnhancedAudioFeaturesChart(audioFeaturesSummary, periodData);
 });

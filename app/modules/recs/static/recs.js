@@ -109,6 +109,15 @@ const searchModule = (() => {
 
 // Seeds module
 const seedsModule = (() => {
+  // Add this to the elements object at the beginning of the file
+  elements.submitButton = document.querySelector('form button[type="submit"]');
+
+  // Add this function to the seedsModule
+  const updateSubmitButton = () => {
+    const seedCount = elements.seedsContainer.children.length;
+    elements.submitButton.disabled = seedCount === 0;
+    elements.submitButton.classList.toggle("disabled", seedCount === 0);
+  };
   const addToSeeds = (item, type) => {
     if (elements.seedsContainer.children.length >= 5) {
       showToast("You can select no more than 5 combined seeds.");
@@ -136,11 +145,13 @@ const seedsModule = (() => {
     showToast(item.name + " added to seeds.");
     updateSeedsInput();
     updateSeedCounter();
+    updateSubmitButton(); // Add this line
   };
   const removeSeed = (seedElement) => {
     seedElement.remove();
     updateSeedsInput();
     updateSeedCounter(); // Update counter when a seed is added
+    updateSubmitButton(); // Add this line
   };
 
   const updateSeedsInput = () => {
@@ -166,7 +177,13 @@ const seedsModule = (() => {
     seedCounter.textContent = `${seedCount}/5`;
   }
 
-  return { addToSeeds, removeSeed, updateSeedsInput, updateSeedCounter };
+  return {
+    addToSeeds,
+    removeSeed,
+    updateSeedsInput,
+    updateSeedCounter,
+    updateSubmitButton, // Add this line
+  };
 })();
 
 // UI module
@@ -601,6 +618,7 @@ const trackModule = (() => {
 // Event listeners
 document.addEventListener("DOMContentLoaded", () => {
   const debouncedSearch = util.debounce(searchModule.performSearch, 300);
+  seedsModule.updateSubmitButton();
 
   elements.searchInput.addEventListener("input", (e) =>
     debouncedSearch(e.target.value),

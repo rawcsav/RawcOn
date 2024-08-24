@@ -27,6 +27,20 @@ body {
   justify-content: center;
 }
 
+button[type="submit"].disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#get-recommendations:hover.disabled {
+  border-color: var(--clr-tertiary);
+  background-color: var(--clr-bgd-dkr);
+  color: var(--clr-txt);
+}
+
+#get-recommendations:hover.disabled i {
+  color: var(--clr-txt);
+}
 #seeds-section {
   border-bottom: var(--border-width) var(--clr-bgd-dkr);
   width: 100%;
@@ -59,6 +73,15 @@ body {
 
 #get-recommendations:hover {
   border-color: var(--clr-secondary-lt);
+  background-color: var(--clr-secondary);
+  color: var(--clr-bgd);
+  font-variation-settings:
+    "wght" 700,
+    "ital" 12;
+}
+
+#get-recommendations:hover i {
+  color: yellow;
 }
 
 #recommendation-form label {
