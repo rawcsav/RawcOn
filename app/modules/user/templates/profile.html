@@ -46,6 +46,9 @@
 
   <div class="genres-column">
     <h3>Top Genres</h3>
+    <div class="chart-container">
+      <canvas id="genreBubbleChart"></canvas>
+    </div>
     <div id="topGenres"></div>
     <div id="genreOverlay" class="overlay">
       <div class="overlay-content">
@@ -76,9 +79,7 @@
       <canvas id="audioFeaturesEvolutionChart"></canvas>
     </div>
   </div>
-  <div class="chart-container">
-    <canvas id="genreBubbleChart"></canvas>
-  </div>
+
   {% else %}
   <p>No user data available. Please try refreshing your data.</p>
   {% endif %}

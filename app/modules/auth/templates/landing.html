@@ -5,21 +5,11 @@
 <link rel="stylesheet" href="{{ ASSET_URL }}" />
 {% endassets %} {% endblock %} {% block body %}{% block menu %} {% endblock %}
 <div class="container">
-  <div class="corner-logo">
-    <img src="/static/dist/img/menatwork2.svg" alt="RAWCSAV Corner Logo" />
-  </div>
-  <div class="header">rawc-on</div>
-  <div class="social-icons">
-    <a href="https://rawcsav.com" target="_blank" rel="noopener noreferrer">
-      <i class="rawcon-house-chimney"></i>
-    </a>
-    <a
-      href="https://www.github.com/rawcsav/rawcon"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      <i class="rawcon-github"></i>
-    </a>
+  <div class="presents">
+    <div class="corner-logo">
+      <img src="/static/dist/img/stonesav.svg" alt="RAWCSAV Corner Logo" />
+    </div>
+    <span class="presents-text">proudly presents...</span>
   </div>
   <div class="main-image">
     <img
@@ -29,12 +19,29 @@
     />
   </div>
   <div class="actions">
-    <img
-      id="spotify-corner"
-      src="/static/dist/img/Spotify_Logo_CMYK_Black.png"
-      alt="Spotify Logo"
-    />
-    <a class="login-button" href="/login"> Login </a>
+    <div class="left-icons">
+      <a
+        href="https://www.github.com/rawcsav/rawcon"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <i class="rawcon-github"></i>
+      </a>
+      <a
+        href="https://www.rawcsav.com/projects#rawcon"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <i class="rawcon-circle-info"></i>
+      </a>
+    </div>
+    <a class="login-button" href="/login">
+      Connect With
+      <img
+        id="spotify-corner"
+        src="/static/dist/img/Spotify_Logo_CMYK_Black.png"
+        alt="Spotify Logo"
+    /></a>
   </div>
 </div>
 

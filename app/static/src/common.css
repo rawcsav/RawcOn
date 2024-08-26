@@ -2,56 +2,120 @@
   --ff-txt: "Diatype", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
     "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
-  --ff-accent: "Monument", serif;
+  --ff-accent: "Monument", sans-serif;
+  --ff-serif: "TZ", serif;
   font-synthesis: none;
-  --clr-bgd: #fafaf9;
-  --clr-bgd-dk: #f4f4f5;
-  --clr-bgd-dkr: #e4e4e7;
+  /* Neutral Colors */
+  --neutral-100: #ffffff;
+  --neutral-200: #d5dadc;
+  --neutral-300: #acb5b9;
+  --neutral-400: #829097;
+  --neutral-500: #5d6a6f;
+  --neutral-600: #3a4245;
+  --neutral-700: #111314;
 
-  --clr-txt-ltr: #a1a1aa;
-  --clr-txt-lt: #71717a;
-  --clr-txt: #3f3f46;
-  --clr-txt-dk: #18181b;
-  --clr-txt-dkr: #09090b;
+  /* Main/Base Colors (Blue) */
+  --main-100: #addeff;
+  --main-200: #5cbdff;
+  --main-300: #0a9cff;
+  --main-400: #006eb8;
+  --main-500: #00458a;
+  --main-600: #00255c;
+  --main-700: #000e2e;
 
-  --clr-base-ltr: #93c5fd;
-  --clr-base-lt: #60a5fa;
-  --clr-base: #3b82f6;
-  --clr-base-dk: #1d4ed8;
-  --clr-base-dkr: #172554;
+  /* Accent Colors - Yellow */
+  --accent-yellow-100: #fef1b4;
+  --accent-yellow-200: #fde481;
+  --accent-yellow-300: #fcd14f;
+  --accent-yellow-400: #fcb315;
+  --accent-yellow-500: #e29003;
+  --accent-yellow-600: #975902;
+  --accent-yellow-700: #4b2602;
 
-  --clr-secondary-ltr: #d1fae5;
-  --clr-secondary-lt: #4ade80;
-  --clr-secondary: #22c55e;
-  --clr-secondary-dk: #166534;
-  --clr-secondary-dkr: #052e16;
+  /* Accent Colors - Red */
+  --accent-red-100: #ffccd5;
+  --accent-red-200: #fb6a84;
+  --accent-red-300: #f53d5f;
+  --accent-red-400: #cc1335;
+  --accent-red-500: #aa0926;
+  --accent-red-600: #630314;
+  --accent-red-700: #330009;
 
-  --clr-tertiary-ltr: #fecaca;
-  --clr-tertiary-lt: #f87171;
-  --clr-tertiary: #ef4444;
-  --clr-tertiary-dk: #b91c1c;
-  --clr-tertiary-dkr: #450a0a;
+  /* Accent Colors - Green */
+  --accent-green-100: #d4f7e3;
+  --accent-green-200: #9be4bc;
+  --accent-green-300: #69c994;
+  --accent-green-400: #499d6f;
+  --accent-green-500: #297049;
+  --accent-green-600: #165030;
+  --accent-green-700: #082b18;
 
-  --transition-speed: 0.3s ease;
-  --border-radius: 10px;
-  --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
 
-  /* New standardized variables */
-  --space-xs: 0.25rem; /* 4px */
-  --space-sm: 0.5rem; /* 8px */
-  --space-md: 1rem; /* 16px */
-  --space-lg: 1.5rem; /* 24px */
-  --space-xl: 2rem; /* 32px */
-  --space-xxl: 4.5rem; /* 48px */
+  /* Font Weights */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-bold: 700;
 
-  --font-size-xs: 0.8em;
-  --font-size-sm: 1em;
-  --font-size-md: 1.1em;
-  --font-size-lg: 1.8em;
-  --font-size-xl: 2.4em;
-  --font-size-xxl: 3em;
+  /* Line Heights */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
 
-  --border-width: 2px solid;
+  /* Spacing - Using a consistent scale as recommended */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-8: 3rem;
+  --space-10: 4rem;
+  --space-12: 5rem;
+  --space-16: 8rem;
+
+  /* Border Radius */
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-full: 9999px;
+
+  /* Border Widths */
+  --border-thin: 1px;
+  --border-normal: 2px;
+  --border-thick: 4px;
+
+  /* Box Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Opacity */
+  --opacity-0: 0;
+  --opacity-25: 0.25;
+  --opacity-50: 0.5;
+  --opacity-75: 0.75;
+  --opacity-100: 1;
+
+  /* Transitions */
+  --transition-fast: 150ms;
+  --transition-normal: 300ms;
+  --transition-slow: 500ms;
 }
 
 @font-face {
@@ -67,11 +131,9 @@
 }
 
 @font-face {
-  font-family: "Lastik";
-  src:
-    url("/static/fonts/Lastik-VariableVF.woff2") format("woff2-variations"),
-    url("/static/fonts/Lastik-VariableVF.ttf") format("truetype-variations");
-  font-weight: 50 100;
+  font-family: "TZ";
+  src: url("/static/fonts/TZ-RegIta.ttf") format("truetype");
+  font-weight: normal;
   font-display: swap;
 }
 
@@ -559,10 +621,10 @@ i {
 
 body {
   line-height: 1.6;
-  color: var(--clr-txt);
+  color: var(--neutral-500);
   margin: 0 auto;
   font-family: var(--ff-txt), sans-serif;
-  background-color: var(--clr-bgd);
+  background-color: var(--neutral-100);
   overflow-x: hidden;
   max-width: 100vw;
 }
@@ -579,7 +641,7 @@ body {
 #playlists {
   overflow-y: auto;
   margin: 0;
-  border-bottom: var(--border-width) var(--clr-bgd-dk);
+  border-bottom: var(--border-normal) var(--neutral-200);
   min-height: 30vh;
   max-height: 30vh;
 }
@@ -587,7 +649,7 @@ body {
 h1,
 h2,
 h3 {
-  color: var(--clr-base);
+  color: var(--main-300);
   margin: 0;
 }
 
@@ -599,7 +661,7 @@ p {
 
 h3 {
   font-family: var(--ff-txt), sans-serif;
-  font-size: var(--font-size-md);
+  font-size: var(--text-lg);
 }
 
 ul {
@@ -611,13 +673,13 @@ ul {
   display: flex;
   flex-direction: row;
   height: 10vh;
-  padding-left: var(--space-md);
-  padding-right: var(--space-md);
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
   min-height: 10vh;
   max-height: 10vh;
   align-items: center;
-  gap: var(--space-sm);
-  border-bottom: var(--border-width) var(--clr-bgd-dkr);
+  gap: var(--space-2);
+  border-bottom: var(--border-normal) var(--neutral-300);
 }
 
 #profile-metadata {
@@ -625,28 +687,28 @@ ul {
   align-items: flex-end;
   justify-content: space-around;
   width: 80%;
-  padding: var(--space-xs);
-  color: var(--clr-bgd);
-  border-radius: var(--border-radius);
-  background-color: var(--clr-base-lt);
-  font-size: var(--font-size-xs);
-  box-shadow: var(--box-shadow);
+  padding: var(--space-1);
+  color: var(--neutral-100);
+  border-radius: var(--radius-lg);
+  background-color: var(--main-200);
+  font-size: var(--text-xs);
+  box-shadow: var(--shadow-sm);
 }
 
 #profile-metadata i {
-  font-size: var(--font-size-md);
+  font-size: var(--text-lg);
 }
 
 #profile-pic {
   width: 75px;
   height: auto;
   object-fit: contain;
-  margin-right: var(--space-md);
+  margin-right: var(--space-4);
 }
 
 #country-flag {
-  font-size: var(--space-lg);
-  margin-right: var(--space-sm);
+  font-size: var(--space-5);
+  margin-right: var(--space-2);
 }
 
 .nav-container a,
@@ -654,8 +716,8 @@ ul {
   text-decoration: none;
   font-family: var(--ff-txt), sans-serif;
   font-weight: 700;
-  color: var(--clr-txt);
-  transition: color var(--transition-speed);
+  color: var(--neutral-500);
+  transition: color var(--transition-normal);
 }
 
 .nav-container {
@@ -664,29 +726,29 @@ ul {
   align-items: center;
   justify-content: space-around;
   width: 100%;
-  gap: var(--space-sm);
+  gap: var(--space-2);
   flex-grow: 1;
-  border-bottom: var(--border-width) var(--clr-bgd-dkr);
+  border-bottom: var(--border-normal) var(--neutral-300);
 }
 
 .nav-container a:hover {
-  color: var(--clr-base-lt);
+  color: var(--main-200);
   cursor: pointer;
 }
 
 .playlist-nav:hover,
 .playlist-nav:hover p {
   cursor: pointer;
-  color: var(--clr-secondary);
+  color: var(--accent-green-300);
 }
 .icon {
-  width: var(--space-md);
-  margin-right: var(--space-xs);
+  width: var(--space-4);
+  margin-right: var(--space-1);
   vertical-align: middle;
 }
 
 #profile-container p {
-  font-size: var(--font-size-md);
+  font-size: var(--text-lg);
   margin: 0;
   display: flex;
   height: 100%;
@@ -704,9 +766,9 @@ ul {
   z-index: 101;
   min-width: 20vw;
   height: 100vh;
-  border-right: var(--border-width) var(--clr-bgd-dkr);
+  border-right: var(--border-normal) var(--neutral-300);
   position: fixed;
-  background-color: var(--clr-bgd);
+  background-color: var(--neutral-100);
   display: flex;
   flex-direction: column;
 }
@@ -720,31 +782,31 @@ ul {
 }
 
 .logout {
-  background-color: var(--clr-tertiary);
-  color: var(--clr-bgd);
+  background-color: var(--accent-red-300);
+  color: var(--neutral-100);
   width: 80%;
-  font-size: var(--font-size-sm);
-  border-radius: var(--border-radius);
-  padding: var(--space-xs);
+  font-size: var(--text-base);
+  border-radius: var(--radius-lg);
+  padding: var(--space-1);
   text-decoration: none;
   text-align: center;
   margin-left: auto;
   display: flex;
   margin-right: auto;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-md);
-  box-shadow: var(--box-shadow);
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  box-shadow: var(--shadow-sm);
   justify-content: center;
   align-items: center;
 }
 
 .logout i {
-  font-size: var(--font-size-md);
+  font-size: var(--text-lg);
 }
 
 .logout:hover {
-  color: var(--clr-bgd);
-  background-color: var(--clr-tertiary-lt);
+  color: var(--neutral-100);
+  background-color: var(--accent-red-200);
 }
 
 .logo-container {
@@ -759,7 +821,7 @@ ul {
 .logo-container img {
   width: auto;
   max-height: 100%;
-  padding: var(--space-md);
+  padding: var(--space-4);
 }
 
 .logo-redirect {
@@ -775,21 +837,21 @@ ul {
   max-width: 80vw;
   right: 0;
   position: fixed;
-  background-color: var(--clr-bgd);
+  background-color: var(--neutral-100);
   height: 10vh;
   max-height: 10vh;
   z-index: 100;
   min-height: 10vh;
   display: flex;
   align-items: center;
-  border-bottom: var(--border-width) var(--clr-bgd-dk);
+  border-bottom: var(--border-normal) var(--neutral-200);
   justify-content: flex-end;
 }
 
 .top-banner-link {
   height: 90%;
   width: fit-content;
-  padding-right: var(--space-md);
+  padding-right: var(--space-4);
 }
 
 .top-banner img {
@@ -799,8 +861,8 @@ ul {
 }
 
 .user-name {
-  color: var(--clr-base);
-  font-size: var(--font-size-lg);
+  color: var(--main-300);
+  font-size: var(--text-2xl);
   max-width: 100%;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -826,7 +888,7 @@ ul {
   width: 50px;
   height: 50px;
   object-fit: cover;
-  margin-right: var(--space-sm);
+  margin-right: var(--space-2);
 }
 
 .playlist-info {
@@ -840,8 +902,8 @@ ul {
 }
 
 .playlist-visibility {
-  font-size: var(--font-size-xs);
-  color: var(--clr-txt-ltr);
+  font-size: var(--text-xs);
+  color: var(--neutral-300);
 }
 
 .main-div {
@@ -854,13 +916,13 @@ ul {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-md);
+  padding: var(--space-4);
   text-decoration: none;
-  color: var(--clr-txt);
+  color: var(--neutral-500);
   transition:
-    background-color var(--transition-speed),
-    color var(--transition-speed),
-    transform var(--transition-speed);
+    background-color var(--transition-normal),
+    color var(--transition-normal),
+    transform var(--transition-normal);
 }
 
 .playlist-option:hover {
@@ -880,10 +942,10 @@ ul {
 .recommendations-nav,
 .playlist-nav {
   display: flex;
-  gap: var(--space-sm);
-  font-size: var(--font-size-sm);
+  gap: var(--space-2);
+  font-size: var(--text-base);
   align-items: center;
-  padding: var(--space-xs);
+  padding: var(--space-1);
   justify-content: flex-start;
   width: 80%;
 }
@@ -891,64 +953,64 @@ ul {
 .profile-nav i,
 .recommendations-nav i,
 .playlist-nav i {
-  font-size: var(--font-size-md);
+  font-size: var(--text-lg);
 }
 
 .playlist-nav .playlist-toggle-icon {
   margin-left: auto;
-  padding-right: var(--space-md);
+  padding-right: var(--space-4);
 }
 
 .nav-container .active {
-  background-color: var(--clr-base);
-  color: var(--clr-bgd) !important;
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+  background-color: var(--main-300);
+  color: var(--neutral-100) !important;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 .active a {
-  color: var(--clr-bgd) !important;
+  color: var(--neutral-100) !important;
 }
 
 .user-followers,
 .user-country {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: var(--space-2);
 }
 
 .user-followers p,
 .user-country p {
   font-weight: 500;
-  font-size: var(--font-size-xs);
+  font-size: var(--text-xs);
 }
 
 .user-followers i,
 .user-country i {
-  font-size: var(--font-size-md);
+  font-size: var(--text-lg);
 }
 .playlist-nav.open {
-  background-color: var(--clr-secondary);
-  color: var(--clr-bgd) !important;
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+  background-color: var(--accent-green-300);
+  color: var(--neutral-100) !important;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 .playlist-nav p.open,
 .active p,
 .playlist-header.active,
 .profile-menu .profile-top-section .nav-container > div.open > p {
-  color: var(--clr-bgd) !important;
+  color: var(--neutral-100) !important;
 }
 
 .active:hover {
-  background-color: var(--clr-base-ltr);
-  transition: background-color var(--transition-speed);
+  background-color: var(--main-100);
+  transition: background-color var(--transition-normal);
 }
 
 .open:hover {
-  background-color: var(--clr-secondary-lt);
-  transition: background-color var(--transition-speed);
+  background-color: var(--accent-green-200);
+  transition: background-color var(--transition-normal);
 }
 
 #loading-overlay {
@@ -984,10 +1046,10 @@ ul {
   bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
-  background-color: var(--clr-txt);
-  font-size: var(--font-size-sm);
-  color: var(--clr-bgd);
-  padding: var(--space-xs);
+  background-color: var(--neutral-500);
+  font-size: var(--text-base);
+  color: var(--neutral-100);
+  padding: var(--space-1);
 
   border-radius: 4px;
   white-space: nowrap;
@@ -998,7 +1060,7 @@ ul {
 
 .toast-container {
   position: fixed;
-  color: var(--clr-bgd);
+  color: var(--neutral-100);
   bottom: 20px;
   right: 20px;
   display: flex;
@@ -1019,13 +1081,13 @@ ul {
   transform: translateY(0);
 }
 .success {
-  background-color: var(--clr-secondary);
+  background-color: var(--accent-green-300);
 }
 .error {
-  background-color: var(--clr-tertiary);
+  background-color: var(--accent-red-300);
 }
 .info {
-  background-color: var(--clr-base);
+  background-color: var(--main-300);
 }
 .warning {
   background-color: #ff9800;

@@ -172,11 +172,26 @@ document.addEventListener("DOMContentLoaded", function () {
           .getElementById("genreBubbleChart")
           .getContext("2d");
 
-        const datasets = data.map((period) => ({
-          label: period.period,
+        const datasets = data.map((period, index) => ({
+          label:
+            period.period === "short_term"
+              ? "Last\u00A04\u00A0Weeks"
+              : period.period === "medium_term"
+                ? "Last\u00A06\u00A0Months"
+                : "All\u00A0Time",
           data: period.data,
-          backgroundColor: getRandomColor(0.7),
-          borderColor: getRandomColor(1),
+          backgroundColor:
+            index === 0
+              ? "rgba(75, 192, 192, 0.5)"
+              : index === 1
+                ? "rgba(54, 162, 235, 0.5)"
+                : "rgba(255, 99, 132, 0.5)",
+          borderColor:
+            index === 0
+              ? "rgb(75, 192, 192)"
+              : index === 1
+                ? "rgb(54, 162, 235)"
+                : "rgba(255, 99, 132, 1)",
           borderWidth: 1,
         }));
 
@@ -187,34 +202,68 @@ document.addEventListener("DOMContentLoaded", function () {
           },
           options: {
             responsive: true,
-            title: {
-              display: true,
-              text: "Genres by Period",
-            },
+            maintainAspectRatio: false,
             scales: {
               x: {
-                type: "linear",
-                position: "bottom",
                 title: {
-                  display: true,
-                  text: "Energy", // Replace with actual x-axis meaning
+                  display: false,
+                  text: "Energy",
+                  font: {
+                    size: 14,
+                    weight: "bold",
+                  },
+                },
+                ticks: {
+                  align: "start",
+                  callback: function (value, index, values) {
+                    if (index === 0) return "Low\u00A0Energy";
+                    if (index === values.length - 1) return "High\u00A0Energy";
+                    return "";
+                  },
+                  crossAlign: "near",
+                  maxRotation: 0,
+                  autoSkip: false,
                 },
               },
               y: {
-                type: "linear",
-                position: "left",
                 title: {
-                  display: true,
-                  text: "Danceability", // Replace with actual y-axis meaning
+                  display: false,
+                  text: "Danceability",
+                  font: {
+                    size: 14,
+                    weight: "bold",
+                  },
+                },
+                ticks: {
+                  align: "start",
+                  callback: function (value, index, values) {
+                    if (index === 0) return "Less\u00A0Danceable";
+                    if (index === values.length - 1)
+                      return "More\u00A0Danceable";
+                    return "";
+                  },
                 },
               },
             },
             plugins: {
               tooltip: {
                 callbacks: {
-                  label: function (context) {
-                    return `${context.raw.genre} (Count: ${context.raw.r})`;
+                  label: (context) => {
+                    const label = context.raw.genre;
+                    return `${label}:\u00A0${context.raw.r}\u00A0tracks`;
                   },
+                },
+              },
+              legend: {
+                position: "bottom",
+              },
+              title: {
+                display: true,
+                text: "Genre\u00A0Distribution\u00A0and\u00A0Evolution",
+                align: "center",
+                font: {
+                  size: 18,
+                  weight: "bold",
                 },
               },
             },
@@ -589,15 +638,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const colors = [
           "rgb(255, 99, 132)",
-          "rgb(54, 162, 235)",
-          "rgb(255, 206, 86)",
-          "rgb(75, 192, 192)",
-          "rgb(153, 102, 255)",
           "rgb(255, 159, 64)",
-          "rgb(199, 199, 199)",
-          "rgb(83, 102, 255)",
-          "rgb(40, 159, 64)",
-          "rgb(210, 30, 30)",
+          "rgb(255, 205, 86)",
+          "rgb(75, 192, 192)",
+          "rgb(54, 162, 235)",
+          "rgb(153, 102, 255)",
+          "rgb(201, 203, 207)",
+          "rgb(255, 99, 255)",
+          "rgb(100, 200, 100)",
+          "rgb(200, 100, 100)",
         ];
 
         const datasets = data.datasets.map((dataset, index) => ({
@@ -608,15 +657,26 @@ document.addEventListener("DOMContentLoaded", function () {
             .replace(")", ", 0.2)"),
           borderWidth: 2,
           pointRadius: 0,
-          pointHoverRadius: 4,
+          pointHoverRadius: 0,
           fill: false,
-          tension: 0.4, // Add some curve to the lines
+          tension: 0.4,
         }));
 
         new Chart(ctx, {
           type: "line",
           data: {
-            labels: data.labels,
+            labels: data.labels.map((label) => {
+              switch (label) {
+                case "short_term":
+                  return "Last\u00A04\u00A0Weeks";
+                case "medium_term":
+                  return "Last\u00A06\u00A0Months";
+                case "long_term":
+                  return "All\u00A0Time";
+                default:
+                  return label;
+              }
+            }),
             datasets: datasets,
           },
           options: {
@@ -624,10 +684,27 @@ document.addEventListener("DOMContentLoaded", function () {
             plugins: {
               title: {
                 display: true,
-                text: "Audio Features Evolution Over Time",
+                text: "Audio\u00A0Features\u00A0Evolution\u00A0Over\u00A0Time",
+                font: {
+                  size: 18,
+                  weight: "bold",
+                },
               },
               legend: {
                 position: "right",
+                labels: {
+                  boxWidth: 15,
+                  padding: 15,
+                },
+              },
+              tooltip: {
+                mode: "index",
+                intersect: false,
+                callbacks: {
+                  title: function (tooltipItems) {
+                    return `Track\u00A0${tooltipItems[0].dataIndex + 1}`;
+                  },
+                },
               },
             },
             scales: {
@@ -635,17 +712,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 display: true,
                 title: {
                   display: true,
-                  text: "Tracks (Most Recent to Oldest)",
-                },
-                ticks: {
-                  display: false, // Hide x-axis labels for cleaner look
+                  text: "Time\u00A0Period",
+                  font: {
+                    weight: "bold",
+                  },
                 },
               },
               y: {
                 display: true,
                 title: {
                   display: true,
-                  text: "Feature Value",
+                  text: "Feature\u00A0Value",
+                  font: {
+                    weight: "bold",
+                  },
                 },
                 suggestedMin: 0,
                 suggestedMax: 1,
