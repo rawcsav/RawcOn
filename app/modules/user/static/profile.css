@@ -58,14 +58,15 @@ select {
   display: flex;
   justify-content: center;
   align-items: center;
+  font-size: var(--text-lg);
   flex-direction: column;
   flex: 2;
+  width: 100%;
+  background-color: var(--neutral-200);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   white-space: pre-wrap;
-}
-
-#minMaxTrack p,
-#minMaxTrack h4 {
-  margin: 0;
 }
 
 .grid-item a {
@@ -204,7 +205,10 @@ h4 {
 
 .features-row {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
+  gap: var(--space-12);
 }
 
 .row-container {
@@ -339,12 +343,6 @@ h3 {
   width: 50%;
 }
 
-#minMaxTrack h4 {
-  margin-top: 0;
-  color: var(--accent-green-300);
-  font-size: var(--text-2xl);
-}
-
 .track-info {
   display: flex;
   align-items: flex-start;
@@ -387,4 +385,12 @@ h3 {
   width: 100%;
   padding: var(--space-5);
   height: 500px;
+}
+
+#minMaxTrack p {
+  margin: 0;
+  padding: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
 }

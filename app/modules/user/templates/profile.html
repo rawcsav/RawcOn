@@ -6,7 +6,6 @@
 </title>
 {% endblock %} {% block styles %} {% assets "user_style_bundle" %}
 <link rel="stylesheet" href="{{ ASSET_URL }}" />
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endassets %} {% endblock %} {% block body %}
 <div class="user-content">
   {% if user_data %}
@@ -73,7 +72,18 @@
       <div class="audio-features">
         <canvas id="audioFeaturesChart"></canvas>
       </div>
-      <div id="minMaxTrack"></div>
+      <div id="minMaxTrack">
+        <p>Interact with the chart to explore your playlist audio features.</p>
+        <i
+          class="rawcon-arrow-left"
+          style="
+            display: block;
+            margin: auto;
+            text-align: center;
+            margin-top: 10px;
+          "
+        ></i>
+      </div>
     </div>
     <div class="chart-container">
       <canvas id="audioFeaturesEvolutionChart"></canvas>
@@ -85,6 +95,14 @@
   {% endif %}
 </div>
 {% endblock %}{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"
+  integrity="sha512-wUYbRPLV5zs6IqvWd88HIqZU/b8TBx+I8LEioQ/UC0t5EMCLApqhIAnUg7EsAzdbhhdgW07TqYDdH3QEXRcPOQ=="
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+></script>
 <script>
   {% if user_data and period_data and top_genres and audio_features_summary and top_artists_summary and top_tracks_summary and playlist_summary %}
         const periodData = {{ period_data | tojson | safe }};

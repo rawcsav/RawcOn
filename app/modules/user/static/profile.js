@@ -602,7 +602,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function clearMinMaxTrack() {
       const minMaxContainer = document.getElementById("minMaxTrack");
-      minMaxContainer.innerHTML = "";
+      minMaxContainer.innerHTML = `<p>Interact with the chart to explore your playlist audio features.</p><i
+              class="rawcon-arrow-left"
+              style="display: block; margin: auto; text-align: center;
+margin-top: 10px;"
+            ></i>`;
     }
 
     const controlsContainer = document.createElement("div");
@@ -684,7 +688,7 @@ document.addEventListener("DOMContentLoaded", function () {
             plugins: {
               title: {
                 display: true,
-                text: "Audio\u00A0Features\u00A0Evolution\u00A0Over\u00A0Time",
+                text: "Audio\u00A0Features\u00A0Evolution",
                 font: {
                   size: 18,
                   weight: "bold",
@@ -695,15 +699,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 labels: {
                   boxWidth: 15,
                   padding: 15,
-                },
-              },
-              tooltip: {
-                mode: "index",
-                intersect: false,
-                callbacks: {
-                  title: function (tooltipItems) {
-                    return `Track\u00A0${tooltipItems[0].dataIndex + 1}`;
-                  },
                 },
               },
             },
