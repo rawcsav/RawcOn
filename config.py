@@ -2,8 +2,6 @@ import os
 from datetime import timedelta
 from urllib.parse import quote_plus
 
-import cloudinary
-
 basedir = os.path.abspath(os.path.dirname(__file__))
 appdir = os.path.abspath(os.path.join(os.path.dirname(__file__), "app"))
 
@@ -75,7 +73,7 @@ class Config(object):
 
     @classmethod
     def init_app(cls, app):
-        cloudinary.config(cloud_name=cls.CLOUD_NAME, api_key=cls.CLOUD_API_KEY, api_secret=cls.CLOUD_SECRET)
+        pass
 
 
 class DevelopmentConfig(Config):

@@ -1,9 +1,8 @@
 import secrets
 import string
-from datetime import datetime, timedelta
 
 import requests
-from flask import abort, session, current_app
+from flask import abort, current_app
 
 
 def verify_session(session):

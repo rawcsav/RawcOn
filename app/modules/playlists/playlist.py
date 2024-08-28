@@ -11,7 +11,6 @@ from app.modules.playlists.playlist_util import (
     get_playlist_recommendations,
 )
 from app.models.user_models import UserData
-from modules.user.user_util import get_playlist_summary
 
 playlist_bp = Blueprint(
     "playlist", __name__, template_folder="templates", static_folder="static", url_prefix="/playlist"
