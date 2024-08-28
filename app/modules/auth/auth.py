@@ -119,3 +119,9 @@ def refresh():
     session["last_refresh_time"] = datetime.now().isoformat()
 
     return redirect(next_url)
+
+
+@auth_bp.route("/terms")
+@handle_errors
+def terms():
+    return render_template("terms.html")

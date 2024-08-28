@@ -40,8 +40,10 @@ h6 {
   border-bottom: var(--border-normal) var(--accent-green-100);
   width: 50%;
   color: var(--accent-green-300);
-  font-family: var(--ff-accent);
-  font-weight: 600;
+  font-family: var(--ff-txt);
+  font-variation-settings:
+    "wght" var(--font-medium),
+    "ital" 0;
 }
 
 h3 {
@@ -91,7 +93,6 @@ h3 {
 .playlist-cover {
   width: 200px;
   box-shadow: var(--shadow-sm);
-  border-radius: var(--radius-lg);
   height: auto;
   object-fit: cover;
 }
@@ -137,7 +138,9 @@ h3 {
   margin: 0;
   color: var(--neutral-100);
   font-size: var(--text-base);
-  font-weight: 500;
+  font-variation-settings:
+    "wght" var(--font-medium),
+    "ital" 0;
 }
 
 /* Utility Buttons */
@@ -162,7 +165,9 @@ h3 {
   font-size: var(--text-2xl);
   width: 50%;
   margin: 0;
-  font-weight: 600;
+  font-variation-settings:
+    "wght" var(--font-medium),
+    "ital" 0;
   color: var(--accent-green-500);
 }
 form {
@@ -176,7 +181,9 @@ button {
   border: none;
   box-shadow: var(--shadow-sm);
   font-size: var(--text-base);
-  font-weight: 500;
+  font-variation-settings:
+    "wght" var(--font-medium),
+    "ital" 0;
   padding: var(--space-2);
   margin: 0;
   justify-content: center;
@@ -280,7 +287,6 @@ button:hover {
 .newest-track {
   background-color: var(--neutral-200);
   padding: var(--text-lg);
-  border-radius: var(--radius-lg);
   margin-bottom: var(--space-4);
   display: flex;
   flex-direction: column;
@@ -378,7 +384,9 @@ button:hover {
 }
 
 .time-track-date {
-  font-weight: 600;
+  font-variation-settings:
+    "wght" var(--font-medium),
+    "ital" 0;
   margin: auto;
 }
 
@@ -476,7 +484,6 @@ button:hover {
 #feature-stats li {
   background-color: var(--neutral-100);
   padding: 1rem;
-  border-radius: var(--radius-lg);
 }
 
 /* Recommendations Section */
@@ -542,7 +549,9 @@ button:hover {
   font-size: var(--text-base);
   max-width: 100%;
   font-family: var(--ff-txt);
-  font-weight: 450;
+  font-variation-settings:
+    "wght" var(--font-normal),
+    "ital" 0;
   white-space: wrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -552,7 +561,6 @@ button:hover {
   max-height: 125px;
   object-fit: contain;
   max-width: 125px;
-  border-radius: var(--radius-lg);
 }
 
 .artist-name {
@@ -604,7 +612,9 @@ button:hover {
 .caption h2 {
   font-size: var(--text-2xl);
   font-family: var(--ff-txt), serif;
-  font-weight: 500;
+  font-variation-settings:
+    "wght" var(--font-medium),
+    "ital" 0;
   color: var(--accent-green-500);
   white-space: nowrap;
   overflow: hidden;

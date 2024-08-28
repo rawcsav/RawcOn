@@ -1,6 +1,7 @@
 # app/modules/user/user_util.py
 
 import json
+import random
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
 
@@ -489,3 +490,102 @@ def get_audio_features_evolution(user_data):
         "labels": labels,
         "datasets": [{"label": feature.capitalize(), "data": evolution_data[feature]} for feature in features],
     }
+
+
+def generate_stats_blurbs(audio_features_summary, top_genres, time_periods=["short_term", "medium_term", "long_term"]):
+    blurbs = []
+    features = ["danceability", "energy", "valence", "acousticness", "instrumentalness", "speechiness"]
+
+    def get_change_description(percent_change):
+        if percent_change > 20:
+            return "significantly increased"
+        elif percent_change > 10:
+            return "noticeably increased"
+        elif percent_change < -20:
+            return "significantly decreased"
+        elif percent_change < -10:
+            return "noticeably decreased"
+        else:
+            return None
+
+    for feature in features:
+        short_term = audio_features_summary["short_term"][feature]
+        medium_term = audio_features_summary["medium_term"][feature]
+        long_term = audio_features_summary["long_term"][feature]
+
+        medium_change = ((short_term - medium_term) / medium_term) * 100
+        long_change = ((short_term - long_term) / long_term) * 100
+
+        medium_description = get_change_description(medium_change)
+        long_description = get_change_description(long_change)
+
+        if medium_description or long_description:
+            time_frame = (
+                "compared to the last 6 months" if medium_description else "compared to your all-time listening"
+            )
+            change = medium_change if medium_description else long_change
+            description = medium_description or long_description
+
+            feature_blurbs = {
+                "danceability": [
+                    f"Your music's danceability has {description} by {abs(change):.1f}% {time_frame}.",
+                    "You're gravitating towards more rhythm-driven tracks!"
+                    if change > 0
+                    else "You're exploring more complex or unconventional rhythms lately.",
+                ],
+                "energy": [
+                    f"The energy in your music has {description} by {abs(change):.1f}% {time_frame}.",
+                    "You're pumping up the volume!"
+                    if change > 0
+                    else "You're chilling out with more mellow tunes recently.",
+                ],
+                "valence": [
+                    f"The overall mood of your music has {description} by {abs(change):.1f}% {time_frame}.",
+                    "Your playlist is radiating more positive vibes!"
+                    if change > 0
+                    else "You're diving into more introspective or melancholic tracks lately.",
+                ],
+                "acousticness": [
+                    f"The acousticness of your music has {description} by {abs(change):.1f}% {time_frame}.",
+                    "You're embracing more organic, unplugged sounds!"
+                    if change > 0
+                    else "You're exploring more electronic and produced tracks recently.",
+                ],
+                "instrumentalness": [
+                    f"The instrumentalness in your music has {description} by {abs(change):.1f}% {time_frame}.",
+                    "You're vibing with more instrumental tracks!"
+                    if change > 0
+                    else "You're connecting with more vocal-centric music lately.",
+                ],
+                "speechiness": [
+                    f"The speechiness in your tracks has {description} by {abs(change):.1f}% {time_frame}.",
+                    "You're tuning into more spoken-word or rap content!"
+                    if change > 0
+                    else "Your current playlist features less spoken word and more melodic content.",
+                ],
+            }
+
+            blurb = " ".join(feature_blurbs[feature])
+            blurbs.append(blurb)
+
+    # Genre shift analysis
+    short_term_genres = set(genre for genre, _ in top_genres["short_term"][:5])
+    long_term_genres = set(genre for genre, _ in top_genres["long_term"][:5])
+    new_genres = short_term_genres - long_term_genres
+
+    if new_genres:
+        genre_intro = random.choice(
+            ["Exciting genre exploration!", "New sounds on the horizon!", "Your musical palette is expanding!"]
+        )
+        genre_action = random.choice(["You've been diving into", "You're showing love for", "You're vibing with"])
+        genre_list = (
+            ", ".join(list(new_genres)[:-1]) + " and " + list(new_genres)[-1]
+            if len(new_genres) > 1
+            else list(new_genres)[0]
+        )
+        genre_outro = random.choice(["Nice discovery!", "Expanding those musical horizons!", "Keep exploring!"])
+
+        genre_blurb = f"{genre_intro} {genre_action} {genre_list}. {genre_outro}"
+        blurbs.append(genre_blurb)
+
+    return blurbs

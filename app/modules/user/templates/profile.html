@@ -9,7 +9,10 @@
 {% endassets %} {% endblock %} {% block body %}
 <div class="user-content">
   {% if user_data %}
-
+  <div id="sticky-period" class="sticky-period">
+    <i class="rawcon-calendar sticky-icon"></i>
+    <span id="sticky-period-text">Last 4 Weeks</span>
+  </div>
   <div class="time-selector">
     <div class="selector-header">
       <i class="rawcon-calendar"> </i>
@@ -30,21 +33,21 @@
   </div>
 
   <div class="artists-column">
-    <h3>Top Artists</h3>
+    <h3><i class="rawcon-microphone-stand title-icon"></i>Top Artists</h3>
     <div class="scroll-container">
       <div id="topArtists" class="row-container"></div>
     </div>
   </div>
 
   <div class="tracks-column">
-    <h3>Top Tracks</h3>
+    <h3><i class="rawcon-record-vinyl title-icon"></i>Top Tracks</h3>
     <div class="scroll-container">
       <div id="topTracks" class="row-container"></div>
     </div>
   </div>
 
   <div class="genres-column">
-    <h3>Top Genres</h3>
+    <h3><i class="rawcon-sparkles title-icon"></i>Top Genres</h3>
     <div class="chart-container">
       <canvas id="genreBubbleChart"></canvas>
     </div>
@@ -67,7 +70,7 @@
     </div>
   </div>
   <div class="features-column">
-    <h3>Audio Features</h3>
+    <h3><i class="rawcon-symbols title-icon"></i>Audio Features</h3>
     <div class="features-row">
       <div class="audio-features">
         <canvas id="audioFeaturesChart"></canvas>
@@ -88,6 +91,7 @@
     <div class="chart-container">
       <canvas id="audioFeaturesEvolutionChart"></canvas>
     </div>
+    <div id="stats-blurbs-container"></div>
   </div>
 
   {% else %}

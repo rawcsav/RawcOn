@@ -24,6 +24,7 @@ from .user_util import (
     get_user_data,
     get_genre_bubble_chart_data,
     get_audio_features_evolution,
+    generate_stats_blurbs,
 )
 
 user_bp = Blueprint("user", __name__, template_folder="templates", static_folder="static", url_prefix="/user")
@@ -108,6 +109,8 @@ def profile():
         top_tracks_summary = {period: get_top_tracks_summary(user_data_entry, period) for period in time_periods[:3]}
         recent_tracks_summary = get_recent_tracks_summary(user_data_entry)
         playlist_summary = get_playlist_summary(user_data_entry)
+        stats_blurbs = generate_stats_blurbs(audio_features_summary, top_genres)
+
         return render_template(
             "profile.html",
             user_data=res_data,
@@ -120,6 +123,7 @@ def profile():
             top_tracks_summary=top_tracks_summary,
             recent_tracks_summary=recent_tracks_summary,
             playlist_summary=playlist_summary,
+            stats_blurbs=stats_blurbs,
         )
 
     except Exception as e:
@@ -287,3 +291,19 @@ def audio_features_evolution():
     except Exception as e:
         print(f"An error occurred: {e}")
         return jsonify({"error": str(e)}), 500
+
+
+@user_bp.route("/stats_blurbs")
+@handle_errors
+@require_spotify_auth
+def get_stats_blurbs():
+    user_data = get_user_data()
+    audio_features_summary = {
+        period: get_audio_features_summary(user_data, period) for period in ["short_term", "medium_term", "long_term"]
+    }
+
+    top_genres = {period: get_top_genres(user_data, period) for period in ["short_term", "medium_term", "long_term"]}
+
+    stats_blurbs = generate_stats_blurbs(audio_features_summary, top_genres)
+
+    return jsonify({"blurbs": stats_blurbs})

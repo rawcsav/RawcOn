@@ -440,8 +440,8 @@ const chartModule = (() => {
       <a href="${externalUrl}" target="_blank" class="minmax-link">
         <img src="${coverArt}" alt="${trackName}" class="minmax-track-image"></a>
         <div class="minmax-track-details">
-          <p class="minmax-track">${trackName}</p>
-          <p class="minmax-artist">${artistName}</p>
+          <p class="minmax-track" title="${trackName}">${trackName}</p>
+          <p class="minmax-artist" title="${artistName}">${artistName}</p>
         </div>
       </div>
     `;
@@ -759,8 +759,8 @@ const recommendationModule = (() => {
           <img src="${trackInfo.cover_art || "/static/dist/img/default-track.svg"}" alt="${trackInfo.name}" class="result-cover-art">
         </a>        
         <div class="caption">
-          <h2>${trackInfo.trackName}</h2>
-          <p>${trackInfo.artist}</p>
+          <h2 title="${trackInfo.trackName}">${trackInfo.trackName}</h2>
+          <p title="${trackInfo.artist}">${trackInfo.artist}</p>
         </div>
         ${
           trackInfo.preview

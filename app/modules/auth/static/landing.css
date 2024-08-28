@@ -44,7 +44,9 @@ html {
   grid-row: 1;
   margin-left: auto;
   font-size: 3.5em;
-  font-weight: 700;
+  font-variation-settings:
+    "wght" var(--font-bold),
+    "ital" 0;
 }
 
 .main-image {
@@ -63,7 +65,9 @@ html {
   align-items: center;
   font-size: var(--text-5xl);
   font-family: var(--ff-txt);
-  font-weight: 700;
+  font-variation-settings:
+    "wght" var(--font-bold),
+    "ital" 0;
   padding: var(--space-5);
 }
 .actions a,
@@ -92,4 +96,8 @@ html {
   transform: scale(1.1);
   transition: ease-in 0.2s;
   cursor: pointer;
+}
+
+.top-banner {
+  display: none;
 }

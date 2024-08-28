@@ -71,6 +71,7 @@ const elements = {
   artistSeedsInput: document.getElementById("artist_seeds"),
   recommendationForm: document.querySelector("form"),
   resultsContainer: document.getElementById("results"),
+  seedStep: document.getElementById("seed-step"),
   playlistModal: document.getElementById("playlistModal"),
   playlistOptions: document.getElementById("playlistOptions"),
   toast: document.getElementById("toast"),
@@ -115,8 +116,10 @@ const seedsModule = (() => {
   // Add this function to the seedsModule
   const updateSubmitButton = () => {
     const seedCount = elements.seedsContainer.children.length;
+    elements.seedStep.visible = seedCount >= 1;
     elements.submitButton.disabled = seedCount === 0;
     elements.submitButton.classList.toggle("disabled", seedCount === 0);
+    elements.seedStep.classList.toggle("hidden", seedCount >= 1);
   };
   const addToSeeds = (item, type) => {
     if (elements.seedsContainer.children.length >= 5) {
@@ -131,7 +134,7 @@ const seedsModule = (() => {
     const spotifyUrl = item.external_urls.spotify;
     seedElement.innerHTML = `
       <div class="seed-info">
-        <a href="${spotifyUrl}" target="_blank" rel="noopener noreferrer" class="seed-name">${item.name}</a>
+        <a href="${spotifyUrl}" target="_blank" rel="noopener noreferrer" class="seed-name" title="${item.name}">${item.name}</a>
         <div class="seed-subtext">${type === "track" ? item.artists[0].name : "Artist"}</div>
       </div>
       <button class="remove-seed" aria-label="Remove seed">×</button>
@@ -207,7 +210,7 @@ const uiModule = (() => {
           <img src="${imageUrl || "/static/dist/img/default-track.svg"}" alt="${item.name}" class="result-image">
         </a>
         <div class="result-info">
-          <div class="result-name">${item.name}</div>
+          <div class="result-name" title="${item.name}">${item.name}</div>
           <div class="result-subtext">${type === "track" ? item.artists[0].name : "Artist"}</div>
         </div>
         <button class="add-to-seeds" data-id="${item.id}" data-type="${type}">+</button>
@@ -260,8 +263,8 @@ const uiModule = (() => {
           <img src="${trackInfo.cover_art}" alt="Cover Art" class="result-cover-art">
         </a>
         <div class="caption">
-          <h2>${trackInfo.trackName}</h2>
-          <p>${trackInfo.artist}</p>
+          <h2 title="${trackInfo.trackName}">${trackInfo.trackName}</h2>
+          <p title="${trackInfo.artist}">${trackInfo.artist}</p>
         </div>
         ${
           trackInfo.preview
@@ -549,7 +552,7 @@ const playlistModule = (() => {
             <div class="playlist-choice" data-playlistid="${playlist.id}">
               <div class="playlist-div">
                 <img src="${playlist.cover_art}" alt="${playlist.name}" class="playlist-art">
-                <h3 class="playlist-title">${playlist.name}</h3>
+                <h3 class="playlist-title" title="${playlist.name}">${playlist.name}</h3>
               </div>
             </div>
           `,

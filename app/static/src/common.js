@@ -128,10 +128,25 @@ function setupLoader() {
       if (form) {
         event.preventDefault();
         window.showLoading(Infinity);
-        fetch(form.action, {
-          method: form.method,
-          body: new FormData(form),
-        }).finally(() => {
+
+        const method = (form.method || "GET").toUpperCase();
+        const formData = new FormData(form);
+
+        let url = form.action;
+        let options = {
+          method: method,
+        };
+
+        if (method === "GET") {
+          // For GET requests, append form data to URL
+          const params = new URLSearchParams(formData);
+          url += (url.includes("?") ? "&" : "?") + params.toString();
+        } else {
+          // For other methods, send form data in the body
+          options.body = formData;
+        }
+
+        fetch(url, options).finally(() => {
           window.hideLoading();
         });
       }
@@ -174,11 +189,11 @@ function setupPageFeatures() {
       playlistNav.classList.toggle("open");
       if (icon) {
         icon.classList.toggle(
-          "rawcon-sort-up",
+          "rawcon-circle-chevron-up",
           playlistNav.classList.contains("open"),
         );
         icon.classList.toggle(
-          "rawcon-sort-down",
+          "rawcon-circle-chevron-up",
           !playlistNav.classList.contains("open"),
         );
       }
@@ -204,7 +219,7 @@ function setupPageFeatures() {
              onclick="handlePlaylistClick()">
       </div>
       <div class="playlist-info">
-        <span class="playlist-name">${playlist.name}</span>
+        <span class="playlist-name" title="${playlist.name}">${playlist.name}</span>
       </div>
     </a>
   </li>
@@ -252,3 +267,6 @@ document.addEventListener("DOMContentLoaded", function () {
     setupPageFeatures();
   }
 });
+function goBack() {
+  window.history.back();
+}

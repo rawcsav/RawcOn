@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", function () {
       div.innerHTML = `
         <a href="${artist.spotify_url}" target="_blank" rel="noopener noreferrer">
           <img src="/static/dist/img/default-artist.svg" data-src="${artist.image_url || "/static/dist/img/default-artist.svg"}" alt="${artist.name}" class="artist-image lazy-load" loading="lazy">
-          <p>${artist.name}</p>
+          <p title="${artist.name}">${artist.name}</p>
         </a>
       `;
       fragment.appendChild(div);
@@ -117,8 +117,8 @@ document.addEventListener("DOMContentLoaded", function () {
       div.innerHTML = `
         <a href="${track.spotify_url}" target="_blank" rel="noopener noreferrer">
           <img src="/static/dist/img/default-track.svg" data-src="${track.image_url || "/static/dist/img/default-track.svg"}" alt="${track.name}" class="track-image lazy-load" loading="lazy">
-          <p>${track.name}</p>
-          <p class="artist-name">${track.artists.join(", ")}</p>
+          <p title="${track.name}">${track.name}</p>
+          <p class="artist-name" title="${track.artists.join(", ")}">${track.artists.join(", ")}</p>
         </a>
       `;
       fragment.appendChild(div);
@@ -302,7 +302,7 @@ document.addEventListener("DOMContentLoaded", function () {
         <li class="grid-item">
           <a href="${externalUrl}" target="_blank" rel="noopener noreferrer">
             <img src="${imageUrl}" alt="${artist.name}" class="artist-image">
-            <p>${artist.name}</p>
+            <p title="${artist.name}">${artist.name}</p>
           </a>
         </li>
       `;
@@ -322,8 +322,8 @@ document.addEventListener("DOMContentLoaded", function () {
         <li class="grid-item">
           <a href="${externalUrl}" target="_blank" rel="noopener noreferrer">
             <img src="${imageUrl}" alt="${track.name}" class="track-image">
-            <p>${track.name}</p>
-            <p class="artist-name">${track.artists[0].name}</p>
+            <p title="${track.name}">${track.name}</p>
+            <p class="artist-name" title="${track.artists[0].name}">${track.artists[0].name}</p>
           </a>
         </li>
       `;
@@ -580,8 +580,8 @@ document.addEventListener("DOMContentLoaded", function () {
         <img src="${albumArt}" alt="${trackInfo.name}" class="album-art">
       </a>
       <div class="track-details">
-        <a class="minmax-track" href="${trackUrl}" target="_blank" rel="noopener noreferrer">${trackInfo.name}</a>
-        <p class="minmax-artist">${trackInfo.artists[0].name}</p>
+        <a class="minmax-track" href="${trackUrl}" target="_blank" rel="noopener noreferrer" title="${trackInfo.name}">${trackInfo.name}</a>
+        <p class="minmax-artist" title="${trackInfo.artists[0].name}">${trackInfo.artists[0].name}</p>
       </div>
     </div>
   `;
@@ -742,4 +742,97 @@ margin-top: 10px;"
   createAudioFeaturesEvolutionChart();
   updateDisplay("short_term");
   createEnhancedAudioFeaturesChart(audioFeaturesSummary, periodData);
+  const stickyPeriod = document.getElementById("sticky-period");
+  const stickyPeriodText = document.getElementById("sticky-period-text");
+
+  let timeSelectorRect = timeSelector.getBoundingClientRect();
+  let timeSelectorBottom = timeSelectorRect.bottom + window.pageYOffset;
+
+  function updateStickyPeriod() {
+    const selectedOption = document.querySelector(".time-option.selected");
+    if (selectedOption) {
+      stickyPeriodText.textContent = selectedOption.textContent.trim();
+    }
+  }
+
+  function handleScroll() {
+    if (window.pageYOffset > timeSelectorBottom) {
+      stickyPeriod.classList.add("visible");
+    } else {
+      stickyPeriod.classList.remove("visible");
+    }
+  }
+
+  function handleResize() {
+    timeSelectorRect = timeSelector.getBoundingClientRect();
+    timeSelectorBottom = timeSelectorRect.bottom + window.pageYOffset;
+  }
+
+  timeOptions.forEach((option) => {
+    option.addEventListener("click", function () {
+      timeOptions.forEach((opt) => opt.classList.remove("selected"));
+      this.classList.add("selected");
+      updateStickyPeriod();
+    });
+  });
+
+  window.addEventListener("scroll", handleScroll);
+  window.addEventListener("resize", handleResize);
+  updateStickyPeriod(); // Initialize with the default selected period
+
+  const blurbContainer = document.getElementById("stats-blurbs-container");
+
+  function displayBlurbs(blurbs) {
+    blurbContainer.innerHTML = ""; // Clear existing blurbs
+
+    blurbs.forEach((blurb, index) => {
+      const blurbElement = document.createElement("div");
+      blurbElement.className = "stat-blurb";
+
+      const icon = document.createElement("i");
+      icon.className = getRandomIcon();
+
+      const textElement = document.createElement("p");
+      textElement.textContent = blurb;
+
+      blurbElement.appendChild(icon);
+      blurbElement.appendChild(textElement);
+
+      // Add a slight delay for each blurb to create a staggered appearance
+      setTimeout(() => {
+        blurbElement.style.opacity = "1";
+        blurbElement.style.transform = "translateY(0)";
+      }, index * 200);
+
+      blurbContainer.appendChild(blurbElement);
+    });
+  }
+
+  function getRandomIcon() {
+    const icons = [
+      "fas fa-chart-line",
+      "fas fa-music",
+      "fas fa-headphones",
+      "fas fa-guitar",
+      "fas fa-drum",
+      "fas fa-microphone-alt",
+    ];
+    return icons[Math.floor(Math.random() * icons.length)];
+  }
+
+  function fetchBlurbs() {
+    fetch("/user/stats_blurbs")
+      .then((response) => response.json())
+      .then((data) => {
+        displayBlurbs(data.blurbs);
+      })
+      .catch((error) => {
+        console.error("Error fetching stats blurbs:", error);
+        blurbContainer.innerHTML =
+          '<p class="error-message">Unable to load stats blurbs. Please try again later.</p>';
+      });
+  }
+
+  // Initial load of blurbs
+  fetchBlurbs();
 });
