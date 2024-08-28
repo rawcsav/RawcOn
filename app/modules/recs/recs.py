@@ -1,6 +1,6 @@
 import json
 from flask import Blueprint, jsonify, render_template, request, session, json
-from app import db
+from app import db, limiter, cache
 from app.models.user_models import UserData
 from app.modules.auth.auth_util import fetch_user_data
 from app.util.wrappers import require_spotify_auth
@@ -17,6 +17,8 @@ def parse_seeds(key):
 
 
 @recs_bp.route("/recommendations", methods=["GET"])
+@limiter.limit("5 per minute")
+@cache.memoize(timeout=300)  # Cache for 5 minutes
 @require_spotify_auth
 def recommendations():
     spotify_user_id = session["USER_ID"]
@@ -35,6 +37,8 @@ def recommendations():
 
 
 @recs_bp.route("/get_recommendations", methods=["POST"])
+@limiter.limit("5 per minute")
+@require_spotify_auth
 def get_recommendations_route():
     sp, error = init_session_client()
     if error:
@@ -76,6 +80,8 @@ def get_recommendations_route():
 
 
 @recs_bp.route("/save_track", methods=["POST"])
+@limiter.limit("5 per minute")
+@require_spotify_auth
 def save_track():
     sp, error = init_session_client()
     if error:
@@ -88,6 +94,8 @@ def save_track():
 
 
 @recs_bp.route("/add_to_playlist", methods=["POST"])
+@limiter.limit("25 per minute")
+@require_spotify_auth
 def add_to_playlist():
     sp, error = init_session_client()
     if error:
@@ -100,6 +108,8 @@ def add_to_playlist():
 
 
 @recs_bp.route("/unsave_track", methods=["POST"])
+@limiter.limit("25 per minute")
+@require_spotify_auth
 def unsave_track():
     sp, error = init_session_client()
     if error:
@@ -112,6 +122,8 @@ def unsave_track():
 
 
 @recs_bp.route("/remove_from_playlist", methods=["POST"])
+@limiter.limit("25 per minute")
+@require_spotify_auth
 def remove_from_playlist():
     sp, error = init_session_client()
     if error:
@@ -125,6 +137,8 @@ def remove_from_playlist():
 
 
 @recs_bp.route("/search", methods=["POST"])
+@limiter.limit("15 per minute")
+@require_spotify_auth
 def search():
     query = request.json.get("query")
     type = request.json.get("type")
@@ -146,6 +160,7 @@ def search():
 
 
 @recs_bp.route("/get-user-playlists")
+@limiter.limit("15 per minute")
 def get_user_playlists():
     spotify_user_id = session.get("USER_ID")
     if not spotify_user_id:

@@ -3,7 +3,7 @@ from datetime import datetime
 from flask import Blueprint, render_template, session, request, jsonify
 from pytz import timezone
 
-from app import db
+from app import db, limiter, cache
 from app.models.user_models import UserData
 from ..auth.auth_util import fetch_user_data
 from app.util.wrappers import require_spotify_auth, handle_errors
@@ -33,6 +33,8 @@ eastern = timezone("US/Eastern")
 
 
 @user_bp.route("/profile")
+@limiter.limit("8 per minute")
+@cache.memoize(timeout=300)  # Cache for 5 minutes
 @handle_errors
 @require_spotify_auth
 def profile():
@@ -132,6 +134,7 @@ def profile():
 
 
 @user_bp.route("/refresh-data", methods=["POST"])
+@limiter.limit("2 per minute")
 @handle_errors
 @require_spotify_auth
 def refresh_data():
@@ -154,6 +157,7 @@ def refresh_data():
 
 
 @user_bp.route("/get_mode", methods=["GET"])
+@limiter.limit("10 per minute")
 @require_spotify_auth
 def get_mode():
     try:
@@ -166,6 +170,7 @@ def get_mode():
 
 
 @user_bp.route("/update_mode", methods=["POST"])
+@limiter.limit("10 per minute")
 @handle_errors
 @require_spotify_auth
 def update_mode():
@@ -194,6 +199,7 @@ def top_genres(time_range):
 
 
 @user_bp.route("/genre_data/<period>/<genre>")
+@limiter.limit("30 per minute")
 @handle_errors
 @require_spotify_auth
 def genre_data(period, genre):
@@ -203,6 +209,7 @@ def genre_data(period, genre):
 
 
 @user_bp.route("/audio_features/<time_range>")
+@limiter.limit("30 per minute")
 @handle_errors
 @require_spotify_auth
 def audio_features(time_range):
@@ -216,6 +223,7 @@ def audio_features(time_range):
 
 
 @user_bp.route("/top_artists/<time_range>")
+@limiter.limit("30 per minute")
 @handle_errors
 @require_spotify_auth
 def top_artists(time_range):
@@ -229,6 +237,7 @@ def top_artists(time_range):
 
 
 @user_bp.route("/top_tracks/<time_range>")
+@limiter.limit("30 per minute")
 @handle_errors
 @require_spotify_auth
 def top_tracks(time_range):
@@ -242,6 +251,7 @@ def top_tracks(time_range):
 
 
 @user_bp.route("/recent_tracks")
+@limiter.limit("30 per minute")
 @handle_errors
 @require_spotify_auth
 def recent_tracks():
@@ -255,6 +265,7 @@ def recent_tracks():
 
 
 @user_bp.route("/playlists")
+@limiter.limit("30 per minute")
 @handle_errors
 @require_spotify_auth
 def playlists():
@@ -268,6 +279,7 @@ def playlists():
 
 
 @user_bp.route("/genre_bubble_chart")
+@limiter.limit("30 per minute")
 @handle_errors
 @require_spotify_auth
 def genre_bubble_chart():
@@ -281,6 +293,7 @@ def genre_bubble_chart():
 
 
 @user_bp.route("/audio_features_evolution")
+@limiter.limit("30 per minute")
 @handle_errors
 @require_spotify_auth
 def audio_features_evolution():
@@ -294,6 +307,7 @@ def audio_features_evolution():
 
 
 @user_bp.route("/stats_blurbs")
+@limiter.limit("30 per minute")
 @handle_errors
 @require_spotify_auth
 def get_stats_blurbs():

@@ -71,6 +71,16 @@ class Config(object):
     MAX_RETRIES = 3
     RETRY_WAIT_SECONDS = 2
 
+    CACHE_TYPE = 'redis'
+    CACHE_REDIS_HOST = 'localhost'
+    CACHE_REDIS_PORT = 6379
+    CACHE_REDIS_DB = 0
+    CACHE_REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")  # if applicable
+
+    RATELIMIT_STORAGE_URI = 'redis://localhost:6379/1'
+    RATELIMIT_STORAGE_OPTIONS = {"password": os.getenv("REDIS_PASSWORD")}
+
+
     @classmethod
     def init_app(cls, app):
         pass

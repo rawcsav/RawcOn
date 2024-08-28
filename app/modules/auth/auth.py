@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from urllib.parse import urlencode
 from flask import Blueprint, abort, redirect, render_template, request, session, url_for, current_app
 from flask import make_response
-
+from app import cache, limiter
 
 from app.modules.auth.auth_util import generate_state, prepare_auth_payload, request_tokens
 from app.util.wrappers import handle_errors
@@ -12,12 +12,14 @@ auth_bp = Blueprint("auth", __name__, template_folder="templates", static_folder
 
 
 @auth_bp.route("/")
+@cache.cached(timeout=3600)  # Cache for 1 hour
 @handle_errors
 def index():
     return render_template("landing.html")
 
 
 @auth_bp.route("/<loginout>")
+@limiter.limit("10 per minute")
 @handle_errors
 def login(loginout):
     if loginout == "logout":
@@ -56,6 +58,7 @@ def login(loginout):
 
 
 @auth_bp.route("/callback")
+@limiter.limit("10 per minute")
 @handle_errors
 def callback():
     state = request.args.get("state")
@@ -89,6 +92,7 @@ def callback():
 
 
 @auth_bp.route("/refresh")
+@limiter.limit("5 per minute")
 def refresh():
     next_url = request.args.get("next") or url_for("user.profile")
 
@@ -122,6 +126,7 @@ def refresh():
 
 
 @auth_bp.route("/terms")
+@cache.cached(timeout=3600)  # Cache for 1 hour
 @handle_errors
 def terms():
     return render_template("terms.html")

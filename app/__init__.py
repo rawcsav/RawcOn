@@ -1,6 +1,9 @@
 import os
 from flask import Flask, request, Response
 from flask_assets import Environment
+from flask_caching import Cache
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
@@ -12,6 +15,8 @@ from flask_cors import CORS
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 cors = CORS()
+cache = Cache()
+limiter = Limiter(key_func=get_remote_address)
 
 
 def country_flag(country_code):
@@ -40,6 +45,8 @@ def create_app():
     Migrate(app, db)
     bcrypt.init_app(app)
     assets.init_app(app)
+    cache.init_app(app)
+    limiter.init_app(app)
 
     with app.app_context():
         from app.modules.auth import auth
