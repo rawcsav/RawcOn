@@ -6,6 +6,7 @@
     />
   </a>
 </header>
+{% if user_data is defined and user_data %}
 <div class="hidden-profile"></div>
 <div class="profile-menu">
   <div class="profile-top-section">
@@ -26,6 +27,16 @@
         <div class="info-item user-country">
           <i class="rawcon-location-dot"></i>
           <span class="info-content">{{ user_data.country }} </span>
+        </div>
+        {% endif %} {% if user_data.product %}
+        <div class="info-item user-product">
+          {% if user_data.product == 'premium' %}
+          <i class="rawcon-badge-dollar"></i>
+          <span class="info-content">Spotify Premium</span>
+          {% elif user_data.product == 'free' %}
+          <i class="rawcon-badge"></i>
+          <span class="info-content">Spotify Free</span>
+          {% endif %}
         </div>
         {% endif %}
       </div>
@@ -50,12 +61,12 @@
       <div class="playlist-nav nav-item" data-keyword="playlist">
         <i class="rawcon-album-collection-circle-user"></i>
         <p class="playlist-header">Playlists</p>
-        <i class="rawcon-sort-down playlist-toggle-icon"></i>
+        <i class="rawcon-circle-chevron-down playlist-toggle-icon"></i>
       </div>
     </div>
   </div>
   <ul id="playlists" class="hidden"></ul>
-  <div class="logo-container">
+  <div class="logo-container mobile-playback-ui">
     <a class="logo-redirect" href="{{ url_for('auth.index') }}">
       <img
         class="logo"
@@ -68,3 +79,4 @@
     <i class="rawcon-left-from-line"></i>Logout</a
   >
 </div>
+{% endif %}
