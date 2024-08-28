@@ -117,6 +117,8 @@
   --transition-fast: 150ms ease;
   --transition-normal: 300ms ease;
   --transition-slow: 500ms ease;
+
+  --spotify-black: #191414;
 }
 
 @font-face {

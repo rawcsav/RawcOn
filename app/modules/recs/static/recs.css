@@ -324,7 +324,7 @@ button:hover {
   gap: var(--space-5);
 }
 
-.result-cover-art-container a {
+.cover-art-container {
   width: 40%;
 }
 
@@ -338,6 +338,10 @@ button:hover {
 
 .caption {
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: flex-start;
 }
 
 .no-preview,
@@ -466,7 +470,7 @@ input:focus-visible + .search-btn {
   display: flex;
   flex-grow: 1;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 /* Seed Item */
@@ -539,12 +543,13 @@ input:focus-visible + .search-btn {
   display: flex;
   flex-direction: column;
   width: 100%;
+  gap: var(--space-2);
 }
 
 .caption h2 {
-  font-size: var(--text-lg);
-  margin-bottom: var(--space-2);
+  font-size: var(--text-xl);
   font-family: var(--ff-txt), serif;
+  margin: 0;
   font-variation-settings:
     "wght" var(--font-medium),
     "ital" 0;
@@ -553,15 +558,33 @@ input:focus-visible + .search-btn {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 75%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-5);
 }
 
 .caption p {
-  font-size: var(--text-base);
+  font-size: var(--text-xl);
   color: var(--neutral-400);
   white-space: nowrap;
+  margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 75%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.result-cover-art-container a {
+  text-decoration: none;
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  color: var(--spotify-black);
+  font-size: var(--text-xl);
 }
 #seed-step.hidden {
   display: none;
@@ -702,7 +725,7 @@ input:focus-visible + .search-btn {
   display: flex;
   align-items: center;
   padding: var(--space-4);
-  border-bottom: var(--border-normal) var(--neutral-300);
+  border-bottom: var(--border-normal) var(--neutral-200);
   cursor: pointer;
   transition:
     background-color var(--transition-normal),
@@ -710,7 +733,6 @@ input:focus-visible + .search-btn {
 }
 
 .playlist-choice:hover {
-  background-color: var(--neutral-300);
   transform: translateX(5px);
 }
 
@@ -719,7 +741,6 @@ input:focus-visible + .search-btn {
   height: 60px;
   object-fit: cover;
   margin-right: var(--space-5);
-  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
 }
 
@@ -736,9 +757,15 @@ input:focus-visible + .search-btn {
   font-size: var(--text-base);
 }
 
+.playlist-div {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
 .playlist-details {
-  font-size: var(--text-xs);
-  color: var(--neutral-300);
+  font-size: var(--text-lg);
+  color: var(--neutral-500);
 }
 .recommendations-guide {
   border-radius: var(--radius-md);
@@ -757,8 +784,9 @@ input:focus-visible + .search-btn {
 .guide-content {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-  margin: auto;
+  gap: var(--space-4);
+  margin-top: 30px;
+  /* margin: auto; */
 }
 
 .guide-step {
@@ -773,6 +801,7 @@ input:focus-visible + .search-btn {
 .step-title {
   font-size: var(--text-base);
   margin-bottom: var(--space-2);
+  color: var(--accent-red-300);
 }
 
 .step-list,

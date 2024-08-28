@@ -755,12 +755,13 @@ const recommendationModule = (() => {
     div.className = "result-item";
     div.innerHTML = `
       <div class="result-cover-art-container">
-        <a href="${trackInfo.trackUrl}" target="_blank" rel="noopener noreferrer">
+        <div class="cover-art-container">
           <img src="${trackInfo.cover_art || "/static/dist/img/default-track.svg"}" alt="${trackInfo.name}" class="result-cover-art">
-        </a>        
+        </div>        
         <div class="caption">
-          <h2 title="${trackInfo.trackName}">${trackInfo.trackName}</h2>
-          <p title="${trackInfo.artist}">${trackInfo.artist}</p>
+          <h2 title="${trackInfo.trackName}"><i class="rawcon-music"></i>${trackInfo.trackName}</h2>
+          <p title="${trackInfo.artist}"><i class="rawcon-user-music"></i>${trackInfo.artist}</p>
+          <a href="${trackInfo.trackUrl}" target="_blank" rel="noopener noreferrer"><i class="rawcon-spotify"></i> Play on Spotify</a>
         </div>
         ${
           trackInfo.preview

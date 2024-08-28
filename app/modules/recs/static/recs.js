@@ -259,12 +259,13 @@ const uiModule = (() => {
       const trackElement = util.createElement("div", "result-item");
       trackElement.innerHTML = `
       <div class="result-cover-art-container">
-        <a href="${trackInfo.trackUrl}" target="_blank" rel="noopener noreferrer">
+        <div class="cover-art-container">
           <img src="${trackInfo.cover_art}" alt="Cover Art" class="result-cover-art">
-        </a>
+        </div>
         <div class="caption">
-          <h2 title="${trackInfo.trackName}">${trackInfo.trackName}</h2>
-          <p title="${trackInfo.artist}">${trackInfo.artist}</p>
+          <h2 title="${trackInfo.trackName}"><i class="rawcon-music"></i>${trackInfo.trackName}</h2>
+          <p title="${trackInfo.artist}"><i class="rawcon-user-music"></i>${trackInfo.artist}</p>
+          <a href="${trackInfo.trackUrl}" target="_blank" rel="noopener noreferrer"><i class="rawcon-spotify"></i> Play on Spotify</a>
         </div>
         ${
           trackInfo.preview
@@ -524,10 +525,24 @@ const playlistModule = (() => {
       if (data.error) {
         throw new Error(data.error);
       }
+
+      console.log(
+        `Searching for plus icon with selector: .add-to-playlist[data-trackid="${trackId}"] .plus-icon`,
+      );
       const plusIcon = document.querySelector(
         `.add-to-playlist[data-trackid="${trackId}"] .plus-icon`,
       );
-      plusIcon.classList.add("added");
+
+      if (plusIcon) {
+        console.log("Plus icon found, adding 'added' class");
+        plusIcon.classList.add("added");
+      } else {
+        console.log("Plus icon not found. Debugging information:");
+        console.log("Track ID:", trackId);
+        console.log("Playlist ID:", playlistId);
+        console.log("DOM at this point:", document.body.innerHTML);
+      }
+
       elements.playlistModal.style.display = "none";
       showToast("Track added to playlist successfully.");
     } catch (error) {
@@ -535,7 +550,6 @@ const playlistModule = (() => {
       console.error("Error:", error);
     }
   };
-
   const loadUserPlaylists = async () => {
     try {
       const response = await fetch("/recs/get-user-playlists");
