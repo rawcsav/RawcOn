@@ -15,6 +15,22 @@ services:
     networks:
       - internal
 
+  redis:
+    image: redis:6.2-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - internal
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   web:
     command: gunicorn --workers 1  -t 90 --bind 0.0.0.0:8081 uwsgi:app --log-level=debug
     build:
@@ -31,6 +47,7 @@ services:
       SQL_DB_NAME: ${SQL_DB_NAME}
       CRYPT_KEY: ${CRYPT_KEY}
       CLOUD_NAME: ${CLOUD_NAME}
+      REDIS_URL: redis://default:${REDIS_PASSWORD}@redis:6379/0
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
       CLOUDINARY_SECRET: ${CLOUDINARY_SECRET}
       CLIENT_ID: ${CLIENT_ID}
@@ -43,6 +60,7 @@ services:
       - ./uwsgi.py:/rawcon/uwsgi.py
     depends_on:
       - mysql
+      - redis
     networks:
       - appnet
       - internal
@@ -50,9 +68,11 @@ services:
 volumes:
   db_volume:
   user_files_volume:  # New volume for user files
+  redis_data:
+
 
 networks:
-    internal:
-      driver: "bridge"
-    appnet:
-      external: true
+  internal:
+    driver: "bridge"
+  appnet:
+    external: true

@@ -76,9 +76,12 @@ class Config(object):
     CACHE_REDIS_PORT = 6379
     CACHE_REDIS_DB = 0
     CACHE_REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")  # if applicable
+    CACHE_DEFAULT_TIMEOUT = 300
 
     RATELIMIT_STORAGE_URI = 'redis://localhost:6379/1'
     RATELIMIT_STORAGE_OPTIONS = {"password": os.getenv("REDIS_PASSWORD")}
+    RATELIMIT_HEADERS_ENABLED = True
+
 
 
     @classmethod
