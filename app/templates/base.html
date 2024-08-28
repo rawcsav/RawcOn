@@ -83,8 +83,17 @@
   </head>
   <body>
     <div class="main-div">
-      {% block menu %}{% include 'menu.html' %}{% endblock %} {% block body %}
-      {% endblock %}
+      {% block header %}
+      <header class="top-banner">
+        <a class="top-banner-link" href="/">
+          <img
+            src="/static/dist/img/rawcon-corner.svg"
+            alt="Rawc-On Top Banner Logo"
+          />
+        </a>
+      </header>
+      {% endblock %} {% block menu %}{% include 'menu.html' %}{% endblock %} {%
+      block body %} {% endblock %}
     </div>
     {% include 'loader.html' %}
     <div id="toastContainer" class="toast-container"></div>

@@ -3,7 +3,7 @@
 <link rel="canonical" href="https://rawcon.rawcsav.com/" />
 {% endblock %} {% block styles %} {% assets "auth_style_bundle" %}
 <link rel="stylesheet" href="{{ ASSET_URL }}" />
-{% endassets %} {% endblock %} {% block body %}
+{% endassets %} {% endblock %} {% block header %} {% endblock %}{% block body %}
 <div class="container">
   <div class="presents">
     <div class="corner-logo">
@@ -33,11 +33,7 @@
         rel="noopener noreferrer"
       >
         <i class="rawcon-circle-info"></i> </a
-      ><a
-        href="{{ url_for('auth.terms') }}"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
+      ><a href="{{ url_for('auth.terms') }}" rel="noopener noreferrer">
         <i class="rawcon-scale-balanced"></i>
       </a>
     </div>

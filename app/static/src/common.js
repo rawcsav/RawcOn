@@ -267,6 +267,3 @@ document.addEventListener("DOMContentLoaded", function () {
     setupPageFeatures();
   }
 });
-function goBack() {
-  window.history.back();
-}

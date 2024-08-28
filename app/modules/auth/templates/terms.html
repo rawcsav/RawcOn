@@ -3,113 +3,133 @@
 <title>Rawc-On | Terms</title>
 {% endblock %} {% block styles %} {% assets "auth_style_bundle" %}
 <link rel="stylesheet" href="{{ ASSET_URL }}" />
-{% endassets %} {% endblock %} {% block body %}
-<div class="about-rawc-on">
-  <h1>About Rawc-On!</h1>
-  <p>
-    Rawc-On! is an advanced music experience platform that leverages the Spotify
-    API to provide personalized, data-driven insights and recommendations. Our
-    service enhances your music journey by offering:
-  </p>
-  <ul>
-    <li>
-      <strong>Detailed statistical profiles</strong> of your top tracks,
-      artists, and genres, across different time periods (4 weeks, 6 months, all
-      time).
-    </li>
-    <li>
-      <strong>Personalized music recommendations</strong> based on user-defined
-      seeds and desired audio characteristics.
-    </li>
-    <li>
-      <strong>Advanced playlist management features and statistics</strong>,
-      including:
-      <ul>
-        <li>Custom playlist cover image generation.</li>
-        <li>Duplicate track removal.</li>
-        <li>Intelligent track reordering.</li>
-        <li>Tailored track recommendations for playlist enhancement.</li>
-      </ul>
-    </li>
-  </ul>
+{% endassets %} {% endblock %}
+<div class="main-div">
+  {% block header %}
+  <header class="top-banner">
+    <div class="back-arrow-container">
+      <button class="back-arrow" onclick="history.back();return false;">
+        <i class="rawcon-arrow-left" onclick="history.back();return false;"></i>
+        Go Back
+      </button>
+    </div>
+    <a class="top-banner-link" href="/">
+      <img
+        src="/static/dist/img/rawcon-corner.svg"
+        alt="Rawc-On Top Banner Logo"
+      />
+    </a>
+  </header>
+  {% endblock %}{% block body %}
+  <div class="terms-img">
+    <img
+      class="logo"
+      src="/static/dist/img/rawcon-logo.svg"
+      alt="RAWCON Logo"
+    />
+  </div>
 
-  <h2>How It Works</h2>
-  <p>
-    Rawc-On! securely connects to your Spotify account using Spotify's OAuth 2.0
-    flow. Upon authorization, we analyze your listening history and preferences
-    to generate insights and power our recommendation engine. The platform uses
-    Spotify's Web API to fetch detailed information about your playlists,
-    tracks, and artists, which is then processed to provide you with a
-    customized music experience.
-  </p>
+  <div class="about-rawc-on">
+    <h1 class="terms-title">About Rawc-On!</h1>
+    <p>
+      Rawc-On! is an advanced music experience platform that leverages the
+      Spotify API to provide personalized, data-driven insights and
+      recommendations. Our service enhances your music journey by offering:
+    </p>
+    <ul class="terms-list">
+      <li>
+        <strong>Detailed statistical profiles</strong> of your top tracks,
+        artists, and genres, across different time periods (4 weeks, 6 months,
+        all time).
+      </li>
+      <li>
+        <strong>Personalized music recommendations</strong> based on
+        user-defined seeds and desired audio characteristics.
+      </li>
+      <li>
+        <strong>Advanced playlist management features and statistics.</strong>,
+      </li>
+    </ul>
 
-  <h2>Data Usage and Privacy</h2>
-  <p>
-    Rawc-On! is committed to protecting your privacy and adheres to modern web
-    security standards. We collect and process data from your Spotify account to
-    provide our services. This includes, but is not limited to, your listening
-    history, playlists, and favorite artists. The data is used solely to enhance
-    your experience on Rawc-On! and is not shared with third parties.
-  </p>
-  <ul>
-    <li>
-      <strong>Data Collected</strong>: We access your Spotify user ID, the
-      country your account is registered to, and lists of your top artists &
-      tracks. This data is used to generate your profile, visualizations, and
-      power the recommendation engine.
-    </li>
-    <li>
-      <strong>Security</strong>: Rawc-On! uses secure authentication processes
-      managed by Spotify, ensuring that your login is as secure as logging into
-      Spotify itself.
-    </li>
-    <li>
-      <strong>Data Retention</strong>: We retain your data only as long as
-      necessary to provide our services. You can request data deletion at any
-      time by contacting us.
-    </li>
-  </ul>
+    <h2 class="terms-subtitle">How It Works</h2>
+    <p>
+      Rawc-On! securely connects to your Spotify account using Spotify's OAuth
+      2.0 flow. Upon authorization, we analyze your listening history and
+      preferences to generate insights and power our recommendation engine. The
+      platform uses Spotify's Web API to fetch detailed information about your
+      playlists, tracks, and artists, which is then processed to provide you
+      with a customized music experience.
+    </p>
 
-  <h2>Terms of Use</h2>
-  <p>By using Rawc-On!, you agree to the following terms:</p>
-  <ul>
-    <li>
-      <strong>Personal Use</strong>: The service is provided for personal,
-      non-commercial use only.
-    </li>
-    <li>
-      <strong>Prohibited Actions</strong>: You agree not to attempt to reverse
-      engineer, exploit, or misuse the service in any way.
-    </li>
-    <li>
-      <strong>Compliance</strong>: You must comply with Spotify's terms of
-      service while using Rawc-On!.
-    </li>
-  </ul>
+    <h2 class="terms-subtitle">Data Usage and Privacy</h2>
+    <p>
+      Rawc-On! is committed to protecting your privacy and adheres to modern web
+      security standards. We collect and process data from your Spotify account
+      to provide our services. This includes, but is not limited to, your
+      listening history, playlists, and favorite artists. The data is used
+      solely to enhance your experience on Rawc-On! and is not shared with third
+      parties.
+    </p>
+    <ul>
+      <li>
+        <strong>Data Collected</strong>: We access your Spotify user ID, the
+        country your account is registered to, and lists of your top artists &
+        tracks. This data is used to generate your profile, visualizations, and
+        power the recommendation engine.
+      </li>
+      <li>
+        <strong>Security</strong>: Rawc-On! uses secure authentication processes
+        managed by Spotify, ensuring that your login is as secure as logging
+        into Spotify itself.
+      </li>
+      <li>
+        <strong>Data Retention</strong>: We retain your data only as long as
+        necessary to provide our services. You can request data deletion at any
+        time by contacting us.
+      </li>
+    </ul>
 
-  <h2>Contact</h2>
-  <p>
-    If you have questions, concerns, or suggestions, please contact us at
-    <a href="mailto:gavin@rawcsav.com">gavin@rawcsav.com</a>.
-  </p>
+    <h2 class="terms-subtitle">Terms of Use</h2>
+    <p>By using Rawc-On!, you agree to the following terms:</p>
+    <ul>
+      <li>
+        <strong>Personal Use</strong>: The service is provided for personal,
+        non-commercial use only.
+      </li>
+      <li>
+        <strong>Prohibited Actions</strong>: You agree not to attempt to reverse
+        engineer, exploit, or misuse the service in any way.
+      </li>
+      <li>
+        <strong>Compliance</strong>: You must comply with Spotify's terms of
+        service while using Rawc-On!.
+      </li>
+    </ul>
 
-  <h2>Disclaimer</h2>
-  <p>
-    Rawc-On! is provided "as is" and "as available" without any warranties of
-    any kind, either express or implied. We reserve the right to modify these
-    terms at any time and to terminate or suspend your access to Rawc-On! at any
-    time, without prior notice, for any reason.
-  </p>
+    <h2 class="terms-subtitle">Contact</h2>
+    <p>
+      If you have questions, concerns, or suggestions, please contact us at
+      <a href="mailto:gavin@rawcsav.com">gavin@rawcsav.com</a>.
+    </p>
+
+    <h2 class="terms-subtitle">Disclaimer</h2>
+    <p>
+      Rawc-On! is provided "as is" and "as available" without any warranties of
+      any kind, either express or implied. We reserve the right to modify these
+      terms at any time and to terminate or suspend your access to Rawc-On! at
+      any time, without prior notice, for any reason.
+    </p>
+  </div>
+  {% endblock %}{% block scripts %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"
+    integrity="sha512-wUYbRPLV5zs6IqvWd88HIqZU/b8TBx+I8LEioQ/UC0t5EMCLApqhIAnUg7EsAzdbhhdgW07TqYDdH3QEXRcPOQ=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
+  {% assets "auth_js_bundle" %}
+  <script src="{{ ASSET_URL }}"></script>
+  {% endassets %}{% endblock %}
 </div>
-{% endblock %}{% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
-<script
-  src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"
-  integrity="sha512-wUYbRPLV5zs6IqvWd88HIqZU/b8TBx+I8LEioQ/UC0t5EMCLApqhIAnUg7EsAzdbhhdgW07TqYDdH3QEXRcPOQ=="
-  crossorigin="anonymous"
-  referrerpolicy="no-referrer"
-></script>
-{% assets "auth_js_bundle" %}
-<script src="{{ ASSET_URL }}"></script>
-{% endassets %}{% endblock %}

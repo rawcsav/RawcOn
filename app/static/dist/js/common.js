@@ -17,4 +17,4 @@ onclick="handlePlaylistClick()"></div><div class="playlist-info"><span class="pl
 lazyLoadImages();}
 function lazyLoadImages(){const images=document.querySelectorAll("img.lazy-load");const imageObserver=new IntersectionObserver((entries,observer)=>{entries.forEach((entry)=>{if(entry.isIntersecting){const img=entry.target;img.src=img.dataset.src;img.classList.remove("lazy-load");observer.unobserve(img);}});},{rootMargin:"0px",threshold:0.1},);images.forEach((img)=>imageObserver.observe(img));}
 displayPlaylists();updateMenu();setupPlaylistToggle();window.addEventListener("popstate",updateMenu);}
-document.addEventListener("DOMContentLoaded",function(){setupLoader();if(shouldEnableFeatures()){setupPageFeatures();}});function goBack(){window.history.back();}
+document.addEventListener("DOMContentLoaded",function(){setupLoader();if(shouldEnableFeatures()){setupPageFeatures();}});
