@@ -6,19 +6,15 @@ html {
 
 .presents {
   display: flex;
-  padding: var(--space-5);
-  padding-left: var(--space-12);
-  padding-right: var(--space-12);
   flex-direction: column;
 }
 
 .presents-text {
   font-family: var(--ff-serif);
-  font-size: calc(2 * (var(--text-4xl)));
-  margin-top: -40px;
+  font-size: var(--text-5xl);
   color: black;
-  text-align: end;
   line-height: 1;
+  margin-left: var(--space-8);
 }
 
 .corner-logo {
@@ -27,7 +23,7 @@ html {
 }
 
 .corner-logo img {
-  max-width: 40%;
+  max-width: 30%;
   height: auto;
 }
 .header {
@@ -49,39 +45,48 @@ html {
 .main-image img {
   max-width: 70%;
   max-height: 100%;
-  padding: var(--space-5);
 }
 .actions {
   display: flex;
   justify-content: space-between;
+  gap: var(--space-5);
   align-items: center;
-  font-size: var(--text-5xl);
   font-family: var(--ff-txt);
   font-variation-settings:
     "wght" var(--font-bold),
     "ital" 0;
   padding: var(--space-5);
+  padding-left: var(--space-8);
+  padding-right: var(--space-8);
 }
-.actions a,
-.actions p {
-  color: var(--main-300);
+
+.left-icons a {
+  color: var(--accent-green-300);
   text-decoration: none;
+}
+.login-button {
+  text-decoration: none;
+  background-color: var(--neutral-700);
+  padding: var(--space-2) var(--space-4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: var(--radius-full);
+  align-self: center;
+  width: 25%;
+  box-shadow: var(--shadow-lg);
 }
 
 #spotify-corner {
-  width: 175px;
+  width: 100%;
   height: auto;
+  object-fit: contain;
 }
 
 .login-button:hover {
   transform: scale(1.1);
-  transition: ease-in 0.2s;
-}
-
-.login-button {
-  gap: var(--space-4);
-  display: flex;
-  align-items: center;
+  background-color: var(--neutral-600);
+  transition: var(--transition-normal);
 }
 
 .corner-logo img:hover {
@@ -91,8 +96,14 @@ html {
 }
 
 .top-banner {
-  width: 100vw;
+  width: unset;
+  min-width: unset;
   max-width: unset;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-left: var(--space-8);
+  padding-right: var(--space-8);
 }
 
 .terms-img {
@@ -103,9 +114,9 @@ html {
   gap: var(--space-5);
   height: 100vh;
   flex: 1;
-  height: 100%;
   max-height: 100%;
   overflow-y: hidden;
+  pointer-events: none;
 }
 
 button {
@@ -155,7 +166,7 @@ body {
   min-height: 100vh;
   height: 100vh;
   max-height: 100vh;
-  justify-content: space-between;
+  gap: var(--space-8);
 }
 
 .logo {
@@ -178,12 +189,12 @@ body {
   color: var(--neutral-100);
   border: none;
   box-shadow: var(--shadow-lg);
-  font-size: var(--text-xl);
+  font-size: var(--text-base);
   font-variation-settings:
     "wght" var(--font-medium),
     "ital" 0;
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-lg);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -216,11 +227,11 @@ body {
   padding-top: 10vh;
   background-color: var(--neutral-100);
   border-radius: var(--radius-lg);
-  flex: 2;
+  flex: 3;
 }
 
 .terms-title {
-  font-size: var(--text-5xl);
+  font-size: var(--text-6xl);
   color: var(--accent-green-400);
   margin-bottom: var(--space-6);
   font-variation-settings:
@@ -239,13 +250,6 @@ body {
     "ital" 0;
   border-bottom: 2px solid var(--accent-green-200);
   padding-bottom: var(--space-2);
-}
-
-p {
-  margin-bottom: var(--space-4);
-  font-size: var(--text-lg);
-  color: var(--neutral-500);
-  line-height: 1.6;
 }
 
 .terms-list {
@@ -288,7 +292,7 @@ strong {
   }
 
   .terms-title {
-    font-size: var(--text-4xl);
+    font-size: var(--text-5xl);
   }
 
   .terms-subtitle {
@@ -335,4 +339,43 @@ strong {
     font-size: var(--text-xl);
     line-height: 1.8;
   }
+}
+
+.top-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-top: var(--space-5);
+  padding-left: var(--space-8);
+  padding-right: var(--space-8);
+}
+
+.actions-link {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--text-xl);
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-green-300);
+}
+
+.actions-link i {
+  font-size: var(--text-4xl);
+}
+
+.login-button-terms {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.email {
+  font-variation-settings:
+    "wght" var(--font-bold),
+    "ital" 0;
+}
+
+.italics {
+  font-variation-settings:
+    "wght" var(--font-normal),
+    "ital" 12;
 }

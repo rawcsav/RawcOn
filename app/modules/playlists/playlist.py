@@ -20,7 +20,7 @@ playlist_bp = Blueprint(
 
 @playlist_bp.route("/playlist/<string:playlist_id>")
 @limiter.limit("30 per minute")
-@cache.memoize(timeout=300)  # Cache for 5 minutes
+@cache.cached(timeout=300)  # Cache for 5 minutes
 @require_spotify_auth
 def show_playlist(playlist_id):
     access_token = verify_session(session)

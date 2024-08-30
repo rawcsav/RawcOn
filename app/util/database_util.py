@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.exc import SQLAlchemyError
 
 
-from app import db
+from app import db, cache
 from app.models.user_models import ArtistData, FeatureData
 
 
@@ -159,3 +159,4 @@ def get_or_fetch_audio_features(sp, track_ids):
     }
 
     return final_features
+

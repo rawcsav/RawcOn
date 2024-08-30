@@ -1,6 +1,6 @@
 {% extends 'base.html' %} {% block head %}
 <link rel="canonical" href="https://rawcon.rawcsav.com/auth/terms" />
-<title>Rawc-On | Terms</title>
+<title>Rawc-On | Terms of Service and Privacy Policy</title>
 {% endblock %} {% block styles %} {% assets "auth_style_bundle" %}
 <link rel="stylesheet" href="{{ ASSET_URL }}" />
 {% endassets %} {% endblock %}
@@ -13,14 +13,17 @@
         Go Back
       </button>
     </div>
-    <a class="top-banner-link" href="/">
-      <img
-        src="/static/dist/img/rawcon-corner.svg"
-        alt="Rawc-On Top Banner Logo"
-      />
-    </a>
+    <div class="login-button-terms">
+      <a class="login-button button-terms" href="/login">
+        <img
+          id="spotify-corner"
+          src="/static/dist/img/signinwhite.svg"
+          alt="Spotify Logo"
+        />
+      </a>
+    </div>
   </header>
-  {% endblock %}{% block body %}
+  {% endblock %} {% block body %}
   <div class="terms-img">
     <img
       class="logo"
@@ -30,97 +33,301 @@
   </div>
 
   <div class="about-rawc-on">
-    <h1 class="terms-title">About Rawc-On!</h1>
+    <h1 class="terms-title">Terms of Service and Privacy Policy</h1>
+    <p>Last Updated: August 30, 2024</p>
+
+    <h2 class="terms-subtitle">1. Introduction</h2>
     <p>
-      Rawc-On! is an advanced music experience platform that leverages the
-      Spotify API to provide personalized, data-driven insights and
-      recommendations. Our service enhances your music journey by offering:
+      <span class="italics">1.1</span> These Terms of Service govern your use of
+      the website located at
+      <span class="email">https://rawcon.rawcsav.com</span> and any related
+      services provided by Rawc-On. By accessing our website, you agree to abide
+      by these Terms of Service and to comply with all applicable laws and
+      regulations. If you do not agree with these Terms of Service, you are
+      prohibited from using or accessing this website or using any other
+      services provided by Rawc-On.
+    </p>
+
+    <h2 class="terms-subtitle">2. Description of Service</h2>
+    <p>
+      <span class="italics">2.1.</span> Rawc-On is an advanced music analytics
+      platform that integrates with Spotify to provide users with personalized
+      insights and recommendations. Our service offers:
+    </p>
+    <ul class="terms-list">
+      <li>Comprehensive statistical profiles of your music preferences</li>
+      <li>Tailored music recommendations</li>
+      <li>Advanced tools for playlist analysis and management</li>
+    </ul>
+
+    <h2 class="terms-subtitle">3. Limitations of Use</h2>
+    <p>
+      <span class="italics">3.1.</span> By using this website, you warrant on
+      behalf of yourself, your users, and other parties you represent that you
+      will not:
     </p>
     <ul class="terms-list">
       <li>
-        <strong>Detailed statistical profiles</strong> of your top tracks,
-        artists, and genres, across different time periods (4 weeks, 6 months,
-        all time).
+        Modify, copy, prepare derivative works of, decompile, or reverse
+        engineer any materials and software contained on this website;
       </li>
       <li>
-        <strong>Personalized music recommendations</strong> based on
-        user-defined seeds and desired audio characteristics.
+        Remove any copyright or other proprietary notations from any materials
+        and software on this website;
       </li>
       <li>
-        <strong>Advanced playlist management features and statistics.</strong>,
+        Transfer the materials to another person or "mirror" the materials on
+        any other server;
+      </li>
+      <li>
+        Knowingly or negligently use this website or any of its associated
+        services in a way that abuses or disrupts our networks or any other
+        service Rawc-On provides;
+      </li>
+      <li>
+        Use this website or its associated services to transmit or publish any
+        harassing, indecent, obscene, fraudulent, or unlawful material;
+      </li>
+      <li>
+        Use this website or its associated services in violation of any
+        applicable laws or regulations;
+      </li>
+      <li>
+        Use this website in conjunction with sending unauthorized advertising or
+        spam;
+      </li>
+      <li>
+        Harvest, collect, or gather user data without the user's consent; or
+      </li>
+      <li>
+        Use this website or its associated services in such a way that may
+        infringe the privacy, intellectual property rights, or other rights of
+        third parties.
       </li>
     </ul>
 
-    <h2 class="terms-subtitle">How It Works</h2>
+    <h2 class="terms-subtitle">4. User Accounts and Authentication</h2>
     <p>
-      Rawc-On! securely connects to your Spotify account using Spotify's OAuth
-      2.0 flow. Upon authorization, we analyze your listening history and
-      preferences to generate insights and power our recommendation engine. The
-      platform uses Spotify's Web API to fetch detailed information about your
-      playlists, tracks, and artists, which is then processed to provide you
-      with a customized music experience.
+      <span class="italics">4.1.</span> To use our Service, you must have a
+      valid Spotify account and authorize Rawc-On to access certain data from
+      your Spotify account.
+    </p>
+    <p>
+      <span class="italics">4.2.</span> We utilize Spotify's secure
+      authentication protocols to ensure the safety of your account information.
+      This process allows us to access necessary data without storing your
+      Spotify login credentials.
+    </p>
+    <p>
+      <span class="italics">4.3.</span> You are responsible for maintaining the
+      confidentiality of your account and for all activities that occur under
+      your account.
     </p>
 
-    <h2 class="terms-subtitle">Data Usage and Privacy</h2>
+    <h2 class="terms-subtitle">5. Data Collection and Use</h2>
     <p>
-      Rawc-On! is committed to protecting your privacy and adheres to modern web
-      security standards. We collect and process data from your Spotify account
-      to provide our services. This includes, but is not limited to, your
-      listening history, playlists, and favorite artists. The data is used
-      solely to enhance your experience on Rawc-On! and is not shared with third
-      parties.
+      <span class="italics">5.1.</span> We collect and process data from your
+      Spotify account as necessary to provide our Service. This includes, but is
+      not limited to:
     </p>
-    <ul>
+    <ul class="terms-list">
+      <li>Your Spotify user ID</li>
+      <li>Information about your top tracks, artists, and genres</li>
+      <li>Your playlist data</li>
+      <li>Other relevant listening history and preference data</li>
+    </ul>
+    <p>
+      <span class="italics">5.2.</span> We may temporarily store certain user
+      information to optimize service performance and reduce unnecessary data
+      requests. This temporary data is regularly updated to ensure accuracy.
+    </p>
+    <p>
+      <span class="italics">5.3.</span> We use this data solely to enhance your
+      experience on Rawc-On and to provide our services. We do not sell or share
+      your personal data with third parties for their commercial purposes.
+    </p>
+    <p>
+      <span class="italics">5.4.</span> By using our Service, you grant us
+      permission to access, collect, and analyze your Spotify data for the
+      purposes outlined in this Agreement.
+    </p>
+
+    <h2 class="terms-subtitle">6. Data Security and Protection</h2>
+    <p>
+      <span class="italics">6.1.</span> We implement industry-standard security
+      measures and best practices to protect your data from unauthorized access,
+      disclosure, alteration, and destruction. These measures include, but are
+      not limited to:
+    </p>
+    <ul class="terms-list">
+      <li>Secure, isolated storage of user data</li>
+      <li>Encryption of data in transit and at rest</li>
+      <li>Restricted access controls and authentication mechanisms</li>
+      <li>Regular security audits and updates</li>
+    </ul>
+    <p>
+      <span class="italics">6.2.</span> While we strive to use commercially
+      acceptable means to protect your personal information, we cannot guarantee
+      its absolute security. No method of electronic storage or transmission is
+      100% secure.
+    </p>
+
+    <h2 class="terms-subtitle">7. User Rights and Data Retention</h2>
+    <p>
+      <span class="italics">7.1.</span> In accordance with data protection laws,
+      including the General Data Protection Regulation (GDPR) where applicable,
+      you have the right to access, correct, or delete your personal data that
+      we hold. To exercise these rights, please contact us at
+      <span class="email">gavin@rawcsav.com</span>.
+    </p>
+    <p>
+      <span class="italics">7.2.</span> We retain your data only for as long as
+      necessary to provide you with our Service and as required by applicable
+      laws. Specifically, we will retain your user data for a period of 30 days
+      after your last activity on our Service. After this period, your data will
+      be automatically deleted from our systems.
+    </p>
+    <p>
+      <span class="italics">7.3.</span> If you wish to have your data removed
+      before this automatic deletion period, you may request immediate deletion
+      by contacting us at the email above.
+    </p>
+
+    <h2 class="terms-subtitle">8. Data Breach Notification</h2>
+    <p>
+      <span class="italics">8.1.</span> In the unlikely event of a data breach
+      that affects your personal information, we will notify you and any
+      relevant authorities (including Spotify) without undue delay, and no later
+      than 72 hours after becoming aware of the breach, in accordance with
+      applicable data protection laws.
+    </p>
+
+    <h2 class="terms-subtitle">9. Third-Party Services</h2>
+    <p>
+      <span class="italics">9.1.</span> Rawc-On is committed to minimizing the
+      use of third-party services. Our Service primarily integrates with
+      Spotify, and we take pride in our approach to limit external dependencies.
+    </p>
+    <p>
+      <span class="italics">9.2.</span> The only third-party library we employ
+      is Chart.js, which is used solely for data visualization purposes. This
+      library does not have access to your personal data and is used exclusively
+      to enhance the visual representation of your music analytics.
+    </p>
+    <p>
+      <span class="italics">9.3.</span> We do not employ any other third-party
+      companies or individuals to facilitate our Service, provide the Service on
+      our behalf, perform Service-related services, or assist in analyzing how
+      our Service is used.
+    </p>
+    <p>
+      <span class="italics">9.4.</span> Your use of Spotify through our Service
+      is subject to Spotify's terms of service and privacy policy. We strongly
+      encourage you to review these policies.
+    </p>
+    <h2 class="terms-subtitle">10. Intellectual Property</h2>
+    <p>
+      <span class="italics">10.1.</span> Rawc-On acknowledges and respects that
+      all Spotify-provided content, including but not limited to music data,
+      user information, and related metadata accessed through the Spotify API,
+      is the exclusive property of Spotify and its licensors. This content is
+      protected by copyright, trademark, and other intellectual property laws.
+    </p>
+    <p>
+      <span class="italics">10.2.</span> The visual design, user interface, and
+      non-Spotify related elements of the Rawc-On Service are the property of
+      Rawc-On. However, we make no claim of ownership to any Spotify-provided
+      data or content.
+    </p>
+    <p>
+      <span class="italics">10.3.</span> You are granted a limited,
+      non-exclusive, non-transferable right to use the Rawc-On Service for
+      personal, non-commercial purposes. This right is strictly limited to
+      accessing and viewing the Spotify-provided content through our interface.
+    </p>
+    <p>
+      <span class="italics">10.4.</span> You may not reproduce, distribute,
+      modify, create derivative works of, publicly display, publicly perform,
+      republish, download, store, or transmit any of the Spotify-provided
+      content or Rawc-On interface elements, except as incidental to normal web
+      browsing or as expressly permitted in writing by Spotify or Rawc-On,
+      respectively.
+    </p>
+
+    <h2 class="terms-subtitle">11. Limitation of Liability</h2>
+    <p>
+      <span class="italics">11.1.</span> To the fullest extent permitted by
+      applicable law, Rawc-On and its affiliates, officers, directors,
+      employees, agents, suppliers, or licensors shall not be liable for any
+      indirect, incidental, special, consequential, or punitive damages,
+      including without limitation, loss of profits, data, use, goodwill, or
+      other intangible losses, resulting from:
+    </p>
+    <ul class="terms-list">
       <li>
-        <strong>Data Collected</strong>: We access your Spotify user ID, the
-        country your account is registered to, and lists of your top artists &
-        tracks. This data is used to generate your profile, visualizations, and
-        power the recommendation engine.
+        Your access to or use of or inability to access or use the Service;
       </li>
+      <li>Any conduct or content of any third party on the Service;</li>
+      <li>Any content obtained from the Service; and</li>
       <li>
-        <strong>Security</strong>: Rawc-On! uses secure authentication processes
-        managed by Spotify, ensuring that your login is as secure as logging
-        into Spotify itself.
-      </li>
-      <li>
-        <strong>Data Retention</strong>: We retain your data only as long as
-        necessary to provide our services. You can request data deletion at any
-        time by contacting us.
+        Unauthorized access, use or alteration of your transmissions or content,
+        whether based on warranty, contract, tort (including negligence) or any
+        other legal theory, whether or not we have been informed of the
+        possibility of such damage.
       </li>
     </ul>
 
-    <h2 class="terms-subtitle">Terms of Use</h2>
-    <p>By using Rawc-On!, you agree to the following terms:</p>
-    <ul>
+    <h2 class="terms-subtitle">12. Disclaimer of Warranties</h2>
+    <p>
+      <span class="italics">12.1.</span> Your use of the Service is at your sole
+      risk. The Service is provided on an "AS IS" and "AS AVAILABLE" basis. The
+      Service is provided without warranties of any kind, whether express or
+      implied, including, but not limited to, implied warranties of
+      merchantability, fitness for a particular purpose, non-infringement or
+      course of performance.
+    </p>
+    <p>
+      <span class="italics">12.2.</span> Rawc-On, its subsidiaries, affiliates,
+      and licensors do not warrant that:
+    </p>
+    <ul class="terms-list">
       <li>
-        <strong>Personal Use</strong>: The service is provided for personal,
-        non-commercial use only.
+        The Service will function uninterrupted, secure or available at any
+        particular time or location;
       </li>
-      <li>
-        <strong>Prohibited Actions</strong>: You agree not to attempt to reverse
-        engineer, exploit, or misuse the service in any way.
-      </li>
-      <li>
-        <strong>Compliance</strong>: You must comply with Spotify's terms of
-        service while using Rawc-On!.
-      </li>
+      <li>Any errors or defects will be corrected;</li>
+      <li>The Service is free of viruses or other harmful components;</li>
+      <li>The results of using the Service will meet your requirements.</li>
     </ul>
 
-    <h2 class="terms-subtitle">Contact</h2>
+    <h2 class="terms-subtitle">13. Changes to this Agreement</h2>
     <p>
-      If you have questions, concerns, or suggestions, please contact us at
-      <a href="mailto:gavin@rawcsav.com">gavin@rawcsav.com</a>.
+      <span class="italics">13.1.</span> We reserve the right to modify this
+      Agreement at any time. We will notify you of any changes by posting the
+      new Agreement on this page and updating the "Last Updated" date at the top
+      of this Agreement.
+    </p>
+    <p>
+      <span class="italics">13.2.</span> You are advised to review this
+      Agreement periodically for any changes. Changes to this Agreement are
+      effective when they are posted on this page.
+    </p>
+    <p>
+      <span class="italics">13.3.</span> Your continued use of the Service after
+      any such changes constitutes your acceptance of the new Agreement.
     </p>
 
-    <h2 class="terms-subtitle">Disclaimer</h2>
+    <h2 class="terms-subtitle">14. Contact Us</h2>
     <p>
-      Rawc-On! is provided "as is" and "as available" without any warranties of
-      any kind, either express or implied. We reserve the right to modify these
-      terms at any time and to terminate or suspend your access to Rawc-On! at
-      any time, without prior notice, for any reason.
+      If you have any questions about this Agreement, please contact us at
+      <span class="email">gavin@rawcsav.com</span>.
+    </p>
+    <p>
+      By using the Service, you acknowledge that you have read and understood
+      this Agreement and agree to be bound by its terms and conditions.
     </p>
   </div>
-  {% endblock %}{% block scripts %}
+  {% endblock %} {% block scripts %}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
   <script
@@ -131,5 +338,5 @@
   ></script>
   {% assets "auth_js_bundle" %}
   <script src="{{ ASSET_URL }}"></script>
-  {% endassets %}{% endblock %}
+  {% endassets %} {% endblock %}
 </div>

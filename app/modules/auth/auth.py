@@ -12,7 +12,7 @@ auth_bp = Blueprint("auth", __name__, template_folder="templates", static_folder
 
 
 @auth_bp.route("/")
-@cache.cached(timeout=3600)  # Cache for 1 hour
+# @cache.cached(timeout=3600)  # Cache for 1 hour
 @handle_errors
 def index():
     return render_template("landing.html")
@@ -92,7 +92,7 @@ def callback():
 
 
 @auth_bp.route("/refresh")
-@limiter.limit("5 per minute")
+@limiter.limit("20 per minute")
 def refresh():
     next_url = request.args.get("next") or url_for("user.profile")
 
@@ -126,7 +126,8 @@ def refresh():
 
 
 @auth_bp.route("/terms")
-@cache.cached(timeout=3600)  # Cache for 1 hour
+# @cache.cached(timeout=3600)  # Cache for 1 hour
 @handle_errors
 def terms():
-    return render_template("terms.html")
+    is_logged_in = "tokens" in session and session["tokens"].get("access_token")
+    return render_template("terms.html", logged_in=is_logged_in)

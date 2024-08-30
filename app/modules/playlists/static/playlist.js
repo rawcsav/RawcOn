@@ -636,8 +636,8 @@ const playlistActionsModule = (() => {
   const likeAllSongs = (playlistId) => {
     fetch(`/playlist/like_all_songs/${playlistId}`)
       .then((response) => response.text())
-      .then(showToast)
-      .catch(() =>
+      .then((message) => showToast(message, "success"))
+      .catch((error) =>
         showToast("An error occurred while liking all songs.", "error"),
       );
   };
@@ -645,7 +645,7 @@ const playlistActionsModule = (() => {
   const unlikeAllSongs = (playlistId) => {
     fetch(`/playlist/unlike_all_songs/${playlistId}`)
       .then((response) => response.text())
-      .then(showToast)
+      .then((message) => showToast(message, "success"))
       .catch((error) =>
         showToast(
           `An error occurred while unliking all songs: ${error}`,
@@ -656,7 +656,7 @@ const playlistActionsModule = (() => {
 
   const removeDuplicates = (playlistId) => {
     fetch(`/playlist/remove_duplicates/${playlistId}`)
-      .then(() => showToast("Successfully removed duplicates."))
+      .then(() => showToast("Successfully removed duplicates.", "success"))
       .catch((error) =>
         showToast(
           `An error occurred while removing duplicates: ${error}`,
@@ -677,7 +677,7 @@ const playlistActionsModule = (() => {
     })
       .then((response) => response.json())
       .then(() => {
-        showToast("Playlist reordered successfully.");
+        showToast("Playlist reordered successfully.", "success");
       })
       .catch((error) =>
         showToast(
@@ -851,7 +851,7 @@ const trackActionsModule = (() => {
       body: JSON.stringify({ playlist_id: playlistId, track_id: trackId }),
     })
       .then(() => {
-        showToast("Track added to playlist successfully!");
+        showToast("Track added to playlist successfully!", "success");
         plusIcon.classList.remove("rawcon-album-plus");
         plusIcon.classList.add("rawcon-circle-minus", "added");
       })
@@ -874,7 +874,7 @@ const trackActionsModule = (() => {
       body: JSON.stringify({ playlist_id: playlistId, track_id: trackId }),
     })
       .then(() => {
-        showToast("Track removed from playlist successfully!");
+        showToast("Track removed from playlist successfully!", "success");
         plusIcon.classList.remove("rawcon-circle-minus", "added");
         plusIcon.classList.add("rawcon-album-plus");
       })
@@ -897,11 +897,11 @@ const trackActionsModule = (() => {
       body: JSON.stringify({ track_id: trackId }),
     })
       .then(() => {
-        showToast("Track saved successfully!");
+        showToast("Added to Liked Songs.", "success");
         heartIcon.classList.add("liked");
       })
       .catch((error) => {
-        showToast("An error occurred while saving the track.", "error");
+        showToast("Removed from Liked Songs.", "error");
         console.error("Error:", error);
       });
   };
@@ -916,7 +916,7 @@ const trackActionsModule = (() => {
       body: JSON.stringify({ track_id: trackId }),
     })
       .then(() => {
-        showToast("Track unsaved successfully!");
+        showToast("Track unsaved successfully!", "success");
         heartIcon.classList.remove("liked");
       })
       .catch((error) => {

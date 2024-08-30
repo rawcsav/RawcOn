@@ -838,9 +838,9 @@ button:hover {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 75%;
+  max-width: 350px;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   gap: var(--space-5);
 }
@@ -852,18 +852,25 @@ button:hover {
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 75%;
+  max-width: 350px;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   gap: var(--space-5);
 }
 
 .result-cover-art-container a {
+  background-color: var(--accent-green-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
   text-decoration: none;
   display: flex;
+  font-variation-settings:
+    "wght" var(--font-bold),
+    "ital" 0;
   gap: var(--space-3);
   align-items: center;
+  padding: var(--space-1) var(--space-3);
   color: var(--spotify-black);
   font-size: var(--text-xl);
 }

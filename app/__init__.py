@@ -5,6 +5,7 @@ from flask_caching import Cache
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_migrate import Migrate
+from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_wtf.csrf import CSRFProtect
@@ -17,17 +18,12 @@ bcrypt = Bcrypt()
 cors = CORS()
 cache = Cache()
 limiter = Limiter(key_func=get_remote_address)
-
-
-def country_flag(country_code):
-    OFFSET = 127397
-    return "".join(chr(ord(char) + OFFSET) for char in country_code.upper())
+sess = Session()
 
 
 def create_app():
     app = Flask(__name__)
     flask_env = os.getenv("FLASK_ENV", "production").lower()
-    app.jinja_env.filters["country_flag"] = country_flag
 
     if flask_env == "development":
         app.config.from_object(DevelopmentConfig)
@@ -47,6 +43,7 @@ def create_app():
     assets.init_app(app)
     cache.init_app(app)
     limiter.init_app(app)
+    sess.init_app(app)
 
     with app.app_context():
         from app.modules.auth import auth
@@ -73,6 +70,17 @@ def create_app():
             if exception:
                 db.session.rollback()
             db.session.remove()
+
+        if flask_env == "development":
+
+            @app.route("/clear_all_caches")
+            def clear_caches_route():
+                cache.clear()
+
+                # Clear all Redis databases
+                redis_client = cache.cache._read_client
+                redis_client.flushall()
+                return "All caches cleared"
 
         db.create_all()
         return app

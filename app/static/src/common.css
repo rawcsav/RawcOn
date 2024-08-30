@@ -60,6 +60,7 @@
   --text-3xl: 30px;
   --text-4xl: 36px;
   --text-5xl: 48px;
+  --text-6xl: 60px;
 
   /* Font Weights */
   --font-normal: 400;
@@ -114,10 +115,9 @@
   --opacity-100: 1;
 
   /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-normal: 300ms ease;
-  --transition-slow: 500ms ease;
-
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 300ms ease-in-out;
+  --transition-slow: 500ms ease-in-out;
   --spotify-black: #191414;
 }
 

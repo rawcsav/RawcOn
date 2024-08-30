@@ -101,7 +101,10 @@ const searchModule = (() => {
       uiModule.displaySearchResults(data);
     } catch (error) {
       console.error("Search error:", error);
-      showToast("An error occurred while searching. Please try again.");
+      showToast(
+        "An error occurred while searching. Please try again.",
+        "error",
+      );
     }
   };
 
@@ -123,7 +126,7 @@ const seedsModule = (() => {
   };
   const addToSeeds = (item, type) => {
     if (elements.seedsContainer.children.length >= 5) {
-      showToast("You can select no more than 5 combined seeds.");
+      showToast("You can select no more than 5 combined seeds.", "warning");
       return;
     }
 
@@ -145,7 +148,6 @@ const seedsModule = (() => {
       .addEventListener("click", () => removeSeed(seedElement));
 
     elements.seedsContainer.appendChild(seedElement);
-    showToast(item.name + " added to seeds.");
     updateSeedsInput();
     updateSeedCounter();
     updateSubmitButton(); // Add this line
@@ -458,6 +460,7 @@ const recommendationModule = (() => {
       console.error("Error:", error);
       showToast(
         "An error occurred while getting recommendations. Please try again.",
+        "error",
       );
     }
   };
@@ -544,9 +547,9 @@ const playlistModule = (() => {
       }
 
       elements.playlistModal.style.display = "none";
-      showToast("Track added to playlist successfully.");
+      showToast("Track added to playlist successfully.", "success");
     } catch (error) {
-      showToast("Error adding track to playlist. Please try again.");
+      showToast("Error adding track to playlist. Please try again.", "error");
       console.error("Error:", error);
     }
   };
@@ -576,7 +579,7 @@ const playlistModule = (() => {
       }
     } catch (error) {
       console.error(error);
-      showToast("Failed to load playlists.");
+      showToast("Failed to load playlists.", "error");
     }
   };
 
@@ -597,12 +600,12 @@ const trackModule = (() => {
       });
       if (response.ok) {
         heartIcon.classList.add("liked");
-        showToast("Track liked.");
+        showToast("Added to Liked Songs.", "success");
       } else {
-        throw new Error("Error saving the track");
+        throw new Error("Error liking the track");
       }
     } catch (error) {
-      showToast("Error saving track. Please try again.");
+      showToast("Error liking track. Please try again.", "error");
       console.error("Error:", error);
     }
   };
@@ -618,13 +621,13 @@ const trackModule = (() => {
         body: JSON.stringify({ track_id: trackId }),
       });
       if (response.ok) {
-        showToast("Track unliked.");
+        showToast("Removed from Liked Songs.", "success");
         heartIcon.classList.remove("liked");
       } else {
         throw new Error("Error unsaving the track");
       }
     } catch (error) {
-      showToast("Error unliking track. Please try again.");
+      showToast("Error unliking track. Please try again.", "error");
       console.error("Error:", error);
     }
   };
