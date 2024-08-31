@@ -1,8 +1,9 @@
+import csv
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import BLOB
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.dialects.mysql import insert
 
 from app import db
 from cryptography.fernet import Fernet
@@ -91,6 +92,8 @@ class FeatureData(db.Model):
     tempo = db.Column(db.Float)
     time_signature = db.Column(db.Integer)
 
+    artist = db.relationship("ArtistData", back_populates="features")
+
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
@@ -129,3 +132,39 @@ class GenreData(db.Model):
     color_rgb = db.Column(db.TEXT, nullable=True)
     x = db.Column(db.Float, nullable=True)
     y = db.Column(db.Float, nullable=True)
+
+    @classmethod
+    def populate_from_csv(cls, csv_file_path):
+        data_to_insert = []
+        with open(csv_file_path, "r") as file:
+            csv_reader = csv.DictReader(file)
+            for row in csv_reader:
+                genre_data = {
+                    "genre": row["genre"],
+                    "sim_genres": row["sim_genres"] or None,
+                    "sim_weights": row["sim_weights"] or None,
+                    "opp_genres": row["opp_genres"] or None,
+                    "opp_weights": row["opp_weights"] or None,
+                    "spotify_url": row["spotify_url"] or None,
+                    "color_hex": row["color_hex"] or None,
+                    "color_rgb": row["color_rgb"] or None,
+                    "x": float(row["x"]) if row["x"] else None,
+                    "y": float(row["y"]) if row["y"] else None,
+                }
+                data_to_insert.append(genre_data)
+
+        if data_to_insert:
+            insert_stmt = insert(cls.__table__).values(data_to_insert)
+            on_duplicate_key_stmt = insert_stmt.on_duplicate_key_update(
+                sim_genres=insert_stmt.inserted.sim_genres,
+                sim_weights=insert_stmt.inserted.sim_weights,
+                opp_genres=insert_stmt.inserted.opp_genres,
+                opp_weights=insert_stmt.inserted.opp_weights,
+                spotify_url=insert_stmt.inserted.spotify_url,
+                color_hex=insert_stmt.inserted.color_hex,
+                color_rgb=insert_stmt.inserted.color_rgb,
+                x=insert_stmt.inserted.x,
+                y=insert_stmt.inserted.y,
+            )
+            db.session.execute(on_duplicate_key_stmt)
+            db.session.commit()

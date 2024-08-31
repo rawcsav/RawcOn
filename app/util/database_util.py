@@ -4,7 +4,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 
 from app import db, cache
-from app.models.user_models import ArtistData, FeatureData, UserData
+from app.models.user_models import ArtistData, FeatureData, UserData, GenreData
 
 
 def get_today_date():
@@ -172,3 +172,13 @@ def save_tokens_to_db(user_id, access_token, refresh_token, expires_in):
     user.last_active = datetime.utcnow()
     db.session.add(user)
     db.session.commit()
+
+
+def initialize_genre_data(app):
+    with app.app_context():
+        if GenreData.query.count() == 0:
+            csv_file_path = app.config.get("GENRE_DATA_CSV_PATH", "app/static/data/genre_data.csv")
+            GenreData.populate_from_csv(csv_file_path)
+            print("Genre data populated from CSV.")
+        else:
+            print("Genre data already exists in the database.")
