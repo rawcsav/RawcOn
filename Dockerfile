@@ -1,4 +1,4 @@
-FROM python:3.12.5-slim-bookworm AS app
+FROM python:3.10.14-slim-bookworm AS app
 
 LABEL maintainer="Gavin Mason gavin@rawcsav.com"
 
