@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, Response
+from flask import Flask, request, Response, jsonify
 from flask_assets import Environment
 from flask_caching import Cache
 from flask_limiter import Limiter
@@ -12,6 +12,7 @@ from flask_wtf.csrf import CSRFProtect
 from itsdangerous import URLSafeTimedSerializer
 from config import ProductionConfig, DevelopmentConfig
 from flask_cors import CORS
+from app.celery_app import celery
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -72,9 +73,21 @@ def create_app():
                 db.session.rollback()
             db.session.remove()
 
-        if flask_env == "development":
+        if os.getenv("FLASK_ENV") == "development":
 
-            @app.route("/clear_all_caches")
+            @app.route("/trigger/update-stale-user-data", methods=["POST"])
+            @csrf.exempt
+            def trigger_update_stale_user_data():
+                celery.send_task("tasks.update_stale_user_data")
+                return jsonify({"message": "Task update_stale_user_data triggered successfully"}), 202
+
+            @app.route("/trigger/delete-inactive-users", methods=["POST"])
+            @csrf.exempt
+            def trigger_delete_inactive_users():
+                celery.send_task("tasks.delete_inactive_users")
+                return jsonify({"message": "Task delete_inactive_users triggered successfully"}), 202
+
+            @app.route("/trigger/clear_all_caches")
             @csrf.exempt
             def clear_caches_route():
                 cache.clear()

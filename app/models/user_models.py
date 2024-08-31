@@ -34,9 +34,11 @@ class UserData(db.Model):
     last_active = db.Column(db.DateTime, default=datetime.utcnow)
     isDarkMode = db.Column(db.Boolean, nullable=True)
     last_stale_update = db.Column(db.DateTime, nullable=True)
-    _access_token = db.Column(db.VARCHAR(500), nullable=True)  # Encrypted access token
-    _refresh_token = db.Column(db.VARCHAR(500), nullable=True)  # Encrypted refresh token
+    _access_token = db.Column(db.VARCHAR(1000), nullable=True)  # Encrypted access token
+    _refresh_token = db.Column(db.VARCHAR(1000), nullable=True)  # Encrypted refresh token
     token_expiry = db.Column(db.DateTime, nullable=True)
+
+    playlists = db.relationship("PlaylistData", back_populates="user", lazy="dynamic")
 
     @hybrid_property
     def access_token(self) -> Optional[str]:
@@ -60,12 +62,14 @@ class UserData(db.Model):
 
 class ArtistData(db.Model):
     id = db.Column(db.String(100), primary_key=True, index=True)
-    name = db.Column(db.VARCHAR(255))
+    name = db.Column(db.VARCHAR(255), index=True)
     external_url = db.Column(db.VARCHAR(255))
     followers = db.Column(db.Integer)
     genres = db.Column(db.VARCHAR(255))
     images = db.Column(db.JSON)
     popularity = db.Column(db.Integer)
+
+    features = db.relationship("FeatureData", back_populates="artist")
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
@@ -73,6 +77,7 @@ class ArtistData(db.Model):
 
 class FeatureData(db.Model):
     id = db.Column(db.VARCHAR(255), primary_key=True, index=True)
+    artist_id = db.Column(db.String(100), db.ForeignKey("artist_data.id"), index=True)
     danceability = db.Column(db.Float)
     energy = db.Column(db.Float)
     key = db.Column(db.Integer)
@@ -92,7 +97,8 @@ class FeatureData(db.Model):
 
 class PlaylistData(db.Model):
     id = db.Column(db.VARCHAR(255), primary_key=True, index=True)
-    name = db.Column(db.VARCHAR(255))
+    user_id = db.Column(db.VARCHAR(255), db.ForeignKey("user_data.spotify_user_id"), index=True)
+    name = db.Column(db.VARCHAR(255), index=True)
     owner = db.Column(db.VARCHAR(255))
     cover_art = db.Column(db.VARCHAR(255))
     public = db.Column(db.Boolean)
@@ -108,6 +114,8 @@ class PlaylistData(db.Model):
     local_tracks_count = db.Column(db.Integer)
     feature_stats = db.Column(db.JSON)
     temporal_stats = db.Column(db.JSON)
+
+    user = db.relationship("UserData", back_populates="playlists")
 
 
 class GenreData(db.Model):
