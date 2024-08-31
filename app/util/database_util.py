@@ -4,7 +4,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 
 from app import db, cache
-from app.models.user_models import ArtistData, FeatureData
+from app.models.user_models import ArtistData, FeatureData, UserData
 
 
 def get_today_date():
@@ -160,3 +160,15 @@ def get_or_fetch_audio_features(sp, track_ids):
 
     return final_features
 
+
+def save_tokens_to_db(user_id, access_token, refresh_token, expires_in):
+    user = UserData.query.filter_by(spotify_user_id=user_id).first()
+    if not user:
+        user = UserData(spotify_user_id=user_id)
+
+    user.access_token = access_token
+    user.refresh_token = refresh_token
+    user.token_expiry = datetime.utcnow() + timedelta(seconds=expires_in)
+    user.last_active = datetime.utcnow()
+    db.session.add(user)
+    db.session.commit()

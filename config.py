@@ -3,6 +3,7 @@ from datetime import timedelta
 from urllib.parse import quote_plus
 
 import redis
+from celery.schedules import crontab
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 appdir = os.path.abspath(os.path.join(os.path.dirname(__file__), "app"))
@@ -21,6 +22,7 @@ class Config(object):
     REMEMBER_COOKIE_SAMESITE = "Lax"
     REMEMBER_COOKIE_DURATION = timedelta(days=14)
 
+    ENCRYPTION_KEY = os.getenv("CRYPT_KEY")
     # Spotify Config
     CLIENT_ID = os.getenv("CLIENT_ID")
     CLIENT_SECRET = os.getenv("CLIENT_SECRET")
@@ -89,6 +91,22 @@ class Config(object):
     REDIS_URI = os.getenv("SESSION_REDIS_URI")
     SESSION_TYPE = "redis"
     SESSION_REDIS = redis.from_url(REDIS_URI)
+
+    # Celery Config
+    CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
+    CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
+    CELERY_IMPORTS = ("app.util.tasks.celery_tasks",)
+
+    CELERY_BEAT_SCHEDULE = {
+        "update-stale-user-data": {
+            "task": "tasks.update_stale_user_data",
+            "schedule": crontab(hour="*/6"),  # Run every 6 hours
+        },
+        "delete-inactive-users": {
+            "task": "tasks.delete_inactive_users",
+            "schedule": crontab(hour=0, minute=0),  # Run daily at midnight
+        },
+    }
 
     @classmethod
     def init_app(cls, app):

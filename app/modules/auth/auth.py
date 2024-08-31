@@ -5,8 +5,9 @@ from flask import Blueprint, abort, redirect, render_template, request, session,
 from flask import make_response
 from app import cache, limiter
 
-from app.modules.auth.auth_util import generate_state, prepare_auth_payload, request_tokens
+from app.modules.auth.auth_util import generate_state, prepare_auth_payload, request_tokens, get_spotify_user_id
 from app.util.wrappers import handle_errors
+from app.util.database_util import save_tokens_to_db
 
 auth_bp = Blueprint("auth", __name__, template_folder="templates", static_folder="static", url_prefix="/")
 
@@ -81,13 +82,15 @@ def callback():
     access_token = res_data.get("access_token")
     expires_in = res_data.get("expires_in")
     expiry_time = datetime.now() + timedelta(seconds=expires_in)
-
+    refresh_token = res_data.get("refresh_token")
     session["tokens"] = {
         "access_token": access_token,
-        "refresh_token": res_data.get("refresh_token"),
+        "refresh_token": refresh_token,
         "expiry_time": expiry_time.isoformat(),
     }
-    time.sleep(1)
+    user_id = get_spotify_user_id(access_token)
+    save_tokens_to_db(user_id, access_token, refresh_token, expires_in)
+
     return redirect(url_for("user.profile"))
 
 
@@ -121,7 +124,13 @@ def refresh():
         "expiry_time": (datetime.now() + timedelta(seconds=res_data["expires_in"])).isoformat(),
     }
     session["last_refresh_time"] = datetime.now().isoformat()
-
+    user_id = get_spotify_user_id(access_token=res_data["access_token"])
+    save_tokens_to_db(
+        user_id,
+        access_token=res_data["access_token"],
+        refresh_token=res_data.get("refresh_token", session["tokens"]["refresh_token"]),
+        expires_in=(datetime.now() + timedelta(seconds=res_data["expires_in"])).isoformat(),
+    )
     return redirect(next_url)
 
 

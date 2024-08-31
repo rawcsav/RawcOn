@@ -1,6 +1,24 @@
 from datetime import datetime
+from typing import Optional
+
 from sqlalchemy import BLOB
+from sqlalchemy.ext.hybrid import hybrid_property
+
 from app import db
+from cryptography.fernet import Fernet
+from flask import current_app
+
+
+def encrypt_token(token: str) -> str:
+    key = current_app.config["ENCRYPTION_KEY"]
+    f = Fernet(key)
+    return f.encrypt(token.encode()).decode()
+
+
+def decrypt_token(encrypted_token: str) -> str:
+    key = current_app.config["ENCRYPTION_KEY"]
+    f = Fernet(key)
+    return f.decrypt(encrypted_token.encode()).decode()
 
 
 class UserData(db.Model):
@@ -15,6 +33,29 @@ class UserData(db.Model):
     playlist_info = db.Column(db.JSON, nullable=True)
     last_active = db.Column(db.DateTime, default=datetime.utcnow)
     isDarkMode = db.Column(db.Boolean, nullable=True)
+    last_stale_update = db.Column(db.DateTime, nullable=True)
+    _access_token = db.Column(db.VARCHAR(500), nullable=True)  # Encrypted access token
+    _refresh_token = db.Column(db.VARCHAR(500), nullable=True)  # Encrypted refresh token
+    token_expiry = db.Column(db.DateTime, nullable=True)
+
+    @hybrid_property
+    def access_token(self) -> Optional[str]:
+        return decrypt_token(self._access_token) if self._access_token else None
+
+    @access_token.setter
+    def access_token(self, value: Optional[str]):
+        self._access_token = encrypt_token(value) if value else None
+
+    @hybrid_property
+    def refresh_token(self) -> Optional[str]:
+        return decrypt_token(self._refresh_token) if self._refresh_token else None
+
+    @refresh_token.setter
+    def refresh_token(self, value: Optional[str]):
+        self._refresh_token = encrypt_token(value) if value else None
+
+    def __repr__(self):
+        return f"<UserData {self.spotify_user_id}>"
 
 
 class ArtistData(db.Model):

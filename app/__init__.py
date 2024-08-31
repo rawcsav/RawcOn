@@ -19,6 +19,7 @@ cors = CORS()
 cache = Cache()
 limiter = Limiter(key_func=get_remote_address)
 sess = Session()
+csrf = CSRFProtect()
 
 
 def create_app():
@@ -36,7 +37,7 @@ def create_app():
 
     assets = Environment(app)
     CORS(app)
-    CSRFProtect(app)
+    csrf.init_app(app)
     db.init_app(app)
     Migrate(app, db)
     bcrypt.init_app(app)
@@ -74,6 +75,7 @@ def create_app():
         if flask_env == "development":
 
             @app.route("/clear_all_caches")
+            @csrf.exempt
             def clear_caches_route():
                 cache.clear()
 
