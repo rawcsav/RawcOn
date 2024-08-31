@@ -6,11 +6,10 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${SQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${SQL_DB_NAME}
-      MYSQL_USER: remote_user
+      MYSQL_USER: ${SQL_USERNAME}
       MYSQL_PASSWORD: ${SQL_PASSWORD}
     volumes:
       - db_volume:/var/lib/mysql
-      - ./init:/docker-entrypoint-initdb.d/:ro
     command: --default-authentication-plugin=mysql_native_password
     networks:
       - internal
@@ -41,25 +40,28 @@ services:
       FLASK_APP: wsgi.py
       FLASK_ENV: production
       FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
-      SQL_HOSTNAME: mysql
-      SQL_USERNAME: remote_user
+      SQL_HOSTNAME: ${SQL_HOSTNAME}
+      SQL_USERNAME: ${SQL_USERNAME}
       SQL_PASSWORD: ${SQL_PASSWORD}
       SQL_DB_NAME: ${SQL_DB_NAME}
       CRYPT_KEY: ${CRYPT_KEY}
-      CLOUD_NAME: ${CLOUD_NAME}
-      REDIS_URL: redis://default:${REDIS_PASSWORD}@redis:6379/0
-      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
-      CLOUDINARY_SECRET: ${CLOUDINARY_SECRET}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      RATELIMIT_REDIS_URI: ${RATELIMIT_REDIS_URI}
+      SESSION_REDIS_URI: ${SESSION_REDIS_URI}
+      CACHE_REDIS_DB: ${CACHE_REDIS_DB}
       CLIENT_ID: ${CLIENT_ID}
       CLIENT_SECRET: ${CLIENT_SECRET}
       REDIRECT_URI: ${REDIRECT_URI}
-      CELERY_BROKER_URL: redis://default:${REDIS_PASSWORD}@redis:6379/0
-      CELERY_RESULT_BACKEND: redis://default:${REDIS_PASSWORD}@redis:6379/0
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
     volumes:
       - ./app:/rawcon/app
       - ./app/static:/rawcon/app/static
       - ./config.py:/rawcon/config.py
       - ./wsgi.py:/rawcon/wsgi.py
+      - ./make_celery.py:/rawcon/make_celery.py
     depends_on:
       - mysql
       - redis
@@ -70,14 +72,12 @@ services:
   celery_worker:
     build:
       context: .
-      dockerfile: Dockerfile
-    command: celery -A wsgi.celery worker --loglevel=info
+    command: celery -A make_celery.celery worker --loglevel=info
     environment:
       FLASK_APP: wsgi.py
       FLASK_ENV: production
-      REDIS_URL: redis://default:${REDIS_PASSWORD}@redis:6379/0
-      CELERY_BROKER_URL: redis://default:${REDIS_PASSWORD}@redis:6379/0
-      CELERY_RESULT_BACKEND: redis://default:${REDIS_PASSWORD}@redis:6379/0
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
     depends_on:
       - web
       - redis
@@ -87,16 +87,17 @@ services:
   celery_beat:
     build:
       context: .
-      dockerfile: Dockerfile
-    command: celery -A wsgi.celery beat --loglevel=info
+    command: celery -A make_celery.celery beat --loglevel=info
     environment:
       FLASK_APP: wsgi.py
       FLASK_ENV: production
-      REDIS_URL: redis://default:${REDIS_PASSWORD}@redis:6379/0
-      CELERY_BROKER_URL: redis://default:${REDIS_PASSWORD}@redis:6379/0
-      CELERY_RESULT_BACKEND: redis://default:${REDIS_PASSWORD}@redis:6379/0
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+    volumes:
+      - celerybeat-schedule:/newutil/celerybeat-schedule
     depends_on:
       - web
+      - celery_worker
       - redis
     networks:
       - internal
