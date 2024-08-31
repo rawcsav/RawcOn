@@ -6,53 +6,108 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${SQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${SQL_DB_NAME}
-      MYSQL_USER: remote_user
+      MYSQL_USER: ${SQL_USERNAME}
       MYSQL_PASSWORD: ${SQL_PASSWORD}
     volumes:
       - db_volume:/var/lib/mysql
-      - ./init:/docker-entrypoint-initdb.d/:ro
     command: --default-authentication-plugin=mysql_native_password
     networks:
       - internal
 
+  redis:
+    image: redis:6.2-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - internal
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   web:
-    command: gunicorn --workers 1  -t 90 --bind 0.0.0.0:8081 uwsgi:app --log-level=debug
+    command: gunicorn --workers 1 -t 90 --bind 0.0.0.0:8081 wsgi:app --log-level=debug
     build:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      FLASK_APP: uwsgi.py
+      FLASK_APP: wsgi.py
       FLASK_ENV: production
       FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
-      SQL_HOSTNAME: mysql
-      SQL_USERNAME: remote_user
+      SQL_HOSTNAME: ${SQL_HOSTNAME}
+      SQL_USERNAME: ${SQL_USERNAME}
       SQL_PASSWORD: ${SQL_PASSWORD}
       SQL_DB_NAME: ${SQL_DB_NAME}
       CRYPT_KEY: ${CRYPT_KEY}
-      CLOUD_NAME: ${CLOUD_NAME}
-      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
-      CLOUDINARY_SECRET: ${CLOUDINARY_SECRET}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      RATELIMIT_REDIS_URI: ${RATELIMIT_REDIS_URI}
+      SESSION_REDIS_URI: ${SESSION_REDIS_URI}
+      CACHE_REDIS_DB: ${CACHE_REDIS_DB}
       CLIENT_ID: ${CLIENT_ID}
       CLIENT_SECRET: ${CLIENT_SECRET}
       REDIRECT_URI: ${REDIRECT_URI}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
     volumes:
       - ./app:/rawcon/app
       - ./app/static:/rawcon/app/static
       - ./config.py:/rawcon/config.py
-      - ./uwsgi.py:/rawcon/uwsgi.py
+      - ./wsgi.py:/rawcon/wsgi.py
+      - ./make_celery.py:/rawcon/make_celery.py
     depends_on:
       - mysql
+      - redis
     networks:
       - appnet
       - internal
 
+  celery_worker:
+    build:
+      context: .
+    command: celery -A make_celery.celery worker --loglevel=info
+    environment:
+      FLASK_APP: wsgi.py
+      FLASK_ENV: production
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+    depends_on:
+      - web
+      - redis
+    networks:
+      - internal
+
+  celery_beat:
+    build:
+      context: .
+    command: celery -A make_celery.celery beat --loglevel=info
+    environment:
+      FLASK_APP: wsgi.py
+      FLASK_ENV: production
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+    volumes:
+      - celerybeat-schedule:/newutil/celerybeat-schedule
+    depends_on:
+      - web
+      - celery_worker
+      - redis
+    networks:
+      - internal
+
 volumes:
   db_volume:
-  user_files_volume:  # New volume for user files
+  redis_data:
 
 networks:
-    internal:
-      driver: "bridge"
-    appnet:
-      external: true
+  internal:
+    driver: "bridge"
+  appnet:
+    external: true

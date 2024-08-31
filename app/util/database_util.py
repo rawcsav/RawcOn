@@ -1,14 +1,10 @@
-import csv
 import json
 from datetime import datetime, timedelta
+from sqlalchemy.exc import SQLAlchemyError
 
-import numpy as np
-import pandas as pd
-from scipy.spatial import distance_matrix
 
-from app import db
-from app.models.artgen_models import artgen_sql, artgenurl_sql
-from app.models.user_models import artist_sql, features_sql
+from app import db, cache
+from app.models.user_models import ArtistData, FeatureData, UserData, GenreData
 
 
 def get_today_date():
@@ -40,22 +36,31 @@ def validate_audio_data(data):
 
 
 def add_artist_to_db(artist_data):
-    new_artist = artist_sql(
-        id=artist_data["id"],
-        name=artist_data["name"],
-        external_url=json.dumps(artist_data["external_urls"]),
-        followers=artist_data.get("followers", {"total": 0})["total"],
-        genres=json.dumps(artist_data["genres"]),
-        images=json.dumps(artist_data["images"]),
-        popularity=artist_data["popularity"],
-    )
-    db.session.merge(new_artist)
+    try:
+        new_artist = ArtistData(
+            id=artist_data["id"],
+            name=artist_data["name"],
+            external_url=json.dumps(artist_data["external_urls"]),
+            followers=artist_data.get("followers", {"total": 0})["total"],
+            genres=json.dumps(artist_data["genres"]),
+            images=json.dumps(artist_data["images"]),
+            popularity=artist_data["popularity"],
+        )
+        db.session.merge(new_artist)
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        print(f"Error adding/updating artist {artist_data['id']}: {str(e)}")
+        # You might want to log this error or handle it in some way
+    except KeyError as e:
+        print(f"Missing key in artist data: {str(e)}")
+        # Handle missing data in the artist_data dictionary
 
 
 def get_or_fetch_artist_info(sp, artist_ids):
     if isinstance(artist_ids, str):
         artist_ids = [artist_ids]
-    existing_artists = artist_sql.query.filter(artist_sql.id.in_(artist_ids)).all()
+    existing_artists = ArtistData.query.filter(ArtistData.id.in_(artist_ids)).all()
     existing_artist_ids = {artist.id: artist for artist in existing_artists}
 
     to_fetch = [artist_id for artist_id in artist_ids if artist_id not in existing_artist_ids]
@@ -67,7 +72,7 @@ def get_or_fetch_artist_info(sp, artist_ids):
         fetched_artists = sp.artists(batch)["artists"]
 
         for artist in fetched_artists:
-            new_artist = artist_sql(
+            new_artist = ArtistData(
                 id=artist["id"],
                 name=artist["name"],
                 external_url=json.dumps(artist["external_urls"]),
@@ -97,7 +102,7 @@ def get_or_fetch_artist_info(sp, artist_ids):
 
 
 def get_or_fetch_audio_features(sp, track_ids):
-    existing_features = features_sql.query.filter(features_sql.id.in_(track_ids)).all()
+    existing_features = FeatureData.query.filter(FeatureData.id.in_(track_ids)).all()
     existing_feature_ids = {feature.id: feature for feature in existing_features}
 
     to_fetch = [track_id for track_id in track_ids if track_id not in existing_feature_ids]
@@ -111,7 +116,7 @@ def get_or_fetch_audio_features(sp, track_ids):
 
             for feature in fetched_features:
                 if feature:
-                    new_feature = features_sql(
+                    new_feature = FeatureData(
                         id=feature["id"],
                         danceability=feature["danceability"],
                         energy=feature["energy"],
@@ -156,15 +161,24 @@ def get_or_fetch_audio_features(sp, track_ids):
     return final_features
 
 
-def delete_expired_images_for_playlist(playlist_id):
-    expiry_threshold = datetime.utcnow() - timedelta(hours=1)
+def save_tokens_to_db(user_id, access_token, refresh_token, expires_in):
+    user = UserData.query.filter_by(spotify_user_id=user_id).first()
+    if not user:
+        user = UserData(spotify_user_id=user_id)
 
-    expired_images = artgenurl_sql.query.filter(
-        artgenurl_sql.playlist_id == playlist_id, artgenurl_sql.timestamp <= expiry_threshold
-    ).all()
-
-    for image in expired_images:
-        db.session.delete(image)
-
+    user.access_token = access_token
+    user.refresh_token = refresh_token
+    user.token_expiry = datetime.utcnow() + timedelta(seconds=expires_in)
+    user.last_active = datetime.utcnow()
+    db.session.add(user)
     db.session.commit()
-    db.session.close()
+
+
+def initialize_genre_data(app):
+    with app.app_context():
+        if GenreData.query.count() == 0:
+            csv_file_path = app.config.get("GENRE_DATA_CSV_PATH", "app/static/data/genre_data.csv")
+            GenreData.populate_from_csv(csv_file_path)
+            print("Genre data populated from CSV.")
+        else:
+            print("Genre data already exists in the database.")

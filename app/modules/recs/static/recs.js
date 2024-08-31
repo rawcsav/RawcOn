@@ -1,694 +1,729 @@
+const toastContainer = document.getElementById("toastContainer");
+
+function showToast(message, type = "info") {
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+
+  toast.addEventListener("click", () => {
+    closeToast(toast);
+  });
+
+  toastContainer.appendChild(toast);
+
+  // Trigger reflow
+  toast.offsetHeight;
+
+  toast.classList.add("show");
+
+  // Auto close after 3 seconds
+  setTimeout(() => {
+    closeToast(toast);
+  }, 3000);
+}
+
+function closeToast(toast) {
+  // Clear the timeout to prevent multiple close attempts
+  if (toast.timeoutId) {
+    clearTimeout(toast.timeoutId);
+  }
+
+  // Only proceed if the toast is still in the DOM
+  if (toast.parentNode === toastContainer) {
+    toast.classList.remove("show");
+    setTimeout(() => {
+      // Check again before removing, in case it was removed during the transition
+      if (toast.parentNode === toastContainer) {
+        toastContainer.removeChild(toast);
+      }
+    }, 300); // Wait for the transition to finish
+  }
+}
+
 function getCsrfToken() {
   return document
     .querySelector('meta[name="csrf-token"]')
     .getAttribute("content");
 }
+const util = {
+  debounce: (func, delay) => {
+    let debounceTimer;
+    return function (...args) {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => func.apply(this, args), delay);
+    };
+  },
+  createElement: (tag, className, innerHTML) => {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    if (innerHTML) element.innerHTML = innerHTML;
+    return element;
+  },
+};
 
-document.addEventListener("DOMContentLoaded", function () {
-  const playlistsContainer = document.getElementById("playlistOptions");
+// DOM elements
+const elements = {
+  searchInput: document.getElementById("universal-input"),
+  searchButton: document.getElementById("universal-search"),
+  searchDropdown: document.getElementById("search-dropdown"),
+  seedsContainer: document.getElementById("universal-seeds-container"),
+  trackSeedsInput: document.getElementById("track_seeds"),
+  artistSeedsInput: document.getElementById("artist_seeds"),
+  recommendationForm: document.querySelector("form"),
+  resultsContainer: document.getElementById("results"),
+  seedStep: document.getElementById("seed-step"),
+  playlistModal: document.getElementById("playlistModal"),
+  playlistOptions: document.getElementById("playlistOptions"),
+  toast: document.getElementById("toast"),
+};
 
-  fetch("/recs/get-user-playlists")
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      return response.json();
-    })
-    .then((playlists) => {
-      if (playlists.error) {
-        playlistsContainer.innerHTML = `<p>Error: ${playlists.error}</p>`;
-      } else {
-        // Generate HTML for each playlist and join them into a single string
-        const playlistsHtml = playlists
-          .map((playlist) => {
-            return `<div class="playlist-option" data-playlistid="${playlist.id}">
-                    <div class="playlist-item">
-                      <img src="${playlist.cover_art}" alt="${playlist.name}" class="playlist-image">
-                      <h3 class="playlist-name">${playlist.name}</h3>
-                      <p>Owner: ${playlist.owner}</p>
-                    </div>
-                    </div>`;
-          })
-          .join("");
-        // Set the innerHTML of the playlistsContainer to the generated HTML
-        playlistsContainer.innerHTML = playlistsHtml;
-      }
-    })
-    .catch((error) => {
-      console.error(
-        "There has been a problem with your fetch operation:",
-        error,
+// Search module
+const searchModule = (() => {
+  const performSearch = async (query) => {
+    if (!query.trim()) {
+      uiModule.hideDropdown();
+      return;
+    }
+
+    try {
+      const response = await fetch("/recs/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: JSON.stringify({ query, type: "track,artist" }),
+      });
+
+      if (!response.ok) throw new Error("Network response was not ok");
+
+      const data = await response.json();
+      uiModule.displaySearchResults(data);
+    } catch (error) {
+      console.error("Search error:", error);
+      showToast(
+        "An error occurred while searching. Please try again.",
+        "error",
       );
-      playlistsContainer.innerHTML = `<p>Failed to load playlists.</p>`;
-    });
-  const modal = document.getElementById("instructionsModal");
-  const closeBtn = document.querySelector(".close");
-
-  document
-    .getElementById("showInstructions")
-    .addEventListener("click", function () {
-      modal.style.display = "block";
-    });
-
-  closeBtn.addEventListener("click", function () {
-    modal.style.display = "none";
-  });
-
-  window.addEventListener("click", function (event) {
-    if (event.target === modal) {
-      modal.style.display = "none";
     }
-  });
+  };
 
-  document
-    .getElementById("showInstructions")
-    .addEventListener("click", function () {
-      document.getElementById("instructionsModal").style.display = "block";
-      document.body.style.overflow = "hidden";
+  return { performSearch };
+})();
+
+// Seeds module
+const seedsModule = (() => {
+  // Add this to the elements object at the beginning of the file
+  elements.submitButton = document.querySelector('form button[type="submit"]');
+
+  // Add this function to the seedsModule
+  const updateSubmitButton = () => {
+    const seedCount = elements.seedsContainer.children.length;
+    elements.seedStep.visible = seedCount >= 1;
+    elements.submitButton.disabled = seedCount === 0;
+    elements.submitButton.classList.toggle("disabled", seedCount === 0);
+    elements.seedStep.classList.toggle("hidden", seedCount >= 1);
+  };
+  const addToSeeds = (item, type) => {
+    if (elements.seedsContainer.children.length >= 5) {
+      showToast("You can select no more than 5 combined seeds.", "warning");
+      return;
+    }
+
+    const seedElement = util.createElement("div", `seed-item ${type}`);
+    seedElement.dataset.id = item.id;
+    seedElement.dataset.type = type;
+
+    const spotifyUrl = item.external_urls.spotify;
+    seedElement.innerHTML = `
+      <div class="seed-info">
+        <a href="${spotifyUrl}" target="_blank" rel="noopener noreferrer" class="seed-name" title="${item.name}">${item.name}</a>
+        <div class="seed-subtext">${type === "track" ? item.artists[0].name : "Artist"}</div>
+      </div>
+      <button class="remove-seed" aria-label="Remove seed">×</button>
+    `;
+
+    seedElement
+      .querySelector(".remove-seed")
+      .addEventListener("click", () => removeSeed(seedElement));
+
+    elements.seedsContainer.appendChild(seedElement);
+    updateSeedsInput();
+    updateSeedCounter();
+    updateSubmitButton(); // Add this line
+  };
+  const removeSeed = (seedElement) => {
+    seedElement.remove();
+    updateSeedsInput();
+    updateSeedCounter(); // Update counter when a seed is added
+    updateSubmitButton(); // Add this line
+  };
+
+  const updateSeedsInput = () => {
+    const trackSeeds = [];
+    const artistSeeds = [];
+
+    elements.seedsContainer.querySelectorAll(".seed-item").forEach((seed) => {
+      if (seed.dataset.type === "track") {
+        trackSeeds.push(seed.dataset.id);
+      } else if (seed.dataset.type === "artist") {
+        artistSeeds.push(seed.dataset.id);
+      }
     });
 
-  document.querySelector(".close").addEventListener("click", function () {
-    document.getElementById("instructionsModal").style.display = "none";
-    document.body.style.overflow = "auto";
-  });
+    elements.trackSeedsInput.value = trackSeeds.join(",");
+    elements.artistSeedsInput.value = artistSeeds.join(",");
+  };
 
-  window.addEventListener("click", function (event) {
-    if (event.target === document.getElementById("instructionsModal")) {
-      document.getElementById("instructionsModal").style.display = "none";
-      document.body.style.overflow = "auto";
+  function updateSeedCounter() {
+    const seedContainer = document.getElementById("universal-seeds-container");
+    const seedCounter = document.getElementById("seed-counter");
+    const seedCount = seedContainer.children.length;
+    seedCounter.textContent = `${seedCount}/5`;
+  }
+
+  return {
+    addToSeeds,
+    removeSeed,
+    updateSeedsInput,
+    updateSeedCounter,
+    updateSubmitButton, // Add this line
+  };
+})();
+
+// UI module
+const uiModule = (() => {
+  const displaySearchResults = (data) => {
+    elements.searchDropdown.innerHTML = "";
+
+    const createResultElement = (item, type) => {
+      const element = util.createElement("div", "dropdown-item");
+      element.dataset.id = item.id;
+      element.dataset.type = type;
+
+      const imageUrl =
+        type === "track" ? item.album.images[0]?.url : item.images[0]?.url;
+      const spotifyUrl =
+        type === "track"
+          ? item.external_urls.spotify
+          : item.external_urls.spotify;
+      element.innerHTML = `
+        <a href="${spotifyUrl}" target="_blank" rel="noopener noreferrer" class="result-link">
+          <img src="${imageUrl || "/static/dist/img/default-track.svg"}" alt="${item.name}" class="result-image">
+        </a>
+        <div class="result-info">
+          <div class="result-name" title="${item.name}">${item.name}</div>
+          <div class="result-subtext">${type === "track" ? item.artists[0].name : "Artist"}</div>
+        </div>
+        <button class="add-to-seeds" data-id="${item.id}" data-type="${type}">+</button>
+      `;
+
+      element.querySelector(".add-to-seeds").addEventListener("click", (e) => {
+        e.stopPropagation();
+        seedsModule.addToSeeds(item, type);
+        seedsModule.updateSeedCounter();
+      });
+
+      return element;
+    };
+
+    (data.tracks?.items || []).forEach((track) =>
+      elements.searchDropdown.appendChild(createResultElement(track, "track")),
+    );
+    (data.artists?.items || []).forEach((artist) =>
+      elements.searchDropdown.appendChild(
+        createResultElement(artist, "artist"),
+      ),
+    );
+
+    showDropdown();
+  };
+
+  const showDropdown = () => {
+    elements.searchDropdown.style.display = "block";
+    elements.searchInput.style.borderBottomLeftRadius = "0";
+  };
+
+  const hideDropdown = () => {
+    elements.searchDropdown.style.display = "none";
+    elements.searchInput.style.borderBottomLeftRadius = "4px";
+  };
+
+  const displayErrorMessage = (message) => {
+    elements.searchDropdown.innerHTML = `<div class="error-message">${message}</div>`;
+    showDropdown();
+  };
+
+  const displayRecommendations = (recommendations) => {
+    elements.resultsContainer.innerHTML = "";
+
+    recommendations.forEach((trackInfo) => {
+      const trackElement = util.createElement("div", "result-item");
+      trackElement.innerHTML = `
+      <div class="result-cover-art-container">
+        <div class="cover-art-container">
+          <img src="${trackInfo.cover_art}" alt="Cover Art" class="result-cover-art">
+        </div>
+        <div class="caption">
+          <h2 title="${trackInfo.trackName}"><i class="rawcon-music"></i>${trackInfo.trackName}</h2>
+          <p title="${trackInfo.artist}"><i class="rawcon-user-music"></i>${trackInfo.artist}</p>
+          <a href="${trackInfo.trackUrl}" target="_blank" rel="noopener noreferrer"><i class="rawcon-spotify"></i> Play on Spotify</a>
+        </div>
+        ${
+          trackInfo.preview
+            ? `<div class="preview play-button noselect" id="play_${trackInfo.trackid}"><i class="rawcon-play"></i></div>`
+            : `<div class="no-preview">Preview N/A</div>`
+        }
+      </div>
+      <div class="dropdown-content">
+        <a href="#" class="add-to-saved" data-trackid="${trackInfo.trackid}"><i class="heart-icon rawcon-heart"></i></a>
+        <a href="#" class="add-to-playlist" data-trackid="${trackInfo.trackid}"><i class="plus-icon rawcon-album-plus"></i></a>
+      </div>
+      ${
+        trackInfo.preview
+          ? `<audio class="audio-player" id="audio_${trackInfo.trackid}">
+               <source src="${trackInfo.preview}" type="audio/mpeg">
+               Your browser does not support the audio element.
+             </audio>`
+          : ""
+      }
+    `;
+
+      elements.resultsContainer.appendChild(trackElement);
+      if (trackInfo.preview) {
+        audioModule.setupPlayToggle(trackInfo.trackid);
+      }
+    });
+  };
+
+  return {
+    displaySearchResults,
+    showDropdown,
+    hideDropdown,
+    displayErrorMessage,
+    displayRecommendations,
+  };
+})();
+
+// Slider module
+const sliderModule = (() => {
+  const initMinMaxSlider = (sliderId, minInputId, maxInputId, config) => {
+    const container = document.getElementById(sliderId);
+    const minSlider = container.querySelector(".min-slider");
+    const maxSlider = container.querySelector(".max-slider");
+    const range = container.querySelector(".slider-range");
+    const minValue = container.querySelector(".min-value");
+    const maxValue = container.querySelector(".max-value");
+    const minInput = document.getElementById(minInputId);
+    const maxInput = document.getElementById(maxInputId);
+
+    // Set initial values based on config
+    minSlider.min = config.min;
+    minSlider.max = config.max;
+    maxSlider.min = config.min;
+    maxSlider.max = config.max;
+    minSlider.value = config.defaultMin;
+    maxSlider.value = config.defaultMax;
+
+    function updateSlider() {
+      const minVal = parseInt(minSlider.value);
+      const maxVal = parseInt(maxSlider.value);
+
+      if (minVal > maxVal) {
+        minSlider.value = maxVal;
+      }
+
+      const minPercent =
+        ((minSlider.value - config.min) / (config.max - config.min)) * 100;
+      const maxPercent =
+        ((maxSlider.value - config.min) / (config.max - config.min)) * 100;
+
+      range.style.left = minPercent + "%";
+      range.style.width = maxPercent - minPercent + "%";
+
+      if (config.isInteger) {
+        minValue.textContent = minSlider.value;
+        maxValue.textContent = maxSlider.value;
+        minInput.value = minSlider.value;
+        maxInput.value = maxSlider.value;
+      } else {
+        const minDisplayValue = (minSlider.value / 100).toFixed(2);
+        const maxDisplayValue = (maxSlider.value / 100).toFixed(2);
+        minValue.textContent = minDisplayValue;
+        maxValue.textContent = maxDisplayValue;
+        minInput.value = minDisplayValue;
+        maxInput.value = maxDisplayValue;
+      }
     }
-  });
 
-  // eslint-disable-next-line no-unused-vars
-  function getSliderConfig(sliderId, inputId) {
-    const slider = document.getElementById(sliderId);
+    minSlider.addEventListener("input", updateSlider);
+    maxSlider.addEventListener("input", updateSlider);
 
-    console.log("sliderId:", sliderId);
-    console.log("valueLow (raw):", slider.getAttribute("valueLow")); // Get the raw attribute value
-    console.log("valueHigh (raw):", slider.getAttribute("valueHigh"));
+    updateSlider(); // Initial update
+  };
 
-    const valueLow = parseFloat(slider.getAttribute("valueLow")); // Modify to get the attribute directly
-    const valueHigh = parseFloat(slider.getAttribute("valueHigh"));
-
-    console.log("valueLow (parsed):", valueLow, typeof valueLow);
-    console.log("valueHigh (parsed):", valueHigh, typeof valueHigh);
-
-    return {
-      start: [valueLow, valueHigh],
-      connect: true,
-      range: {
-        min: Math.min(valueLow, valueHigh), // Ensures correct overall min
-        max: Math.max(valueLow, valueHigh), // Ensures correct overall max
+  const initializeAllSliders = () => {
+    const sliderConfigs = {
+      popularity: {
+        min: 0,
+        max: 100,
+        defaultMin: 0,
+        defaultMax: 100,
+        isInteger: true,
+      },
+      energy: {
+        min: 0,
+        max: 100,
+        defaultMin: 0,
+        defaultMax: 100,
+        isInteger: false,
+      },
+      instrumentalness: {
+        min: 0,
+        max: 100,
+        defaultMin: 0,
+        defaultMax: 100,
+        isInteger: false,
+      },
+      tempo: {
+        min: 24,
+        max: 208,
+        defaultMin: 24,
+        defaultMax: 208,
+        isInteger: true,
+      },
+      danceability: {
+        min: 0,
+        max: 100,
+        defaultMin: 0,
+        defaultMax: 100,
+        isInteger: false,
+      },
+      valence: {
+        min: 0,
+        max: 100,
+        defaultMin: 0,
+        defaultMax: 100,
+        isInteger: false,
       },
     };
-  }
 
-  function createSlider(sliderId, inputId) {
-    const slider = document.getElementById(sliderId);
-    const sliderConfig = getSliderConfig(sliderId, inputId);
-
-    // eslint-disable-next-line no-undef
-    noUiSlider.create(slider, sliderConfig); // No need to log here anymore
-
-    slider.noUiSlider.on("update", function (values, handle) {
-      document.getElementById(inputId).value = values.join(",");
+    Object.entries(sliderConfigs).forEach(([key, config]) => {
+      initMinMaxSlider(`${key}_slider`, `min_${key}`, `max_${key}`, config);
     });
-  }
-  createSlider("popularity_slider", "popularity_input");
-  createSlider("energy_slider", "energy_input");
-  createSlider("instrumentalness_slider", "instrumentalness_input");
-  createSlider("tempo_slider", "tempo_input");
-  createSlider("danceability_slider", "danceability_input");
-  createSlider("valence_slider", "valence_input");
-});
+  };
 
-function getTotalSeeds() {
-  return document.querySelectorAll(
-    "#universal_seeds_container .clickable-result",
-  ).length;
-}
-document
-  .getElementById("universal_search_results")
-  .addEventListener("click", function (event) {
-    if (event.target.closest(".clickable-result")) {
-      if (getTotalSeeds() < 5) {
-        let seedType = event.target
-          .closest(".clickable-result")
-          .classList.contains("track")
-          ? "track"
-          : "artist";
-        let seed = event.target.closest(".clickable-result").cloneNode(true);
-        seed.classList.add(seedType);
-        document.getElementById("universal_seeds_container").appendChild(seed);
-        updateSeedsInput("universal_seeds_container");
-      } else {
-        alert("You can select no more than 5 combined seeds.");
-      }
-    }
-  });
+  return { initializeAllSliders };
+})();
+// Recommendation module
+const recommendationModule = (() => {
+  const getRecommendations = async () => {
+    const formData = new FormData(elements.recommendationForm);
+    const data = Object.fromEntries(formData.entries());
 
-document
-  .getElementById("universal_search")
-  .addEventListener("click", function () {
-    let query = document.getElementById("universal_input").value;
-    document.getElementById("universal_search_results").innerHTML = "";
+    // Prepare the data object
+    const requestData = {
+      artist_seeds: data.artist_seeds || "",
+      track_seeds: data.track_seeds || "",
+      limit: data.limit || 10,
+      min_popularity: data.min_popularity,
+      max_popularity: data.max_popularity,
+      min_energy: data.min_energy,
+      max_energy: data.max_energy,
+      min_instrumentalness: data.min_instrumentalness,
+      max_instrumentalness: data.max_instrumentalness,
+      min_tempo: data.min_tempo,
+      max_tempo: data.max_tempo,
+      min_danceability: data.min_danceability,
+      max_danceability: data.max_danceability,
+      min_valence: data.min_valence,
+      max_valence: data.max_valence,
+    };
 
-    fetch("/recs/search", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": getCsrfToken(),
-      },
-      body: JSON.stringify({
-        query: query,
-        type: "track,artist",
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        let trackResults = data["tracks"]["items"];
-        let artistResults = data["artists"]["items"];
-        let searchResults = document.getElementById("universal_search_results");
-        searchResults.innerHTML = "";
-
-        trackResults.forEach((result) => {
-          searchResults.insertAdjacentHTML(
-            "beforeend",
-            `<div class="clickable-result track" data-id="${result["id"]}">
-             <img src="${result["album"]["images"][0]["url"]}" alt="Cover Art" class="result-image">
-             <div class="result-info">
-                 <h2>${result["name"]}</h2>
-                 <p>${result["artists"][0]["name"]}</p>
-             </div>
-           </div>`,
-          );
-        });
-
-        artistResults.forEach((result) => {
-          searchResults.insertAdjacentHTML(
-            "beforeend",
-            `<div class="clickable-result artist" data-id="${result["id"]}">
-             <img src="${result["images"][0]["url"]}" alt="${result["name"]}" class="result-image">
-             <div class="result-info">
-                 <h2>${result["name"]}</h2>
-             </div>
-           </div>`,
-          );
-        });
-      })
-      .catch((error) => {
-        console.error("Error:", error);
+    try {
+      const response = await fetch("/recs/get_recommendations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: JSON.stringify(requestData),
       });
-  });
 
-document
-  .getElementById("universal_input")
-  .addEventListener("keypress", function (e) {
-    if (e.which === 13) {
-      // eslint-disable-next-line no-unused-vars
-      let query = this.value;
-      document.getElementById("universal_search").click();
-    }
-  });
-document
-  .getElementById("universal_seeds_container")
-  .addEventListener("click", function (event) {
-    if (event.target.closest(".clickable-result")) {
-      event.target.closest(".clickable-result").remove();
-      console.log("Seed removed");
-      updateSeedsInput("universal_seeds_container");
-    }
-  });
-
-document.querySelector("form").addEventListener("submit", function (event) {
-  event.preventDefault();
-  getRecommendations();
-});
-
-function showToast(message, type = "success") {
-  const toast = document.getElementById("toast");
-  const toastMessage = document.getElementById("toastMessage");
-
-  toastMessage.textContent = message;
-
-  if (type === "error") {
-    toast.classList.add("error");
-    toast.classList.remove("success");
-  } else {
-    toast.classList.add("success");
-    toast.classList.remove("error");
-  }
-
-  toast.style.display = "block";
-
-  setTimeout(() => {
-    toast.style.display = "none";
-  }, 5000);
-}
-
-document.addEventListener("click", function (event) {
-  if (event.target.closest(".add-to-saved")) {
-    event.preventDefault();
-
-    let heartIcon = event.target
-      .closest(".add-to-saved")
-      .querySelector(".heart-icon");
-    let trackId = event.target.closest(".add-to-saved").dataset.trackid;
-    let button = event.target.closest(".add-to-saved");
-
-    if (heartIcon.classList.contains("icon-")) {
-      fetch("/recs/unsave_track", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCsrfToken(),
-        },
-        body: JSON.stringify({ track_id: trackId }),
-      })
-        .then((response) => {
-          if (response.ok) {
-            showToast(button, "Track unsaved successfully!");
-            heartIcon.classList.remove("icon-heart-minus", "liked");
-            heartIcon.classList.add("icon-heart-plus");
-          } else {
-            throw new Error("Error unsaving the track");
-          }
-        })
-        .catch((error) => {
-          showToast(button, "An error occurred while unsaving the track.");
-          console.error("Error:", error);
-        });
-    } else {
-      fetch("/recs/save_track", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCsrfToken(),
-        },
-        body: JSON.stringify({ track_id: trackId }),
-      })
-        .then((response) => {
-          if (response.ok) {
-            showToast(button, "Track saved successfully!");
-            heartIcon.classList.remove("icon-heart-plus");
-            heartIcon.classList.add("icon-heart-minus", "liked");
-          } else {
-            throw new Error("Error saving the track");
-          }
-        })
-        .catch((error) => {
-          showToast(button, "An error occurred while saving the track.");
-          console.error("Error:", error);
-        });
-    }
-  }
-});
-
-document.addEventListener("click", function (event) {
-  // Check if the clicked element or its parent has the 'add-to-playlist' class
-  if (event.target.closest(".add-to-playlist")) {
-    event.preventDefault(); // Prevent default action
-
-    const button = event.target.closest(".add-to-playlist");
-    const trackId = button.dataset.trackid; // Retrieve the track ID from the data attribute
-    const playlistModal = document.getElementById("playlistModal");
-
-    // Set the track ID and button reference in the modal for later use
-    playlistModal.dataset.trackid = trackId;
-    playlistModal.dataset.button = button;
-    playlistModal.style.display = "block"; // Display the modal
-  }
-});
-
-// This function handles adding a track to a playlist
-function addToPlaylist(trackId, playlistId, button) {
-  fetch("/recs/add_to_playlist", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRFToken": getCsrfToken(), // Ensure CSRF token is correctly used
-    },
-    body: JSON.stringify({ track_id: trackId, playlist_id: playlistId }),
-  })
-    .then((response) => {
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      return response.json();
-    })
-    .then((data) => {
+
+      const data = await response.json();
+      uiModule.displayRecommendations(data.recommendations);
+    } catch (error) {
+      console.error("Error:", error);
+      showToast(
+        "An error occurred while getting recommendations. Please try again.",
+        "error",
+      );
+    }
+  };
+
+  return { getRecommendations };
+})();
+// Audio playback module
+const audioModule = (() => {
+  let currentPlayingAudio = null;
+
+  const setupPlayToggle = (trackId) => {
+    const playButton = document.getElementById(`play_${trackId}`);
+    const audioPlayer = document.getElementById(`audio_${trackId}`);
+
+    if (!playButton || !audioPlayer) {
+      console.warn(
+        `Play button or audio player not found for track ${trackId}`,
+      );
+      return;
+    }
+
+    const playIcon = playButton.querySelector("i");
+
+    playButton.addEventListener("click", () => {
+      if (currentPlayingAudio && currentPlayingAudio !== audioPlayer) {
+        currentPlayingAudio.pause();
+        currentPlayingAudio.currentTime = 0;
+        const playingId = currentPlayingAudio
+          .getAttribute("id")
+          .replace("audio_", "");
+        const playingButton = document.getElementById(`play_${playingId}`);
+        if (playingButton) {
+          playingButton.querySelector("i").className = "rawcon-play";
+        }
+      }
+
+      if (audioPlayer.paused) {
+        audioPlayer.play();
+        playIcon.className = "rawcon-pause";
+        currentPlayingAudio = audioPlayer;
+      } else {
+        audioPlayer.pause();
+        playIcon.className = "rawcon-play";
+        currentPlayingAudio = null;
+      }
+    });
+  };
+
+  return { setupPlayToggle };
+})();
+
+// Playlist module
+const playlistModule = (() => {
+  const addToPlaylist = async (trackId, playlistId) => {
+    try {
+      const response = await fetch("/recs/add_to_playlist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: JSON.stringify({ track_id: trackId, playlist_id: playlistId }),
+      });
+      const data = await response.json();
       if (data.error) {
         throw new Error(data.error);
       }
-      showToast(button, "Added to Playlist!"); // Show success message
-      const plusIcon = button.querySelector(".plus-icon");
-      plusIcon.classList.remove("plus-icon-grey");
-      plusIcon.classList.add("plus-icon-green"); // Update icon color
-      document.getElementById("playlistModal").style.display = "none"; // Hide the modal
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-      showToast(button, "An error occurred while adding to the playlist.");
-    });
-}
 
-// Listen for clicks on playlist options within the modal
-document.addEventListener("click", function (event) {
-  if (event.target.closest(".playlist-option")) {
-    event.preventDefault();
+      console.log(
+        `Searching for plus icon with selector: .add-to-playlist[data-trackid="${trackId}"] .plus-icon`,
+      );
+      const plusIcon = document.querySelector(
+        `.add-to-playlist[data-trackid="${trackId}"] .plus-icon`,
+      );
 
-    const playlistOption = event.target.closest(".playlist-option");
-    const playlistId = playlistOption.dataset.playlistid; // Retrieve the playlist ID
-    const modal = document.getElementById("playlistModal");
-    const trackId = modal.dataset.trackid; // Retrieve the track ID set earlier
-    const button = modal.dataset.button; // Retrieve the button reference
-
-    addToPlaylist(trackId, playlistId, button); // Call the function to add to playlist
-  }
-});
-
-document.querySelectorAll(".close").forEach((closeButton) => {
-  closeButton.addEventListener("click", function () {
-    document.getElementById("playlistModal").style.display = "none";
-  });
-});
-
-window.addEventListener("click", function (event) {
-  if (event.target === document.getElementById("playlistModal")) {
-    document.getElementById("playlistModal").style.display = "none";
-  }
-});
-
-document.addEventListener("click", function (event) {
-  if (event.target.closest(".add-to-seeds-toggle")) {
-    event.preventDefault();
-    event.target
-      .closest(".add-to-seeds-toggle")
-      .nextElementSibling.classList.toggle("hidden");
-  }
-});
-
-window.addEventListener("click", function (event) {
-  if (!event.target.closest(".add-to-seeds-dropdown")) {
-    document.querySelectorAll(".seeds-options").forEach((element) => {
-      element.classList.add("hidden");
-    });
-  }
-});
-function updateSeedsInput(inputId) {
-  let ids = [];
-  let trackIds = [];
-  let artistIds = [];
-  const seedsContainer = document.getElementById("universal_seeds_container");
-
-  // Then, use the seedsContainer variable to find all .clickable-result elements within it
-  seedsContainer
-    .querySelectorAll(".clickable-result")
-    .forEach(function (element) {
-      const id = element.getAttribute("data-id");
-      ids.push(id);
-
-      if (element.classList.contains("track")) {
-        trackIds.push(id);
-      } else if (element.classList.contains("artist")) {
-        artistIds.push(id);
-      }
-    });
-
-  document.getElementById(inputId).value = ids.join(",");
-  console.log("trackIds:", trackIds);
-  console.log("artistIds:", artistIds);
-  document.getElementById("track_seeds").value = trackIds.join(",");
-  document.getElementById("artist_seeds").value = artistIds.join(",");
-}
-async function getRecommendations() {
-  const formData = new FormData(document.querySelector("form"));
-  const formObject = Object.fromEntries(formData.entries());
-  const formJSON = JSON.stringify(formObject);
-
-  try {
-    const response = await fetch("/recs/get_recommendations", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": getCsrfToken(),
-      },
-      body: formJSON,
-    });
-    const data = await response.json();
-    displayRecommendations(data["recommendations"]);
-  } catch (error) {
-    console.error("Error:", error);
-  }
-}
-
-function createTrackElement(trackInfo) {
-  const div = document.createElement("div");
-  div.className = "result-item";
-  div.innerHTML = `
-        <div class="result-cover-art-container">
-            <img src="${trackInfo["cover_art"]}" alt="Cover Art" class="result-cover-art">
-            <div class="caption">
-                <h2>${trackInfo["trackName"]}</h2>
-                <p>${trackInfo["artist"]}</p>
-            </div>
-            <div class="play-button noselect" id="play_${trackInfo["trackid"]}"><i class="icon-play"></i></div>
-        </div>
-        <div class="dropdown-content">
-            <a href="#" class="add-to-saved" data-trackid="${trackInfo["trackid"]}"><i class="heart-icon icon-heart-plus"></i></a>
-            <a href="#" class="add-to-playlist" data-trackid="${trackInfo["trackid"]}"><i class="plus-icon icon-album-plus"></i></a>
-        </div>
-        <audio controls class="audio-player" id="audio_${trackInfo["trackid"]}">
-            <source src="${trackInfo["preview"]}" type="audio/mpeg">
-            Your browser does not support the audio element.
-        </audio>
-    `;
-  return div; // Return the element for external handling
-}
-// Global reference to currently playing audio to manage play/pause
-let currentPlayingAudio = null;
-
-function setupPlayToggle(trackId) {
-  const playButton = document.getElementById(`play_${trackId}`);
-  const audioPlayer = document.getElementById(`audio_${trackId}`);
-  const playIcon = playButton.querySelector("i"); // Assuming <i> is a direct child of the play button
-
-  playButton.addEventListener("click", function () {
-    // If there's any audio playing, pause it and reset its button
-    if (currentPlayingAudio && currentPlayingAudio !== audioPlayer) {
-      currentPlayingAudio.pause();
-      currentPlayingAudio.currentTime = 0; // Optionally reset the audio to the start
-      const playingId = currentPlayingAudio
-        .getAttribute("id")
-        .replace("audio_", "");
-      const playingButtonIcon = document
-        .getElementById(`play_${playingId}`)
-        .querySelector("i");
-      playingButtonIcon.className = "icon-play"; // Reset the icon
-    }
-
-    // Toggle play/pause for the clicked track
-    if (audioPlayer.paused) {
-      audioPlayer.play();
-      playIcon.className = "icon-pause"; // Change the icon to pause
-      currentPlayingAudio = audioPlayer; // Update the currently playing audio
-    } else {
-      audioPlayer.pause();
-      playIcon.className = "icon-play"; // Change the icon back to play
-      currentPlayingAudio = null; // No audio is playing now
-    }
-  });
-}
-// Assume you have a function like this to handle the display of recommendations
-function displayRecommendations(recommendations) {
-  const resultsContainer = document.getElementById("results");
-  resultsContainer.innerHTML = ""; // Clear existing entries
-
-  recommendations.forEach((trackInfo) => {
-    const trackElement = createTrackElement(trackInfo);
-    resultsContainer.appendChild(trackElement); // Append the element here
-    setupPlayToggle(trackInfo["trackid"]); // Setup control here if preferable
-  });
-}
-
-document.addEventListener("click", function (event) {
-  if (event.target.closest(".add-to-seeds")) {
-    event.preventDefault();
-    if (getTotalSeeds() < 5) {
-      let trackId, trackName, artistName, artistId;
-      let seedType = event.target
-        .closest(".add-to-seeds")
-        .classList.contains("track")
-        ? "track"
-        : "artist";
-      let imgSrc = event.target
-        .closest(".result-item")
-        .querySelector(".result-cover-art-container img").src;
-
-      let seedElement;
-      if (seedType === "track") {
-        trackId = event.target.closest(".add-to-seeds").dataset.trackid;
-        trackName = event.target.closest(".add-to-seeds").dataset.name;
-        artistName = event.target.closest(".add-to-seeds").dataset.artist;
-        seedElement = document.createElement("div");
-        seedElement.classList.add("clickable-result", "track");
-        seedElement.dataset.id = trackId;
-        seedElement.innerHTML = `<img src="${imgSrc}" alt="Cover Art" class="result-image">
-                                 <div class="result-info">
-                                     <h2>${trackName}</h2>
-                                     <p>${artistName}</p>
-                                 </div>`;
+      if (plusIcon) {
+        console.log("Plus icon found, adding 'added' class");
+        plusIcon.classList.add("added");
       } else {
-        artistName = event.target.closest(".add-to-seeds").dataset.artist;
-        artistId = event.target.closest(".add-to-seeds").dataset.artistid;
-        seedElement = document.createElement("div");
-        seedElement.classList.add("clickable-result", "artist");
-        seedElement.dataset.id = artistId;
-        seedElement.innerHTML = `<img src="${imgSrc}" alt="Cover Art" class="result-image">
-                                 <div class="result-info">
-                                     <h2>${artistName}</h2>
-                                 </div>`;
+        console.log("Plus icon not found. Debugging information:");
+        console.log("Track ID:", trackId);
+        console.log("Playlist ID:", playlistId);
+        console.log("DOM at this point:", document.body.innerHTML);
       }
 
-      document
-        .getElementById("universal_seeds_container")
-        .appendChild(seedElement);
-      updateSeedsInput("universal_seeds_container");
-    } else {
-      alert("You can select no more than 5 combined seeds.");
+      elements.playlistModal.style.display = "none";
+      showToast("Track added to playlist successfully.", "success");
+    } catch (error) {
+      showToast("Error adding track to playlist. Please try again.", "error");
+      console.error("Error:", error);
     }
-  }
-});
-
-function updateSvgContainerHeight() {
-  const bodyHeight = document.body.scrollHeight; // Get the full scroll height of the body
-  const svgContainer = document.querySelector(".svg-container");
-  svgContainer.style.height = `${bodyHeight}px`; // Update the container height
-}
-
-const toggleButton = document.getElementById("toggleButton");
-const formContainer = document.querySelector(".form-container");
-const searchContainer = document.querySelector(".search-container");
-const seedsContainer = document.querySelector(".seed-container"); // Add this line
-
-let isFormVisible = false; // The form is not visible by default
-const svgUrls = [
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/3673dcf5-01e4-43d2-ac71-ed04a7b56b34",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/amp",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/cd",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/clarinet",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/domra",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/drums_jsuiqf",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/f9cca628-b87a-4880-b2b3-a38e94b48d6f",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/grammy-svgrepo-com",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/gramophone",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/guitar_vqh6f4",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1701529651/randomsvg/headphones_lgdmiw.svg",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1701529651/randomsvg/headphone_pn69ku.svg",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/Layer_1",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/Layer_2",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/Layer_3",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/Layer_30",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/Layer_33",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/Layer_35",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/Layer_36",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/Layer_4",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/Layer_5",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/Layer_6",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/piano",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/piano_hzttv3",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/radio-svgrepo-com",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/shape",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/speaker",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/trombone",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/vinyl_z1naey",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/wave_anpgln",
-  "http://res.cloudinary.com/dn9bcrimg/image/upload/v1/randomsvg/xylophone",
-];
-
-const svgPositions = [
-  { class: "svg1", x: "10%", y: "4%" },
-  { class: "svg2", x: "80%", y: "10%" },
-  { class: "svg3", x: "65%", y: "1%" },
-  { class: "svg4", x: "1%", y: "27%" },
-  { class: "svg5", x: "91%", y: "30%" },
-  { class: "svg6", x: "3%", y: "53%" },
-  { class: "svg7", x: "85%", y: "60%" },
-  { class: "svg8", x: "30%", y: "70%" },
-  { class: "svg9", x: "50%", y: "75%" },
-  { class: "svg10", x: "39%", y: "6%" },
-  { class: "svg11", x: "73%", y: "81%" },
-  { class: "svg12", x: "15%", y: "80%" },
-];
-
-const selectedPositions = svgPositions
-  .sort(() => 0.5 - Math.random())
-  .slice(0, 12);
-
-document.body.style.position = "relative";
-document.body.style.overflowX = "hidden"; // Prevent horizontal scrolling
-document.body.style.margin = "0"; // Remove default margin
-
-// Create a container for the SVG images
-const svgContainer = document.createElement("div");
-svgContainer.classList.add("svg-container"); // Add the class for the query selector
-svgContainer.style.position = "absolute"; // Change to absolute to scroll with content
-svgContainer.style.width = "100%";
-// Initial height will be set by updateSvgContainerHeight function
-svgContainer.style.top = "0";
-svgContainer.style.left = "0";
-svgContainer.style.zIndex = "-1"; // Ensure it's behind all other content
-svgContainer.style.overflow = "hidden"; // Prevent scrollbars if SVGs overflow
-document.body.prepend(svgContainer); // Insert it as the first child of body
-
-svgContainer.querySelectorAll(".svg-placeholder").forEach((el) => el.remove());
-
-// Create and append SVG images to the svgContainer
-selectedPositions.forEach((position, index) => {
-  const svgImage = document.createElement("img");
-  svgImage.src = svgUrls[index % svgUrls.length]; // Cycle through SVG URLs
-  svgImage.classList.add("svg-placeholder", position.class);
-  svgImage.style.position = "absolute";
-  svgImage.style.left = position.x;
-  svgImage.style.top = position.y;
-  svgContainer.appendChild(svgImage);
-});
-updateSvgContainerHeight();
-window.addEventListener("resize", updateSvgContainerHeight);
-
-toggleButton.addEventListener("click", function () {
-  // Check if the viewport width is less than or equal to 620px
-  if (window.innerWidth <= 1024) {
-    if (isFormVisible) {
-      formContainer.style.display = "none";
-      searchContainer.style.display = "flex"; // Adjust according to your layout
-      seedsContainer.style.display = "flex"; // Show seeds container - adjust if needed
-    } else {
-      formContainer.style.display = "flex"; // Adjust according to your layout
-      searchContainer.style.display = "none";
-      seedsContainer.style.display = "none"; // Hide seeds container
+  };
+  const loadUserPlaylists = async () => {
+    try {
+      const response = await fetch("/recs/get-user-playlists");
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const playlists = await response.json();
+      if (playlists.error) {
+        throw new Error(playlists.error);
+      } else {
+        const playlistsHtml = playlists
+          .map(
+            (playlist) => `
+            <div class="playlist-choice" data-playlistid="${playlist.id}">
+              <div class="playlist-div">
+                <img src="${playlist.cover_art}" alt="${playlist.name}" class="playlist-art">
+                <h3 class="playlist-title" title="${playlist.name}">${playlist.name}</h3>
+              </div>
+            </div>
+          `,
+          )
+          .join("");
+        elements.playlistOptions.innerHTML = playlistsHtml;
+      }
+    } catch (error) {
+      console.error(error);
+      showToast("Failed to load playlists.", "error");
     }
-    isFormVisible = !isFormVisible;
-  }
-});
+  };
 
-// Optional: Add a resize event listener to handle cases when the window is resized across the 620px threshold
-window.addEventListener("resize", function () {
-  if (window.innerWidth > 1024) {
-    // If the viewport is wider than 620px, ensure both containers are visible
-    formContainer.style.display = "flex";
-    searchContainer.style.display = "flex";
-    seedsContainer.style.display = "flex"; // Show seeds container - adjust if needed
-  } else {
-    // If the viewport is 620px or less, apply the visibility based on the isFormVisible flag
-    if (isFormVisible) {
-      formContainer.style.display = "flex";
-      searchContainer.style.display = "none";
-      seedsContainer.style.display = "none"; // Hide seeds container
-    } else {
-      formContainer.style.display = "none";
-      searchContainer.style.display = "flex";
-      seedsContainer.style.display = "flex"; // Show seeds container - adjust if needed
+  return { addToPlaylist, loadUserPlaylists };
+})();
+
+// Track management module
+const trackModule = (() => {
+  const saveTrack = async (trackId, heartIcon) => {
+    try {
+      const response = await fetch("/recs/save_track", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: JSON.stringify({ track_id: trackId }),
+      });
+      if (response.ok) {
+        heartIcon.classList.add("liked");
+        showToast("Added to Liked Songs.", "success");
+      } else {
+        throw new Error("Error liking the track");
+      }
+    } catch (error) {
+      showToast("Error liking track. Please try again.", "error");
+      console.error("Error:", error);
     }
-  }
+  };
+
+  const unsaveTrack = async (trackId, heartIcon) => {
+    try {
+      const response = await fetch("/recs/unsave_track", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: JSON.stringify({ track_id: trackId }),
+      });
+      if (response.ok) {
+        showToast("Removed from Liked Songs.", "success");
+        heartIcon.classList.remove("liked");
+      } else {
+        throw new Error("Error unsaving the track");
+      }
+    } catch (error) {
+      showToast("Error unliking track. Please try again.", "error");
+      console.error("Error:", error);
+    }
+  };
+
+  return { saveTrack, unsaveTrack };
+})();
+
+// Event listeners
+document.addEventListener("DOMContentLoaded", () => {
+  const debouncedSearch = util.debounce(searchModule.performSearch, 300);
+  seedsModule.updateSubmitButton();
+
+  elements.searchInput.addEventListener("input", (e) =>
+    debouncedSearch(e.target.value),
+  );
+  elements.searchButton.addEventListener("click", () =>
+    searchModule.performSearch(elements.searchInput.value),
+  );
+
+  elements.searchInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      searchModule.performSearch(elements.searchInput.value);
+    }
+  });
+
+  document.addEventListener("click", (e) => {
+    if (
+      !elements.searchInput.contains(e.target) &&
+      !elements.searchDropdown.contains(e.target)
+    ) {
+      uiModule.hideDropdown();
+    }
+  });
+
+  elements.searchDropdown.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+
+  elements.recommendationForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    recommendationModule.getRecommendations();
+  });
+
+  // Event listener for saving/unsaving tracks
+  document.addEventListener("click", function (event) {
+    if (event.target.closest(".add-to-saved")) {
+      event.preventDefault();
+      const heartIcon = event.target
+        .closest(".add-to-saved")
+        .querySelector(".heart-icon");
+      const trackId = event.target.closest(".add-to-saved").dataset.trackid;
+
+      if (heartIcon.classList.contains("liked")) {
+        trackModule.unsaveTrack(trackId, heartIcon);
+      } else {
+        trackModule.saveTrack(trackId, heartIcon);
+      }
+    }
+  });
+
+  // Event listener for adding tracks to playlist
+  document.addEventListener("click", function (event) {
+    if (event.target.closest(".add-to-playlist")) {
+      event.preventDefault();
+      const button = event.target.closest(".add-to-playlist");
+      const trackId = button.dataset.trackid;
+      elements.playlistModal.dataset.trackid = trackId;
+      elements.playlistModal.dataset.button = button;
+      elements.playlistModal.style.display = "block";
+      playlistModule.loadUserPlaylists();
+    }
+  });
+
+  // Event listener for selecting a playlist
+  elements.playlistOptions.addEventListener("click", function (event) {
+    if (event.target.closest(".playlist-choice")) {
+      event.preventDefault();
+      const playlistId =
+        event.target.closest(".playlist-choice").dataset.playlistid;
+      const trackId = elements.playlistModal.dataset.trackid;
+      playlistModule.addToPlaylist(trackId, playlistId);
+    }
+  });
+
+  // Close modal event listeners
+  document.querySelectorAll(".close").forEach((closeButton) => {
+    closeButton.addEventListener("click", function () {
+      elements.playlistModal.style.display = "none";
+    });
+  });
+
+  window.addEventListener("click", function (event) {
+    if (event.target === elements.playlistModal) {
+      elements.playlistModal.style.display = "none";
+    }
+  });
+  sliderModule.initializeAllSliders();
 });

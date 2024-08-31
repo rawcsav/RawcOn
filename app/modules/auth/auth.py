@@ -1,69 +1,41 @@
-import re
+import time
 from datetime import datetime, timedelta
-from functools import wraps
 from urllib.parse import urlencode
-import cloudinary
-import requests
-from flask import Blueprint, abort, redirect, render_template, request, session, url_for, jsonify, current_app
+from flask import Blueprint, abort, redirect, render_template, request, session, url_for, current_app
 from flask import make_response
-from openai import OpenAI
+from app import cache, limiter
 
-from app import db
-from app.models.user_models import UserData
-from app.modules.auth.auth_util import (
-    verify_session,
-    generate_state,
-    prepare_auth_payload,
-    request_tokens,
-    fetch_user_data,
-    decrypt_data,
-    is_api_key_valid,
-    encrypt_data,
-)
+from app.modules.auth.auth_util import generate_state, prepare_auth_payload, request_tokens, get_spotify_user_id
+from app.util.wrappers import handle_errors
+from app.util.database_util import save_tokens_to_db
 
 auth_bp = Blueprint("auth", __name__, template_folder="templates", static_folder="static", url_prefix="/")
 
 
 @auth_bp.route("/")
+# @cache.cached(timeout=3600)  # Cache for 1 hour
+@handle_errors
 def index():
     return render_template("landing.html")
 
 
-def require_spotify_auth(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        tokens = session.get("tokens")
-        expiry_time = datetime.fromisoformat(tokens.get("expiry_time")) if tokens else None
-
-        if not tokens:
-            return redirect(url_for("auth.index"))
-
-        if expiry_time and expiry_time < datetime.now():
-            session["original_request_url"] = request.url
-            return redirect(url_for("auth.refresh"))
-
-        return f(*args, **kwargs)
-
-    return decorated_function
-
-
 @auth_bp.route("/<loginout>")
+@limiter.limit("10 per minute")
+@handle_errors
 def login(loginout):
-    # If the path is logout, clear the session and return to the index page.
     if loginout == "logout":
         session.clear()
-        # Optionally, if you want to force re-authentication on Spotify's side next time,
-        # you could set `show_dialog=True` for the next login attempt.
         session["show_dialog"] = True
-        # You also might want to clear the spotify_auth_state cookie if it's not needed anymore.
-        response = make_response(redirect(url_for("auth.index")))
-        response.set_cookie("spotify_auth_state", "", expires=0, path="/")
-        return response
+        session.pop("spotify_auth_state", None)
+
+        return redirect(url_for("auth.index"))
 
     # If the path is login, handle the login logic.
     state = generate_state()
+    time.sleep(1)
     scope = " ".join(
         [
+            "user-read-private",
             "user-top-read",
             "user-read-recently-played",
             "playlist-read-private",
@@ -78,120 +50,93 @@ def login(loginout):
 
     # Check if we're supposed to show the dialog (this would be set upon logout).
     show_dialog = session.pop("show_dialog", False)
-
-    # Prepare the payload for authentication.
     payload = prepare_auth_payload(state, scope, show_dialog=show_dialog)
-
     # Redirect the user to Spotify's authorization URL.
     res = make_response(redirect(f'{current_app.config["AUTH_URL"]}/?{urlencode(payload)}'))
-    res.set_cookie("spotify_auth_state", state)
+    session["spotify_auth_state"] = state
 
     return res
 
 
 @auth_bp.route("/callback")
+@limiter.limit("10 per minute")
+@handle_errors
 def callback():
     state = request.args.get("state")
-    stored_state = request.cookies.get("spotify_auth_state")
-
+    stored_state = session.get("spotify_auth_state")
     if state is None or state != stored_state:
         abort(400, description="State mismatch")
-
+    print("passed")
     code = request.args.get("code")
-    payload = {"grant_type": "authorization_code", "code": code, "redirect_uri": current_app.config["REDIRECT_URI"]}
+    payload = {
+        "grant_type": "authorization_code",
+        "code": code,
+        "redirect_uri": current_app.config["REDIRECT_URI"],
+        "client_id": current_app.config["CLIENT_ID"],
+    }
 
-    res_data, error = request_tokens(payload, current_app.config["CLIENT_ID"], current_app.config["CLIENT_SECRET"])
+    res_data, error = request_tokens(payload)
     if error:
         abort(400, description="Error obtaining tokens from Spotify")
 
     access_token = res_data.get("access_token")
     expires_in = res_data.get("expires_in")
     expiry_time = datetime.now() + timedelta(seconds=expires_in)
-
+    refresh_token = res_data.get("refresh_token")
     session["tokens"] = {
         "access_token": access_token,
-        "refresh_token": res_data.get("refresh_token"),
+        "refresh_token": refresh_token,
         "expiry_time": expiry_time.isoformat(),
     }
+    user_id = get_spotify_user_id(access_token)
+    save_tokens_to_db(user_id, access_token, refresh_token, expires_in)
 
     return redirect(url_for("user.profile"))
 
 
 @auth_bp.route("/refresh")
+@limiter.limit("20 per minute")
 def refresh():
-    payload = {"grant_type": "refresh_token", "refresh_token": session.get("tokens").get("refresh_token")}
+    next_url = request.args.get("next") or url_for("user.profile")
 
-    res_data, error = request_tokens(payload, current_app.config["CLIENT_ID"], current_app.config["CLIENT_SECRET"])
+    # Implement a cooldown to prevent rapid successive refreshes
+    last_refresh = session.get("last_refresh_time")
+    if last_refresh and datetime.now() - datetime.fromisoformat(last_refresh) < timedelta(seconds=30):
+        current_app.logger.warning("Refresh attempt too soon after last refresh")
+        return redirect(next_url)
+
+    payload = {
+        "grant_type": "refresh_token",
+        "refresh_token": session["tokens"]["refresh_token"],
+        "client_id": current_app.config["CLIENT_ID"],
+        "client_secret": current_app.config["CLIENT_SECRET"],
+    }
+
+    res_data, error = request_tokens(payload)
     if error:
-        return redirect(url_for("auth.index"))
+        current_app.logger.error(f"Token refresh failed: {error}")
+        return redirect(url_for("auth.login"))
 
-    new_access_token = res_data.get("access_token")
-    new_refresh_token = res_data.get("refresh_token", session["tokens"]["refresh_token"])
-    expires_in = res_data.get("expires_in")
-    new_expiry_time = datetime.now() + timedelta(seconds=expires_in)
-
-    session["tokens"].update(
-        {
-            "access_token": new_access_token,
-            "refresh_token": new_refresh_token,
-            "expiry_time": new_expiry_time.isoformat(),
-        }
+    # Update session with new token info
+    session["tokens"] = {
+        "access_token": res_data["access_token"],
+        "refresh_token": res_data.get("refresh_token", session["tokens"]["refresh_token"]),
+        "expiry_time": (datetime.now() + timedelta(seconds=res_data["expires_in"])).isoformat(),
+    }
+    session["last_refresh_time"] = datetime.now().isoformat()
+    user_id = get_spotify_user_id(access_token=res_data["access_token"])
+    save_tokens_to_db(
+        user_id,
+        access_token=res_data["access_token"],
+        refresh_token=res_data.get("refresh_token", session["tokens"]["refresh_token"]),
+        expires_in=(datetime.now() + timedelta(seconds=res_data["expires_in"])).isoformat(),
     )
-
-    return redirect(session.pop("original_request_url", url_for("user.profile")))
-
-
-@auth_bp.route("/save-api-key", methods=["POST"])
-def save_api_key():
-    access_token = verify_session(session)
-    res_data = fetch_user_data(access_token)
-    spotify_user_id = res_data.get("id")
-
-    user_data = UserData.query.filter_by(spotify_user_id=spotify_user_id).first()
-
-    api_key = request.json.get("api_key")
-    api_key_pattern = re.compile(r"sk-[A-Za-z0-9]{48}")
-    if not api_key_pattern.match(api_key):
-        return jsonify({"status": "error", "message": "Invalid API key format."}), 400
-
-    if not is_api_key_valid(api_key):
-        return jsonify({"message": "Invalid OpenAI API Key"}), 400
-
-    encrypted_key = encrypt_data(api_key)
-    try:
-        user_data.api_key_encrypted = encrypted_key
-        db.session.commit()
-    except:
-        db.session.rollback()
-        raise
-
-    return jsonify({"message": "API Key saved successfully"}), 200
+    return redirect(next_url)
 
 
-@auth_bp.route("/check-api-key", methods=["GET"])
-def check_api_key():
-    access_token = verify_session(session)
-    if not access_token:
-        # Handle the case where session verification fails
-        return jsonify({"error": "Access token verification failed"}), 401
-
-    res_data = fetch_user_data(access_token)
-    if not res_data:
-        # Handle the case where fetching user data fails
-        return jsonify({"error": "Failed to fetch user data"}), 500
-
-    spotify_user_id = res_data.get("id")
-    if not spotify_user_id:
-        # Handle the case where Spotify user ID is not obtained
-        return jsonify({"error": "Spotify user ID not found"}), 500
-
-    user = UserData.query.filter_by(spotify_user_id=spotify_user_id).first()
-    if user and user.api_key_encrypted:
-        api_key = decrypt_data(user.api_key_encrypted)
-        if is_api_key_valid(api_key):
-            return jsonify({"has_key": True})
-        else:
-            return jsonify({"has_key": False})
-    else:
-        # Handle the case where no user or API key is found
-        return jsonify({"has_key": False})
+@auth_bp.route("/terms")
+# @cache.cached(timeout=3600)  # Cache for 1 hour
+@handle_errors
+def terms():
+    is_logged_in = "tokens" in session and session["tokens"].get("access_token")
+    return render_template("terms.html", logged_in=is_logged_in)

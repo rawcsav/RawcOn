@@ -1,33 +1,74 @@
-<div id="spotifyUserDropdown" onclick="toggleDropdown(event)">
-  <div class="menu-container">
-    {% if data.images and data.images[0] %}
-    <img src="{{ data.images[0].url }}" alt="User Image" class="profile-img" />
-    {% else %}
-    <img
-      src="https://res.cloudinary.com/dn9bcrimg/image/upload/bd33260dec7cd00233c444cda31ba12a-removebg-preview_cgobu0.png"
-      alt="Placeholder Image"
-      class="profile-img"
-    />
-    {% endif %}
-    <span class="truncate">{{ data.display_name }}</span>
-    <i
-      class="icon-gear"
-      id="settingsCog"
-      onclick="toggleSettings(event)"
-      style="display: none"
-    ></i>
-  </div>
-  <div class="drop-menu" id="menu">
-    <a class="drop-item" href="{{ url_for('user.profile') }}">Profile</a>
-    <a class="drop-item" href="{{ url_for('stats.stats') }}">Music Stats</a>
-    <a class="drop-item" href="{{ url_for('recs.recommendations') }}"
-      >Music Recommendations</a
-    >
-    <a class="drop-item" href="{{ url_for('playlist.playlist') }}"
-      >Playlist Explorer</a
-    >
-    <div id="settingsDropdown">
-      <a class="drop-item" href="/logout">Logout</a>
+{% if user_data is defined and user_data %}
+<div class="hidden-profile"></div>
+<div class="profile-menu">
+  <div class="profile-top-section">
+    <div id="profile-container">
+      <a class="user-name" href="{{ user_data.external_urls['spotify']}}">
+        {% if user_data.display_name %} {{ user_data.display_name }} {% else %}
+        {{ user_data.id }} {% endif %}
+      </a>
+      <div id="profile-metadata">
+        {% if user_data.followers %}
+        <div class="info-item user-followers">
+          <i class="rawcon-users"></i>
+          <span class="info-content"
+            >{{ user_data.followers.total }} Followers</span
+          >
+        </div>
+        {% endif %} {% if user_data.country %}
+        <div class="info-item user-country">
+          <i class="rawcon-location-dot"></i>
+          <span class="info-content">{{ user_data.country }} </span>
+        </div>
+        {% endif %} {% if user_data.product %}
+        <div class="info-item user-product">
+          {% if user_data.product == 'premium' %}
+          <i class="rawcon-badge-dollar"></i>
+          <span class="info-content">Spotify Premium</span>
+          {% elif user_data.product == 'free' %}
+          <i class="rawcon-badge"></i>
+          <span class="info-content">Spotify Free</span>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="nav-container">
+      <a
+        class="profile-nav nav-item"
+        href="{{ url_for('user.profile') }}"
+        data-keyword="profile"
+      >
+        <i class="rawcon-user-music"></i>
+        Profile
+      </a>
+      <a
+        class="recommendations-nav nav-item"
+        href="{{ url_for('recs.recommendations') }}"
+        data-keyword="recommendations"
+      >
+        <i class="rawcon-music-magnifying-glass"></i>
+        Recs
+      </a>
+      <div class="playlist-nav nav-item" data-keyword="playlist">
+        <i class="rawcon-album-collection-circle-user"></i>
+        <p class="playlist-header">Playlists</p>
+        <i class="rawcon-circle-chevron-down playlist-toggle-icon"></i>
+      </div>
     </div>
   </div>
+  <ul id="playlists" class="hidden"></ul>
+  <div class="logo-container mobile-playback-ui">
+    <a class="logo-redirect" href="{{ url_for('auth.index') }}">
+      <img
+        class="logo"
+        src="/static/dist/img/rawcon-logo.svg"
+        alt="RAWCON Logo"
+      />
+    </a>
+  </div>
+  <a class="logout" href="/logout">
+    <i class="rawcon-left-from-line"></i>Logout</a
+  >
 </div>
+{% endif %}

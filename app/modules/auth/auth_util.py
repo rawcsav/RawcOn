@@ -1,26 +1,14 @@
-import os
 import secrets
 import string
-from datetime import timezone, timedelta, datetime
-import openai
+
 import requests
-from cryptography.fernet import Fernet
-from flask import abort, session, current_app
+from flask import abort, current_app
 
 
 def verify_session(session):
     if "tokens" not in session:
         abort(400)
     return session["tokens"].get("access_token")
-
-
-def fetch_user_data(access_token):
-    headers = {"Authorization": f"Bearer {access_token}"}
-    res = requests.get(current_app.config["ME_URL"], headers=headers)
-    if res.status_code != 200:
-        abort(res.status_code)
-
-    return res.json()
 
 
 def generate_state():
@@ -40,73 +28,34 @@ def prepare_auth_payload(state, scope, show_dialog=False):
     return payload
 
 
-def request_tokens(payload, client_id, client_secret):
-    res = requests.post(current_app.config["TOKEN_URL"], auth=(client_id, client_secret), data=payload)
+def request_tokens(payload):
+    res = requests.post(
+        current_app.config["TOKEN_URL"],
+        auth=(current_app.config["CLIENT_ID"], current_app.config["CLIENT_SECRET"]),
+        data=payload,
+    )
     res_data = res.json()
     if res_data.get("error") or res.status_code != 200:
         return None, res.status_code
     return res_data, None
 
 
-def convert_utc_to_est(utc_time):
-    return utc_time.replace(tzinfo=timezone.utc).astimezone(timezone(timedelta(hours=-4)))
+def fetch_user_data(access_token):
+    headers = {"Authorization": f"Bearer {access_token}"}
+    res = requests.get(current_app.config["ME_URL"], headers=headers)
+    if res.status_code != 200:
+        abort(res.status_code)
+
+    return res.json()
 
 
-def load_encryption_key():
-    return os.environ["CRYPT_KEY"].encode()
+def get_spotify_user_id(access_token):
+    headers = {"Authorization": f"Bearer {access_token}"}
+    response = requests.get("https://api.spotify.com/v1/me", headers=headers)
 
-
-def encrypt_data(api_key):
-    cipher_suite = Fernet(load_encryption_key())
-    encrypted_api_key = cipher_suite.encrypt(api_key.encode())
-    return encrypted_api_key
-
-
-def decrypt_data(encrypted_api_key):
-    cipher_suite = Fernet(load_encryption_key())
-    decrypted_api_key = cipher_suite.decrypt(encrypted_api_key)
-    return decrypted_api_key.decode()
-
-
-def is_api_key_valid(key):
-    openai.api_key = key
-    try:
-        test = openai.chat.completions.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": "Hello!"},
-            ],
-            max_tokens=10,
-            temperature=0,
-        )
-        if test.choices[0].message.content:
-            return True
-    except openai.OpenAIError:
-        return False
-
-
-def refresh_tokens():
-    if "tokens" not in session:
-        return False
-
-    payload = {"grant_type": "refresh_token", "refresh_token": session["tokens"].get("refresh_token")}
-
-    res_data, error = request_tokens(payload, current_app.config["CLIENT_ID"], current_app.config["CLIENT_SECRET"])
-    if error:
-        return False
-
-    new_access_token = res_data.get("access_token")
-    new_refresh_token = res_data.get("refresh_token", session["tokens"]["refresh_token"])
-    expires_in = res_data.get("expires_in")
-    new_expiry_time = datetime.now() + timedelta(seconds=expires_in)
-
-    session["tokens"].update(
-        {
-            "access_token": new_access_token,
-            "refresh_token": new_refresh_token,
-            "expiry_time": new_expiry_time.isoformat(),
-        }
-    )
-
-    return True
+    if response.status_code == 200:
+        user_data = response.json()
+        return user_data["id"]
+    else:
+        current_app.logger.error(f"Failed to fetch Spotify user ID. Status code: {response.status_code}")
+        return None

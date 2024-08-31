@@ -81,11 +81,31 @@
     <title></title>
     {% endassets %} {% block styles %}{% endblock %}
   </head>
-  <body class="{% if g.is_dark_mode %}dark-mode{% endif %}">
-    {% block menu %}{% include 'menu.html' %} {% endblock %} {% block body %} {%
-    endblock %} {% include 'footer.html' %} {% assets "common_js_bundle" %}
+  <body>
+    <div class="main-div">
+      {% block header %}
+      <header class="top-banner">
+        <a class="top-banner-link" href="/">
+          <img
+            src="/static/dist/img/rawcon-corner.svg"
+            alt="Rawc-On Top Banner Logo"
+          />
+        </a>
+      </header>
+      {% endblock %} {% block menu %}{% include 'menu.html' %}{% endblock %} {%
+      block body %} {% endblock %}
+    </div>
+    {% include 'loader.html' %}
+    <div id="toastContainer" class="toast-container"></div>
+    {% assets "common_js_bundle" %}
     <script src="{{ ASSET_URL }}"></script>
-    {% endassets %} {% block scripts %} {% endblock %} {% if not config['DEBUG']
-    %} {% endif %}
+    {% endassets %}
+    <script>
+      {% if user_data is defined and playlist_summary is defined %}
+      const userData = {{ user_data | tojson | safe }};
+      const playlistSummary = {{ playlist_summary | tojson | safe }};
+      {% endif %}
+    </script>
+    {% block scripts %} {% endblock %}
   </body>
 </html>

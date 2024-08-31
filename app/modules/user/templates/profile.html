@@ -1,90 +1,125 @@
 {% extends 'base.html' %} {% block head %}
 <link rel="canonical" href="https://rawcon.rawcsav.com/user/profile" />
+<title>
+  Rawc-On | {% if user_data.display_name %} {{ user_data.display_name }} {% else
+  %} {{ user_data.id }} {% endif %}
+</title>
 {% endblock %} {% block styles %} {% assets "user_style_bundle" %}
 <link rel="stylesheet" href="{{ ASSET_URL }}" />
 {% endassets %} {% endblock %} {% block body %}
-<div class="container">
-  <div class="row d-flex">
-    <div class="col-md-6 flex-fill">
-      <section class="card">
-        <div class="user-info-row">
-          <h3>Hello <em>{{ data.display_name }}</em>!</h3>
-          <div class="text-center mt-4 d-flex justify-content-center page-nav">
-            <a
-              href="{{ url_for('stats.stats') }}"
-              class="btn btn-info stats-btn"
-              >Statistics</a
-            >
-            <a
-              href="{{ url_for('recs.recommendations') }}"
-              class="btn btn-info rec-btn"
-              >Recommendations</a
-            >
-            <a
-              href="{{ url_for('playlist.playlist') }}"
-              class="btn btn-info playlist-btn"
-              >Playlists</a
-            >
-          </div>
-          <div class="text-center mt-4 d-flex justify-content-center page-util">
-            <a href="/logout" class="btn btn-danger">Logout</a>
-            <button id="refresh-button" class="btn btn-success">
-              Refresh Data
-            </button>
-          </div>
-          <div class="text-center mt-2">
-            <small class="text-muted" style="font-size: 0.7rem"
-              >Last Refresh: {{ last_active.strftime('%b %d at %I:%M %p')
-              }}</small
-            >
-          </div>
-          <br />
+<div class="user-content">
+  {% if user_data %}
+  <div id="sticky-period" class="sticky-period">
+    <i class="rawcon-calendar sticky-icon"></i>
+    <span id="sticky-period-text">Last 4 Weeks</span>
+  </div>
+  <div class="time-selector">
+    <div class="selector-header">
+      <i class="rawcon-calendar"> </i>
+      <div class="selector-container">
+        <div class="selector-title">Select Time Range</div>
+        <div class="selector-subtitle">
+          Choose your Spotify listening period
         </div>
-        <p class="project-text">
-          Visit Rawc-On on
-          <a
-            href="https://github.com/rawcsav/SpotifyFlask"
-            target="_blank"
-            rel="noopener noreferrer"
-            >GitHub.</a
-          >
-        </p>
-      </section>
+      </div>
     </div>
-    <div class="col-md-6 flex-fill">
-      <section class="card mb-4">
-        <h3>Recent Tracks</h3>
-        <ul class="recent-tracks">
-          {% for track in user_data.recent_tracks %}
-          <li>
-            <div class="recent-wrapper">
-              <img
-                src="{{ track.track.album.images[0].url }}"
-                alt="Cover Art"
-                width="50"
-                height="50"
-              />
-              <div class="recent-info">
-                <strong>{{ track.track.name }}</strong> from
-                <em>{{ track.track.album.name }}</em> by {{
-                track.track.artists[0].name }}
-              </div>
-            </div>
-          </li>
-          {% endfor %}
-        </ul>
-      </section>
+    <div class="time-options">
+      <button class="time-option selected" data-value="short_term">
+        4 weeks
+      </button>
+      <button class="time-option" data-value="medium_term">6 months</button>
+      <button class="time-option" data-value="long_term">All time</button>
     </div>
   </div>
-  <div class="row mt-5 profile-footer"></div>
+
+  <div class="artists-column">
+    <h3><i class="rawcon-microphone-stand title-icon"></i>Top Artists</h3>
+    <div class="scroll-container">
+      <div id="topArtists" class="row-container"></div>
+    </div>
+  </div>
+
+  <div class="tracks-column">
+    <h3><i class="rawcon-record-vinyl title-icon"></i>Top Tracks</h3>
+    <div class="scroll-container">
+      <div id="topTracks" class="row-container"></div>
+    </div>
+  </div>
+
+  <div class="genres-column">
+    <h3><i class="rawcon-sparkles title-icon"></i>Top Genres</h3>
+    <div class="chart-container">
+      <canvas id="genreBubbleChart"></canvas>
+    </div>
+    <div id="topGenres"></div>
+    <div id="genreOverlay" class="overlay">
+      <div class="overlay-content">
+        <span class="close-btn">&times;</span>
+        <h3 id="genre-title"></h3>
+        <div class="genre-content">
+          <div id="genre-artists">
+            <h4>Top Artists</h4>
+            <ul id="genre-artists-list" class="grid-container"></ul>
+          </div>
+          <div id="genre-tracks">
+            <h4>Top Tracks</h4>
+            <ul id="genre-tracks-list" class="grid-container"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="features-column">
+    <h3><i class="rawcon-symbols title-icon"></i>Audio Features</h3>
+    <div class="features-row">
+      <div class="audio-features">
+        <canvas id="audioFeaturesChart"></canvas>
+      </div>
+      <div id="minMaxTrack">
+        <p>Interact with the chart to explore your playlist audio features.</p>
+        <i
+          class="rawcon-arrow-left"
+          style="
+            display: block;
+            margin: auto;
+            text-align: center;
+            margin-top: 10px;
+          "
+        ></i>
+      </div>
+    </div>
+    <div class="chart-container">
+      <canvas id="audioFeaturesEvolutionChart"></canvas>
+    </div>
+    <div id="stats-blurbs-container"></div>
+  </div>
+
+  {% else %}
+  <p>No user data available. Please try refreshing your data.</p>
+  {% endif %}
 </div>
 {% endblock %}{% block scripts %}
-<link
-  rel="stylesheet"
-  href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-  integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"
+  integrity="sha512-wUYbRPLV5zs6IqvWd88HIqZU/b8TBx+I8LEioQ/UC0t5EMCLApqhIAnUg7EsAzdbhhdgW07TqYDdH3QEXRcPOQ=="
   crossorigin="anonymous"
-/>
+  referrerpolicy="no-referrer"
+></script>
+<script>
+  {% if user_data and period_data and top_genres and audio_features_summary and top_artists_summary and top_tracks_summary and playlist_summary %}
+        const periodData = {{ period_data | tojson | safe }};
+        const topGenres = {{ top_genres | tojson | safe }};
+        const audioFeaturesSummary = {{ audio_features_summary | tojson | safe }};
+        const topArtistsSummary = {{ top_artists_summary | tojson | safe }};
+        const topTracksSummary = {{ top_tracks_summary | tojson | safe }};
+
+        console.log("Script loaded and initial display set");  // Debug log
+    {% else %}
+        console.log("Some required data is missing");
+    {% endif %}
+</script>
 {% assets "user_js_bundle" %}
 <script src="{{ ASSET_URL }}"></script>
 {% endassets %}{% endblock %}

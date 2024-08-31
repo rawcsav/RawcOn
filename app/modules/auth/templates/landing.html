@@ -3,74 +3,56 @@
 <link rel="canonical" href="https://rawcon.rawcsav.com/" />
 {% endblock %} {% block styles %} {% assets "auth_style_bundle" %}
 <link rel="stylesheet" href="{{ ASSET_URL }}" />
-{% endassets %} {% endblock %} {% block body %}{% block menu %} {% endblock %}
-<div class="title-container">
-  <h1 class="landing-title" id="outlined-text">
-    <span>R</span><span>a</span><span>w</span><span>c</span><span>-</span
-    ><span>O</span><span>n</span><span>!</span>
-  </h1>
-  <h1 class="landing-title">
-    <span>R</span><span>a</span><span>w</span><span>c</span><span>-</span
-    ><span>O</span><span>n</span><span>!</span>
-  </h1>
-  <h1 class="landing-title" id="outlined-text2">
-    <span>R</span><span>a</span><span>w</span><span>c</span><span>-</span
-    ><span>O</span><span>n</span><span>!</span>
-  </h1>
-</div>
-<div class="center_column">
-  <a class="login-button" href="/login" onclick="handleAuthClick()">
-    <img
-      alt="Spotify"
-      src="/static/dist/img/spotify.svg"
-      class="spotify-logo"
-    />
-    Connect Spotify
-  </a>
-  <div class="container">
-    <p>
-      *Still in development, so unfortunately authorized users only.
-      <br /><br />
-    </p>
+{% endassets %} {% endblock %} {% block header %} {% endblock %}{% block body %}
+<div class="container">
+  <div class="top-row">
+    <div class="presents">
+      <div class="corner-logo">
+        <img src="/static/dist/img/stonesav.svg" alt="RAWCSAV Corner Logo" />
+      </div>
+      <span class="presents-text">proudly presents...</span>
+    </div>
+    <div class="actions">
+      <a
+        href="https://www.github.com/rawcsav/rawcon"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="actions-link"
+      >
+        <i class="rawcon-github"></i>
+        GitHub
+      </a>
+      <a
+        href="https://www.rawcsav.com/projects#rawcon"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="actions-link"
+      >
+        <i class="rawcon-circle-info"></i> About</a
+      ><a
+        href="{{ url_for('auth.terms') }}"
+        rel="noopener noreferrer"
+        class="actions-link"
+      >
+        <i class="rawcon-scale-balanced"></i>Terms
+      </a>
+    </div>
   </div>
+  <div class="main-image">
+    <img
+      src="/static/dist/img/rock-on.svg"
+      alt="Event Illustration"
+      class="main-image"
+    />
+  </div>
+  <a class="login-button" href="/login">
+    <img
+      id="spotify-corner"
+      src="/static/dist/img/signinwhite.svg"
+      alt="Spotify Logo"
+  /></a>
 </div>
-<div class="image-container">
-  <img
-    src="https://res.cloudinary.com/dn9bcrimg/image/upload/v1701233197/randomsvg/piano_hzttv3.svg"
-    alt="Piano"
-    class="scattered-svg piano"
-  />
-  <img
-    src="https://res.cloudinary.com/dn9bcrimg/image/upload/v1701529651/randomsvg/headphones_lgdmiw.svg"
-    alt="Headphones"
-    class="scattered-svg headphones"
-  />
-  <img
-    src="https://res.cloudinary.com/dn9bcrimg/image/upload/v1701233197/randomsvg/guitar_vqh6f4.svg"
-    alt="Guitar"
-    class="scattered-svg guitar"
-  />
-  <img
-    src="https://res.cloudinary.com/dn9bcrimg/image/upload/v1701233196/randomsvg/drums_jsuiqf.svg"
-    alt="Drums"
-    class="scattered-svg drums"
-  />
-  <img
-    src="https://res.cloudinary.com/dn9bcrimg/image/upload/v1701529651/randomsvg/headphone_pn69ku.svg"
-    alt="Microphone"
-    class="scattered-svg microphone"
-  />
-  <img
-    src="https://res.cloudinary.com/dn9bcrimg/image/upload/v1701233198/randomsvg/wave_anpgln.svg"
-    alt="Wave"
-    class="scattered-svg wave"
-  />
-  <img
-    src="https://res.cloudinary.com/dn9bcrimg/image/upload/v1701233198/randomsvg/vinyl_z1naey.svg"
-    alt="Vinyl"
-    class="scattered-svg vinyl"
-  />
-</div>
+
 {% endblock %}{% block scripts %} {% assets "auth_js_bundle" %}
 <script src="{{ ASSET_URL }}"></script>
 {% endassets %}{% endblock %}

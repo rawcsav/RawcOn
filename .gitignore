@@ -171,7 +171,6 @@ app/db.webstats
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 node_modules/
 /app/db.webstats
-/app/data/
 /app/static/fonts/
 
 include/site/python3.11/greenlet/greenlet.h
