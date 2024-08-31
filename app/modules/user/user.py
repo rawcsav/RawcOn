@@ -10,10 +10,7 @@ from app.util.wrappers import require_spotify_auth, handle_errors
 from app.modules.auth.auth_util import verify_session
 from .user_util import (
     init_session_client,
-    check_and_refresh_user_data,
     fetch_and_process_data,
-    delete_old_user_data,
-    update_user_data,
     get_top_genres,
     get_audio_features_summary,
     get_top_artists_summary,
@@ -50,7 +47,7 @@ def profile():
 
         user_data_entry = UserData.query.filter_by(spotify_user_id=spotify_user_id).first()
 
-        if not user_data_entry or not check_and_refresh_user_data(user_data_entry):
+        if not user_data_entry:
             sp, error = init_session_client()
             if error:
                 return error
@@ -80,8 +77,6 @@ def profile():
             )
             db.session.add(user_data_entry)
             db.session.commit()
-
-        delete_old_user_data()
 
         # Calculate period data for stats
         time_periods = ["short_term", "medium_term", "long_term", "overall"]
@@ -131,29 +126,6 @@ def profile():
     except Exception as e:
         print(f"An error occurred: {e}")
         return str(e), 500
-
-
-@user_bp.route("/refresh-data", methods=["POST"])
-@limiter.limit("2 per minute")
-@handle_errors
-@require_spotify_auth
-def refresh_data():
-    try:
-        access_token = verify_session(session)
-        res_data = fetch_user_data(access_token)
-        spotify_user_id = res_data.get("id")
-        session["USER_ID"] = spotify_user_id
-
-        user_data_entry = UserData.query.filter_by(spotify_user_id=spotify_user_id).first()
-        if user_data_entry:
-            update_user_data(user_data_entry)
-            return jsonify({"message": "User Refreshed Successfully!"}), 200
-        else:
-            return jsonify({"error": "User data not found"}), 404
-
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return jsonify({"error": str(e)}), 500
 
 
 @user_bp.route("/get_mode", methods=["GET"])

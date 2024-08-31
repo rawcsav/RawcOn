@@ -248,56 +248,6 @@ def calculate_averages_for_period(tracks, audio_features):
     return averaged_features, min_track, max_track, min_values, max_values
 
 
-def update_user_data(user_data_entry):
-    sp, error = init_session_client()
-    if error:
-        return json.dumps(error), 401
-
-    time_periods = ["short_term", "medium_term", "long_term"]
-    (
-        top_tracks,
-        top_artists,
-        all_artists_info,
-        audio_features,
-        genre_specific_data,
-        sorted_genres_by_period,
-        recent_tracks,
-        playlist_info,
-    ) = fetch_and_process_data(sp, time_periods)
-
-    user_data_entry.top_tracks = top_tracks
-    user_data_entry.top_artists = top_artists
-    user_data_entry.all_artists_info = all_artists_info
-    user_data_entry.audio_features = audio_features
-    user_data_entry.genre_specific_data = genre_specific_data
-    user_data_entry.sorted_genres_by_period = sorted_genres_by_period
-    user_data_entry.recent_tracks = recent_tracks
-    user_data_entry.playlist_info = playlist_info
-    user_data_entry.last_active = datetime.utcnow()
-
-    db.session.merge(user_data_entry)
-    db.session.commit()
-
-    return "User updated successfully"
-
-
-def check_and_refresh_user_data(user_data_entry):
-    if user_data_entry:
-        delta_since_last_active = datetime.utcnow() - user_data_entry.last_active
-        if timedelta(days=7) < delta_since_last_active < timedelta(days=30):
-            update_user_data(user_data_entry)
-        return True
-    return False
-
-
-def delete_old_user_data():
-    threshold_date = datetime.utcnow() - timedelta(days=30)
-    old_users = UserData.query.filter(UserData.last_active < threshold_date).all()
-    for user in old_users:
-        db.session.delete(user)
-    db.session.commit()
-
-
 def get_top_genres(user_data, time_range):
     """
     Get the top genres for a specific time range.
@@ -374,9 +324,9 @@ def get_recent_tracks_summary(user_data):
             "artists": [artist["name"] for artist in most_recent["track"]["artists"]],
             "album": most_recent["track"]["album"]["name"],
             "played_at": most_recent["played_at"],
-            "image_url": most_recent["track"]["album"]["images"][0]["url"]
-            if most_recent["track"]["album"]["images"]
-            else None,
+            "image_url": (
+                most_recent["track"]["album"]["images"][0]["url"] if most_recent["track"]["album"]["images"] else None
+            ),
         }
     return None  # Return None if no recent tracks are available
 
@@ -529,39 +479,51 @@ def generate_stats_blurbs(audio_features_summary, top_genres, time_periods=["sho
             feature_blurbs = {
                 "danceability": [
                     f"Your music's danceability has {description} by {abs(change):.1f}% {time_frame}.",
-                    "You're gravitating towards more rhythm-driven tracks!"
-                    if change > 0
-                    else "You're exploring more complex or unconventional rhythms lately.",
+                    (
+                        "You're gravitating towards more rhythm-driven tracks!"
+                        if change > 0
+                        else "You're exploring more complex or unconventional rhythms lately."
+                    ),
                 ],
                 "energy": [
                     f"The energy in your music has {description} by {abs(change):.1f}% {time_frame}.",
-                    "You're pumping up the volume!"
-                    if change > 0
-                    else "You're chilling out with more mellow tunes recently.",
+                    (
+                        "You're pumping up the volume!"
+                        if change > 0
+                        else "You're chilling out with more mellow tunes recently."
+                    ),
                 ],
                 "valence": [
                     f"The overall mood of your music has {description} by {abs(change):.1f}% {time_frame}.",
-                    "Your playlist is radiating more positive vibes!"
-                    if change > 0
-                    else "You're diving into more introspective or melancholic tracks lately.",
+                    (
+                        "Your playlist is radiating more positive vibes!"
+                        if change > 0
+                        else "You're diving into more introspective or melancholic tracks lately."
+                    ),
                 ],
                 "acousticness": [
                     f"The acousticness of your music has {description} by {abs(change):.1f}% {time_frame}.",
-                    "You're embracing more organic, unplugged sounds!"
-                    if change > 0
-                    else "You're exploring more electronic and produced tracks recently.",
+                    (
+                        "You're embracing more organic, unplugged sounds!"
+                        if change > 0
+                        else "You're exploring more electronic and produced tracks recently."
+                    ),
                 ],
                 "instrumentalness": [
                     f"The instrumentalness in your music has {description} by {abs(change):.1f}% {time_frame}.",
-                    "You're vibing with more instrumental tracks!"
-                    if change > 0
-                    else "You're connecting with more vocal-centric music lately.",
+                    (
+                        "You're vibing with more instrumental tracks!"
+                        if change > 0
+                        else "You're connecting with more vocal-centric music lately."
+                    ),
                 ],
                 "speechiness": [
                     f"The speechiness in your tracks has {description} by {abs(change):.1f}% {time_frame}.",
-                    "You're tuning into more spoken-word or rap content!"
-                    if change > 0
-                    else "Your current playlist features less spoken word and more melodic content.",
+                    (
+                        "You're tuning into more spoken-word or rap content!"
+                        if change > 0
+                        else "Your current playlist features less spoken word and more melodic content."
+                    ),
                 ],
             }
 

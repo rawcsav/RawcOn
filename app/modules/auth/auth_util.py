@@ -47,3 +47,15 @@ def fetch_user_data(access_token):
         abort(res.status_code)
 
     return res.json()
+
+
+def get_spotify_user_id(access_token):
+    headers = {"Authorization": f"Bearer {access_token}"}
+    response = requests.get("https://api.spotify.com/v1/me", headers=headers)
+
+    if response.status_code == 200:
+        user_data = response.json()
+        return user_data["id"]
+    else:
+        current_app.logger.error(f"Failed to fetch Spotify user ID. Status code: {response.status_code}")
+        return None
