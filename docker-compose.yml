@@ -32,13 +32,13 @@ services:
       retries: 5
 
   web:
-    command: gunicorn --workers 1  -t 90 --bind 0.0.0.0:8081 uwsgi:app --log-level=debug
+    command: gunicorn --workers 1 -t 90 --bind 0.0.0.0:8081 wsgi:app --log-level=debug
     build:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      FLASK_APP: uwsgi.py
+      FLASK_APP: wsgi.py
       FLASK_ENV: production
       FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
       SQL_HOSTNAME: mysql
@@ -53,11 +53,13 @@ services:
       CLIENT_ID: ${CLIENT_ID}
       CLIENT_SECRET: ${CLIENT_SECRET}
       REDIRECT_URI: ${REDIRECT_URI}
+      CELERY_BROKER_URL: redis://default:${REDIS_PASSWORD}@redis:6379/0
+      CELERY_RESULT_BACKEND: redis://default:${REDIS_PASSWORD}@redis:6379/0
     volumes:
       - ./app:/rawcon/app
       - ./app/static:/rawcon/app/static
       - ./config.py:/rawcon/config.py
-      - ./uwsgi.py:/rawcon/uwsgi.py
+      - ./wsgi.py:/rawcon/wsgi.py
     depends_on:
       - mysql
       - redis
@@ -65,11 +67,43 @@ services:
       - appnet
       - internal
 
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A wsgi.celery worker --loglevel=info
+    environment:
+      FLASK_APP: wsgi.py
+      FLASK_ENV: production
+      REDIS_URL: redis://default:${REDIS_PASSWORD}@redis:6379/0
+      CELERY_BROKER_URL: redis://default:${REDIS_PASSWORD}@redis:6379/0
+      CELERY_RESULT_BACKEND: redis://default:${REDIS_PASSWORD}@redis:6379/0
+    depends_on:
+      - web
+      - redis
+    networks:
+      - internal
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A wsgi.celery beat --loglevel=info
+    environment:
+      FLASK_APP: wsgi.py
+      FLASK_ENV: production
+      REDIS_URL: redis://default:${REDIS_PASSWORD}@redis:6379/0
+      CELERY_BROKER_URL: redis://default:${REDIS_PASSWORD}@redis:6379/0
+      CELERY_RESULT_BACKEND: redis://default:${REDIS_PASSWORD}@redis:6379/0
+    depends_on:
+      - web
+      - redis
+    networks:
+      - internal
+
 volumes:
   db_volume:
-  user_files_volume:  # New volume for user files
   redis_data:
-
 
 networks:
   internal:
