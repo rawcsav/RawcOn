@@ -246,6 +246,21 @@ document.addEventListener("DOMContentLoaded", function () {
               },
             },
             plugins: {
+              zoom: {
+                pan: {
+                  enabled: true,
+                  mode: "xy",
+                },
+                zoom: {
+                  wheel: {
+                    enabled: true,
+                  },
+                  pinch: {
+                    enabled: true,
+                  },
+                  mode: "xy",
+                },
+              },
               tooltip: {
                 callbacks: {
                   label: (context) => {

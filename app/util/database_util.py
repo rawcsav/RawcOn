@@ -161,14 +161,14 @@ def get_or_fetch_audio_features(sp, track_ids):
     return final_features
 
 
-def save_tokens_to_db(user_id, access_token, refresh_token, expires_in):
+def save_tokens_to_db(user_id, access_token, refresh_token, expiry_time):
     user = UserData.query.filter_by(spotify_user_id=user_id).first()
     if not user:
         user = UserData(spotify_user_id=user_id)
 
     user.access_token = access_token
     user.refresh_token = refresh_token
-    user.token_expiry = datetime.utcnow() + timedelta(seconds=expires_in)
+    user.token_expiry = datetime.fromisoformat(expiry_time)
     user.last_active = datetime.utcnow()
     db.session.add(user)
     db.session.commit()

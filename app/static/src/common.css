@@ -645,8 +645,6 @@ body {
   overflow-y: auto;
   margin: 0;
   border-bottom: var(--border-normal) var(--neutral-200);
-  min-height: 30vh;
-  max-height: 30vh;
 }
 
 h1,
@@ -786,49 +784,6 @@ ul {
   min-width: 20vw;
   max-width: 20vw;
   height: 100%;
-}
-
-.logout {
-  background-color: var(--accent-red-300);
-  color: var(--neutral-100);
-  width: 80%;
-  font-size: var(--text-base);
-  border-radius: var(--radius-lg);
-  padding: var(--space-1);
-  text-decoration: none;
-  text-align: center;
-  margin-left: auto;
-  display: flex;
-  margin-right: auto;
-  gap: var(--space-2);
-  margin-bottom: var(--space-4);
-  box-shadow: var(--shadow-sm);
-  justify-content: center;
-  align-items: center;
-}
-
-.logout i {
-  font-size: var(--text-lg);
-}
-
-.logout:hover {
-  color: var(--neutral-100);
-  background-color: var(--accent-red-200);
-}
-
-.logo-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  min-height: 25vh;
-  max-height: 25vh;
-}
-
-.logo-container img {
-  width: auto;
-  max-height: 100%;
-  padding: var(--space-4);
 }
 
 .logo-redirect {
@@ -1057,6 +1012,7 @@ ul {
 .info-content {
   display: none;
   position: absolute;
+  z-index: 20;
   top: 100%;
   left: 100%;
   background-color: var(--neutral-500);
@@ -1104,4 +1060,99 @@ ul {
 }
 .warning {
   background-color: var(--accent-yellow-300);
+}
+.menu-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: var(--space-3);
+  padding-bottom: var(--space-1);
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.05));
+  border-top: var(--border-thin) var(--neutral-200);
+}
+
+.bottom-icon-container {
+  display: flex;
+  justify-content: space-between;
+  width: 80%;
+  margin-top: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+.bottom-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: var(--neutral-500);
+  transition:
+    color var(--transition-normal),
+    transform var(--transition-normal);
+  position: relative;
+  padding: var(--space-2);
+}
+
+.bottom-link:hover {
+  transform: translateY(-2px);
+}
+
+.github:hover {
+  color: var(--accent-green-300);
+}
+
+.rawcsav:hover {
+  color: var(--main-300);
+}
+
+.terms:hover {
+  color: var(--accent-yellow-400);
+}
+
+.logout:hover {
+  color: var(--accent-red-300);
+}
+
+.bottom-icon {
+  font-size: var(--text-2xl);
+}
+
+.bottom-text {
+  font-size: var(--text-sm);
+  font-family: var(--ff-txt), sans-serif;
+  font-variation-settings:
+    "wght" var(--font-medium),
+    "ital" 0;
+  opacity: 0;
+  position: absolute;
+  top: 80%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  transition:
+    opacity var(--transition-normal),
+    transform var(--transition-normal);
+  pointer-events: none;
+}
+
+.bottom-link:hover .bottom-text {
+  opacity: 1;
+  transform: translateX(-50%) translateY(var(--space-1));
+}
+
+.powered-spotify {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--neutral-400);
+  font-family: var(--ff-txt), sans-serif;
+  font-variation-settings:
+    "wght" var(--font-normal),
+    "ital" 0;
+}
+
+.powered-spotify img {
+  width: 75px;
+  height: auto;
 }

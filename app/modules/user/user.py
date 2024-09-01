@@ -30,8 +30,8 @@ eastern = timezone("US/Eastern")
 
 
 @user_bp.route("/profile")
-@limiter.limit("8 per minute")
-@cache.cached(timeout=300)  # Cache for 5 minutes
+@limiter.limit("30 per minute")
+# @cache.cached(timeout=300)  # Cache for 5 minutes
 @handle_errors
 @require_spotify_auth
 def profile():
