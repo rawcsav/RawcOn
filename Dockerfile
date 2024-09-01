@@ -21,7 +21,7 @@ RUN mkdir -p /rawcon/celerybeat-schedule && \
     chmod 755 /rawcon/celerybeat-schedule \
 
 # Switch to non-root user
-USER appuser
+
 
 ENV PATH="/home/appuser/.local/bin:${PATH}"
 
