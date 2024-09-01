@@ -760,8 +760,18 @@ ul {
   align-items: center;
 }
 
+#profile-container a {
+  font-variation-settings:
+    "wght" var(--font-medium),
+    "ital" 0;
+  transition: font-variation-settings var(--transition-normal);
+}
+
 #profile-container a:hover {
-  text-decoration: underline;
+  text-decoration: none;
+  font-variation-settings:
+    "wght" var(--font-bold),
+    "ital" 12;
 }
 
 .profile-menu {
