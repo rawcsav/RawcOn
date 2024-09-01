@@ -130,7 +130,7 @@ class DevelopmentConfig(Config):
 
 
 class ProductionConfig(Config):
-    FLASK_DEBUG = False
+    FLASK_DEBUG = True
     SESSION_COOKIE_SECURE = True
     REMEMBER_COOKIE_SECURE = True
 
