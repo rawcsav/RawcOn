@@ -19,6 +19,8 @@ RUN apt-get update \
 # Switch to non-root user
 USER rawcon
 
+ENV PATH="/home/rawcon/.local/bin:${PATH}"
+
 # Copy requirements file and install dependencies
 COPY --chown=rawcon:rawcon requirements.txt .
 RUN pip install --user --no-cache-dir -r requirements.txt
