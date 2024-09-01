@@ -122,9 +122,7 @@ services:
       CLIENT_SECRET: ${CLIENT_SECRET}
       REDIRECT_URI: ${REDIRECT_URI}
       CELERY_BROKER_URL: ${CELERY_BROKER_URL}
-      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
-    volumes:
-      - celerybeat-schedule:/rawcon/celerybeat-schedule  # Modify this line
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND} # Modify this line
     depends_on:
       - web
       - celery_worker
@@ -135,7 +133,6 @@ services:
 volumes:
   db_volume:
   redis_data:
-  celerybeat-schedule:  # Add this line
 
 
 
