@@ -2,7 +2,7 @@ FROM python:3.10.14-slim-bookworm AS app
 
 LABEL maintainer="Gavin Mason gavin@rawcsav.com"
 
-WORKDIR /rawcon
+WORKDIR /appuser
 
 ARG UID=1000
 ARG GID=1000
@@ -12,17 +12,17 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential curl libpq-dev \
     && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man \
     && apt-get clean \
-    && groupadd -g "${GID}" rawcon \
-    && useradd --create-home --no-log-init -u "${UID}" -g "${GID}" rawcon \
-    && chown rawcon:rawcon -R /rawcon
+    && groupadd -g "${GID}" appuser \
+    && useradd --create-home --no-log-init -u "${UID}" -g "${GID}" appuser \
+    && chown appuser:appuser -R /appuser
 
 # Switch to non-root user
-USER rawcon
+USER appuser
 
-ENV PATH="/home/rawcon/.local/bin:${PATH}"
+ENV PATH="/home/appuser/.local/bin:${PATH}"
 
 # Copy requirements file and install dependencies
-COPY --chown=rawcon:rawcon requirements.txt .
+COPY --chown=appuser:appuser requirements.txt .
 RUN pip install --user --no-cache-dir -r requirements.txt
 
 # Set environment variables
@@ -30,14 +30,14 @@ ENV FLASK_APP=wsgi.py \
     FLASK_DEBUG=false \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PATH="/home/rawcon/.local/bin:${PATH}" \
-    USER="rawcon"
+    PATH="/home/appuser/.local/bin:${PATH}" \
+    USER="appuser"
 
 # Copy the rest of the application
-COPY --chown=rawcon:rawcon . .
+COPY --chown=appuser:appuser . .
 
 # Set proper permissions
-RUN chmod -R 755 /rawcon
+RUN chmod -R 755 /appuser
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
