@@ -15,5 +15,5 @@ from app.util.database_util import initialize_genre_data
 initialize_genre_data(app)
 
 if __name__ == "__main__":
-
+    FLASK_DEBUG = True
     app.run(port=8081, host="0.0.0.0")
