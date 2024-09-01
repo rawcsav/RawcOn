@@ -14,7 +14,11 @@ RUN apt-get update \
     && apt-get clean \
     && groupadd -g "${GID}" appuser \
     && useradd --create-home --no-log-init -u "${UID}" -g "${GID}" appuser \
-    && chown appuser:appuser -R /appuser
+    && chown appuser:appuser -R /appuser \
+
+RUN mkdir -p /rawcon/celerybeat-schedule && \
+    chown appuser:appuser /rawcon/celerybeat-schedule && \
+    chmod 755 /rawcon/celerybeat-schedule \
 
 # Switch to non-root user
 USER appuser
@@ -44,9 +48,6 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8081/health || exit 1
 
 # Create directory for celerybeat schedule with correct permissions
-RUN mkdir -p /rawcon/celerybeat-schedule && \
-    chown appuser:appuser /rawcon/celerybeat-schedule && \
-    chmod 755 /rawcon/celerybeat-schedule \
 
 # Set the command
 CMD ["gunicorn", "--workers", "1", "--timeout", "90", "--bind", "0.0.0.0:8081", "wsgi:app"]
