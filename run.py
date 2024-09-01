@@ -10,7 +10,7 @@ from app import create_app
 
 app = create_app()
 
-from util.database_util import initialize_genre_data
+from app.util.database_util import initialize_genre_data
 
 initialize_genre_data(app)
 
