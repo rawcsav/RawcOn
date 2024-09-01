@@ -1,8 +1,8 @@
-FROM python:3.10.14-slim-bookworm AS app
+FROM python:3.10.14-slim-bookworm
 
 LABEL maintainer="Gavin Mason gavin@rawcsav.com"
 
-WORKDIR /appuser
+WORKDIR /rawcon
 
 ARG UID=1000
 ARG GID=1000
@@ -14,11 +14,8 @@ RUN apt-get update \
     && apt-get clean \
     && groupadd -g "${GID}" appuser \
     && useradd --create-home --no-log-init -u "${UID}" -g "${GID}" appuser \
-    && chown appuser:appuser -R /appuser \
-
-RUN mkdir /rawcon/celerybeat-schedule && \
-    chown appuser:appuser /rawcon/celerybeat-schedule && \
-    chmod 755 /rawcon/celerybeat-schedule \
+    && mkdir -p /rawcon/celerybeat-schedule \
+    && chown -R appuser:appuser /rawcon
 
 # Switch to non-root user
 USER appuser
@@ -40,14 +37,9 @@ ENV FLASK_APP=wsgi.py \
 # Copy the rest of the application
 COPY --chown=appuser:appuser . .
 
-# Set proper permissions
-RUN chmod -R 755 /appuser
-
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8081/health || exit 1
-
-# Create directory for celerybeat schedule with correct permissions
 
 # Set the command
 CMD ["gunicorn", "--workers", "1", "--timeout", "90", "--bind", "0.0.0.0:8081", "wsgi:app"]
