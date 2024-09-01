@@ -100,7 +100,7 @@ class Config(object):
     CELERY_BEAT_SCHEDULE = {
         "update-stale-user-data": {
             "task": "tasks.update_stale_user_data",
-            "schedule": crontab(hour="*/6"),  # Run every 6 hours
+            "schedule": crontab(minute=0, hour="*/6"),  # Run every 6 hours
         },
         "delete-inactive-users": {
             "task": "tasks.delete_inactive_users",
