@@ -40,18 +40,3 @@ COPY --chown=appuser:appuser . .
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8081/health || exit 1
-
-# Set the command
-CMD ["gunicorn",
-     "--workers", "2",
-     "--threads", "4",
-     "--worker-class", "gthread",
-     "--worker-tmp-dir", "/dev/shm",
-     "--timeout", "90",
-     "--bind", "0.0.0.0:8081",
-     "--log-level", "debug",
-     "--error-logfile", "-",
-     "--access-logfile", "-",
-     "--capture-output",
-     "--enable-stdio-inheritance",
-     "wsgi:app"]
