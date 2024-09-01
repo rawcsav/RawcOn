@@ -100,7 +100,7 @@
     </div>
     <div class="playlist-functions">
       <div class="playlist-functions-group">
-        <h4 class="utils-title">Utilities</h4>
+        <h4 class="utils-title"><i class="rawcon-screwdriver-wrench"></i> Utilities</h4>
         <form
           action="{{ url_for('playlist.refresh_playlist', playlist_id=playlist_id) }}"
           method="post"
@@ -130,7 +130,7 @@
         </button>
       </div>
       <div class="playlist-order-group">
-        <h4 class="utils-title">Ordering</h4>
+        <h4 class="utils-title"><i class="rawcon-folder-tree"></i> Ordering</h4>
         <div class="playlist-btn-group">
           <button id="order-asc-btn">
             <i class="rawcon-circle-chevron-up"></i> Date Added (Ascending)
@@ -152,7 +152,7 @@
     </div>
 
     <div class="artists-column">
-      <h3 class="top-artists-title">Top Artists</h3>
+      <h3 class="top-artists-title"><i class="rawcon-microphone-stand"></i> Top Artists</h3>
       <div class="scroll-container">
         <div id="topArtists" class="row-container">
           {% for artist, count, image_url, spotify_url, artist_ids in
@@ -175,7 +175,7 @@
       </div>
     </div>
     <div class="genre-title-container">
-      <h3>Genre Info</h3>
+      <h3><i class="rawcon-symbols"></i> Genre Info</h3>
       <div class="genre-chart">
         <canvas id="genreBubbleChart"></canvas>
       </div>
@@ -225,7 +225,7 @@
       </div>
     </div>
     <div class="track-stats">
-      <h3 class="decade-title">Track Stats</h3>
+      <h3 class="decade-title"><i class="rawcon-chart-line"></i> Track Stats</h3>
 
       <div class="chart-flex">
         <div class="chart-container">
@@ -312,7 +312,7 @@
       </div>
     </div>
     <div class="recommendations-container">
-      <h3 class="recommendations-title">Recommendations</h3>
+      <h3 class="recommendations-title"><i class="rawcon-music-magnifying-glass"></i> Recommendations</h3>
       <div class="rec-desc">
         <div class="rec-button-container">
         <button

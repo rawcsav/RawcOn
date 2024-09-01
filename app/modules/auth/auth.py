@@ -89,7 +89,7 @@ def callback():
         "expiry_time": expiry_time.isoformat(),
     }
     user_id = get_spotify_user_id(access_token)
-    save_tokens_to_db(user_id, access_token, refresh_token, expires_in)
+    save_tokens_to_db(user_id, access_token, refresh_token, expiry_time.isoformat())
 
     return redirect(url_for("user.profile"))
 
@@ -130,7 +130,7 @@ def refresh():
         user_id,
         access_token=res_data["access_token"],
         refresh_token=res_data.get("refresh_token", session["tokens"]["refresh_token"]),
-        expires_in=(datetime.now() + timedelta(seconds=res_data["expires_in"])).isoformat(),
+        expiry_time=(datetime.now() + timedelta(seconds=res_data["expires_in"])).isoformat(),
     )
     return redirect(next_url)
 

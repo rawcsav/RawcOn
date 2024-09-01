@@ -58,17 +58,32 @@
     </div>
   </div>
   <ul id="playlists" class="hidden"></ul>
-  <div class="logo-container mobile-playback-ui">
-    <a class="logo-redirect" href="{{ url_for('auth.index') }}">
+  <div class="menu-bottom">
+    <div class="bottom-icon-container">
+      <a class="bottom-link github" href="https://github.com/rawcsav/rawcon">
+        <i class="bottom-icon rawcon-github"></i>
+        <span class="bottom-text">GitHub</span>
+      </a>
+      <a class="bottom-link rawcsav" href="http://rawcsav.com">
+        <i class="bottom-icon rawcon-user-tie"></i>
+        <span class="bottom-text">rawcsav</span>
+      </a>
+      <a class="bottom-link terms" href="/terms">
+        <i class="bottom-icon rawcon-scale-balanced"></i>
+        <span class="bottom-text">Terms</span>
+      </a>
+      <a class="bottom-link logout" href="/logout">
+        <i class="bottom-icon rawcon-left-from-line"></i>
+        <span class="bottom-text">Logout</span>
+      </a>
+    </div>
+    <div class="powered-spotify">
+      <p>Powered by</p>
       <img
-        class="logo"
-        src="/static/dist/img/rawcon-logo.svg"
-        alt="RAWCON Logo"
+        src="/static/dist/img/Black_Spotify_logo_with_text.svg"
+        alt="Spotify Logo"
       />
-    </a>
+    </div>
   </div>
-  <a class="logout" href="/logout">
-    <i class="rawcon-left-from-line"></i>Logout</a
-  >
 </div>
 {% endif %}
