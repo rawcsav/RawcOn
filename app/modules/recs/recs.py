@@ -18,7 +18,7 @@ def parse_seeds(key):
 
 @recs_bp.route("/recommendations", methods=["GET"])
 @limiter.limit("5 per minute")
-@cache.cached(timeout=300)  # Cache for 5 minutes
+#@cache.cached(timeout=300)  # Cache for 5 minutes
 @require_spotify_auth
 def recommendations():
     spotify_user_id = session["USER_ID"]
