@@ -130,6 +130,7 @@ def profile():
 
 @user_bp.route("/get_mode", methods=["GET"])
 @limiter.limit("10 per minute")
+@handle_errors
 @require_spotify_auth
 def get_mode():
     try:

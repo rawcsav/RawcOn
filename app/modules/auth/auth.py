@@ -96,6 +96,7 @@ def callback():
 
 @auth_bp.route("/refresh")
 @limiter.limit("20 per minute")
+@handle_errors
 def refresh():
     next_url = request.args.get("next") or url_for("user.profile")
 
@@ -135,7 +136,7 @@ def refresh():
 
 
 @auth_bp.route("/terms")
-# @cache.cached(timeout=3600)  # Cache for 1 hour
+@cache.cached(timeout=3600)  # Cache for 1 hour
 @handle_errors
 def terms():
     is_logged_in = "tokens" in session and session["tokens"].get("access_token")
