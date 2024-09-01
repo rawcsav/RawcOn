@@ -38,6 +38,7 @@ class UserData(db.Model):
     _access_token = db.Column(db.VARCHAR(1000), nullable=True)  # Encrypted access token
     _refresh_token = db.Column(db.VARCHAR(1000), nullable=True)  # Encrypted refresh token
     token_expiry = db.Column(db.DateTime, nullable=True)
+    new_account = db.Column(db.Boolean, default=True)
 
     playlists = db.relationship("PlaylistData", back_populates="user", lazy="dynamic")
 

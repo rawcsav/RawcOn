@@ -47,7 +47,8 @@ def profile():
 
         user_data_entry = UserData.query.filter_by(spotify_user_id=spotify_user_id).first()
 
-        if not user_data_entry:
+        if not user_data_entry or user_data_entry.new_account:
+            print("Fetching new data")
             sp, error = init_session_client()
             if error:
                 return error
@@ -63,25 +64,27 @@ def profile():
                 playlist_info,
             ) = fetch_and_process_data(sp, time_periods)
 
-            user_data_entry = UserData(
-                spotify_user_id=spotify_user_id,
-                top_tracks=top_tracks,
-                top_artists=top_artists,
-                all_artists_info=all_artists_info,
-                audio_features=audio_features,
-                genre_specific_data=genre_specific_data,
-                sorted_genres_by_period=sorted_genres_by_period,
-                recent_tracks=recent_tracks,
-                playlist_info=playlist_info,
-                last_active=datetime.utcnow(),
-            )
-            db.session.add(user_data_entry)
+            if not user_data_entry:
+                user_data_entry = UserData(spotify_user_id=spotify_user_id)
+                db.session.add(user_data_entry)
+
+            user_data_entry.top_tracks = top_tracks
+            user_data_entry.top_artists = top_artists
+            user_data_entry.all_artists_info = all_artists_info
+            user_data_entry.audio_features = audio_features
+            user_data_entry.genre_specific_data = genre_specific_data
+            user_data_entry.sorted_genres_by_period = sorted_genres_by_period
+            user_data_entry.recent_tracks = recent_tracks
+            user_data_entry.playlist_info = playlist_info
+            user_data_entry.last_active = datetime.utcnow()
+            user_data_entry.new_account = False
+
             db.session.commit()
 
-        # Calculate period data for stats
+        # Rest of the code remains the same
         time_periods = ["short_term", "medium_term", "long_term", "overall"]
         period_data = {}
-
+        print("3")
         for period in time_periods:
             period_tracks = (
                 user_data_entry.top_tracks[period]
@@ -96,7 +99,7 @@ def profile():
                 period_data[period]["min_values"],
                 period_data[period]["max_values"],
             ) = calculate_averages_for_period(period_tracks, user_data_entry.audio_features)
-
+        print("4")
         # Prepare additional data for the profile page
         top_genres = {period: get_top_genres(user_data_entry, period) for period in time_periods[:3]}
         audio_features_summary = {
@@ -107,7 +110,7 @@ def profile():
         recent_tracks_summary = get_recent_tracks_summary(user_data_entry)
         playlist_summary = get_playlist_summary(user_data_entry)
         stats_blurbs = generate_stats_blurbs(audio_features_summary, top_genres)
-
+        print("5")
         return render_template(
             "profile.html",
             user_data=res_data,
@@ -125,6 +128,7 @@ def profile():
 
     except Exception as e:
         print(f"An error occurred: {e}")
+        db.session.rollback()
         return str(e), 500
 
 
