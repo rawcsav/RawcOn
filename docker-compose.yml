@@ -128,7 +128,7 @@ services:
       - ./config.py:/rawcon/config.py
       - ./wsgi.py:/rawcon/wsgi.py
       - ./make_celery.py:/rawcon/make_celery.py
-      - celerybeat-schedule:/newutil/celerybeat-schedule
+      - celerybeat-schedule:/rawcon/celerybeat-schedule
     depends_on:
       - web
       - celery
