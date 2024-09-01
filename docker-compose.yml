@@ -101,7 +101,7 @@ services:
   celerybeat:
     build:
       context: .
-    command: celery -A make_celery.celery beat --loglevel=info -s /rawcon/celerybeat-schedule/celerybeat-schedule
+    command: celery -A make_celery.celery beat --loglevel=info -s rawcon/celerybeat-schedule/celerybeat-schedule
     environment:
       FLASK_APP: wsgi.py
       FLASK_ENV: production
