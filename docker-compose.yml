@@ -31,7 +31,6 @@ services:
       retries: 5
 
   web:
-    command: gunicorn --workers 1 -t 90 --bind 0.0.0.0:8081 wsgi:app --log-level=debug
     build:
       context: .
       dockerfile: Dockerfile
@@ -69,7 +68,7 @@ services:
       - appnet
       - internal
 
-  celery_worker:
+  celery:
     build:
       context: .
     command: celery -A make_celery.celery worker --loglevel=info
@@ -99,10 +98,10 @@ services:
     networks:
       - internal
 
-  celery_beat:
+  celerybeat:
     build:
       context: .
-    command: celery -A make_celery.celery beat --loglevel=info
+    command: celery -A make_celery.celery beat --loglevel=info  -s /rawcon/celerybeat-schedule/celerybeat-schedule
     environment:
       FLASK_APP: wsgi.py
       FLASK_ENV: production
@@ -123,9 +122,16 @@ services:
       REDIRECT_URI: ${REDIRECT_URI}
       CELERY_BROKER_URL: ${CELERY_BROKER_URL}
       CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND} # Modify this line
+    volumes:
+      - ./app:/rawcon/app
+      - ./app/static:/rawcon/app/static
+      - ./config.py:/rawcon/config.py
+      - ./wsgi.py:/rawcon/wsgi.py
+      - ./make_celery.py:/rawcon/make_celery.py
+      - celerybeat-schedule:/newutil/celerybeat-schedule
     depends_on:
       - web
-      - celery_worker
+      - celery
       - redis
     networks:
       - internal
@@ -133,6 +139,8 @@ services:
 volumes:
   db_volume:
   redis_data:
+  celerybeat-schedule:
+
 
 
 

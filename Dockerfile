@@ -44,4 +44,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8081/health || exit 1
 
 # Set the command
-CMD ["gunicorn", "--workers", "1", "--timeout", "90", "--bind", "0.0.0.0:8081", "wsgi:app", "--log-level=debug"]
+CMD ["gunicorn", "--workers", "1", "--timeout", "90", "--bind", "0.0.0.0:8081", "wsgi:app"]
