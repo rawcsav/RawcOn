@@ -105,6 +105,9 @@ services:
 volumes:
   db_volume:
   redis_data:
+  celerybeat-schedule:  # Add this line
+
+
 
 networks:
   internal:
