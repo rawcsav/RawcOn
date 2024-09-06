@@ -106,18 +106,6 @@ def get_top_items(sp, item_type, period):
     return all_items
 
 
-def get_recently_played_tracks(sp, limit=50):
-    recent_tracks = sp.current_user_recently_played(limit=limit)
-    clean_spotify_data(recent_tracks, ["href"])
-
-    if "items" in recent_tracks:
-        for item in recent_tracks["items"]:
-            if "track" in item:
-                item["track"] = clean_track_data(item["track"])
-
-    return recent_tracks
-
-
 def get_user_playlists(sp):
     playlist_info = []
     offset = 0
@@ -201,7 +189,6 @@ def fetch_and_process_data(sp, time_periods):
                 )
                 genre_specific_data[period][genre] = {"top_artists": top_genre_artists, "top_tracks": top_genre_tracks}
 
-        recent_tracks = get_recently_played_tracks(sp)["items"]
         playlist_info = get_user_playlists(sp)
 
         return (
@@ -211,7 +198,6 @@ def fetch_and_process_data(sp, time_periods):
             audio_features,
             genre_specific_data,
             sorted_genres_by_period,
-            recent_tracks,
             playlist_info,
         )
     except Exception as e:
@@ -310,25 +296,6 @@ def get_top_tracks_summary(user_data, time_range):
         }
         for track in tracks[:50]
     ]
-
-
-def get_recent_tracks_summary(user_data):
-    """
-    Get a summary of the most recently played track.
-    """
-    if user_data.recent_tracks and len(user_data.recent_tracks) > 0:
-        most_recent = user_data.recent_tracks[0]
-        return {
-            "name": most_recent["track"]["name"],
-            "id": most_recent["track"]["id"],
-            "artists": [artist["name"] for artist in most_recent["track"]["artists"]],
-            "album": most_recent["track"]["album"]["name"],
-            "played_at": most_recent["played_at"],
-            "image_url": (
-                most_recent["track"]["album"]["images"][0]["url"] if most_recent["track"]["album"]["images"] else None
-            ),
-        }
-    return None  # Return None if no recent tracks are available
 
 
 def get_playlist_summary(user_data):

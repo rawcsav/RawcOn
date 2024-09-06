@@ -114,7 +114,7 @@ class Config(object):
 
 
 class DevelopmentConfig(Config):
-    DEBUG = True
+    FLASK_DEBUG = True
     SESSION_COOKIE_SECURE = False
     REMEMBER_COOKIE_SECURE = False
 
@@ -130,7 +130,7 @@ class DevelopmentConfig(Config):
 
 
 class ProductionConfig(Config):
-    FLASK_DEBUG = True
+    FLASK_DEBUG = False
     SESSION_COOKIE_SECURE = True
     REMEMBER_COOKIE_SECURE = True
 

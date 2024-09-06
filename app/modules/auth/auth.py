@@ -37,14 +37,12 @@ def login(loginout):
         [
             "user-read-private",
             "user-top-read",
-            "user-read-recently-played",
             "playlist-read-private",
             "playlist-read-collaborative",
             "playlist-modify-private",
             "playlist-modify-public",
             "user-library-modify",
             "user-library-read",
-            "ugc-image-upload",
         ]
     )
 

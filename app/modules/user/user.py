@@ -15,7 +15,6 @@ from .user_util import (
     get_audio_features_summary,
     get_top_artists_summary,
     get_top_tracks_summary,
-    get_recent_tracks_summary,
     get_playlist_summary,
     calculate_averages_for_period,
     get_user_data,
@@ -31,7 +30,7 @@ eastern = timezone("US/Eastern")
 
 @user_bp.route("/profile")
 @limiter.limit("30 per minute")
-#@cache.cached(timeout=300)  # Cache for 5 minutes
+# @cache.cached(timeout=300)  # Cache for 5 minutes
 @handle_errors
 @require_spotify_auth
 def profile():
@@ -60,7 +59,6 @@ def profile():
                 audio_features,
                 genre_specific_data,
                 sorted_genres_by_period,
-                recent_tracks,
                 playlist_info,
             ) = fetch_and_process_data(sp, time_periods)
 
@@ -74,7 +72,6 @@ def profile():
             user_data_entry.audio_features = audio_features
             user_data_entry.genre_specific_data = genre_specific_data
             user_data_entry.sorted_genres_by_period = sorted_genres_by_period
-            user_data_entry.recent_tracks = recent_tracks
             user_data_entry.playlist_info = playlist_info
             user_data_entry.last_active = datetime.utcnow()
             user_data_entry.new_account = False
@@ -107,7 +104,6 @@ def profile():
         }
         top_artists_summary = {period: get_top_artists_summary(user_data_entry, period) for period in time_periods[:3]}
         top_tracks_summary = {period: get_top_tracks_summary(user_data_entry, period) for period in time_periods[:3]}
-        recent_tracks_summary = get_recent_tracks_summary(user_data_entry)
         playlist_summary = get_playlist_summary(user_data_entry)
         stats_blurbs = generate_stats_blurbs(audio_features_summary, top_genres)
         print("5")
@@ -121,7 +117,6 @@ def profile():
             audio_features_summary=audio_features_summary,
             top_artists_summary=top_artists_summary,
             top_tracks_summary=top_tracks_summary,
-            recent_tracks_summary=recent_tracks_summary,
             playlist_summary=playlist_summary,
             stats_blurbs=stats_blurbs,
         )
@@ -221,20 +216,6 @@ def top_tracks(time_range):
     try:
         user_data = get_user_data()
         tracks = get_top_tracks_summary(user_data, time_range)
-        return jsonify(tracks)
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return jsonify({"error": str(e)}), 500
-
-
-@user_bp.route("/recent_tracks")
-@limiter.limit("30 per minute")
-@handle_errors
-@require_spotify_auth
-def recent_tracks():
-    try:
-        user_data = get_user_data()
-        tracks = get_recent_tracks_summary(user_data)
         return jsonify(tracks)
     except Exception as e:
         print(f"An error occurred: {e}")
