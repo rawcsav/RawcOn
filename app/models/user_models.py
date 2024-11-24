@@ -22,6 +22,9 @@ def decrypt_token(encrypted_token: str) -> str:
     return f.decrypt(encrypted_token.encode()).decode()
 
 
+from sqlalchemy.orm import relationship
+
+
 class UserData(db.Model):
     spotify_user_id = db.Column(db.VARCHAR(255), primary_key=True, index=True)
     top_tracks = db.Column(db.JSON, nullable=True)
@@ -40,7 +43,9 @@ class UserData(db.Model):
     token_expiry = db.Column(db.DateTime, nullable=True)
     new_account = db.Column(db.Boolean, default=True)
 
-    playlists = db.relationship("PlaylistData", back_populates="user", lazy="dynamic")
+    # Cascade delete for playlists
+    # Cascade delete for playlists
+    playlists = db.relationship("PlaylistData", back_populates="user", lazy="dynamic", cascade="all, delete-orphan")
 
     @hybrid_property
     def access_token(self) -> Optional[str]:
@@ -62,46 +67,13 @@ class UserData(db.Model):
         return f"<UserData {self.spotify_user_id}>"
 
 
-class ArtistData(db.Model):
-    id = db.Column(db.String(100), primary_key=True, index=True)
-    name = db.Column(db.VARCHAR(255), index=True)
-    external_url = db.Column(db.VARCHAR(255))
-    followers = db.Column(db.Integer)
-    genres = db.Column(db.VARCHAR(255))
-    images = db.Column(db.JSON)
-    popularity = db.Column(db.Integer)
-
-    features = db.relationship("FeatureData", back_populates="artist")
-
-    def as_dict(self):
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
-
-class FeatureData(db.Model):
-    id = db.Column(db.VARCHAR(255), primary_key=True, index=True)
-    artist_id = db.Column(db.String(100), db.ForeignKey("artist_data.id"), index=True)
-    danceability = db.Column(db.Float)
-    energy = db.Column(db.Float)
-    key = db.Column(db.Integer)
-    loudness = db.Column(db.Float)
-    mode = db.Column(db.Integer)
-    speechiness = db.Column(db.Float)
-    acousticness = db.Column(db.Float)
-    instrumentalness = db.Column(db.Float)
-    liveness = db.Column(db.Float)
-    valence = db.Column(db.Float)
-    tempo = db.Column(db.Float)
-    time_signature = db.Column(db.Integer)
-
-    artist = db.relationship("ArtistData", back_populates="features")
-
-    def as_dict(self):
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
-
 class PlaylistData(db.Model):
     id = db.Column(db.VARCHAR(255), primary_key=True, index=True)
-    user_id = db.Column(db.VARCHAR(255), db.ForeignKey("user_data.spotify_user_id"), index=True)
+    user_id = db.Column(
+        db.VARCHAR(255),
+        db.ForeignKey("user_data.spotify_user_id", ondelete="CASCADE"),  # Ensure CASCADE is set
+        index=True,
+    )
     name = db.Column(db.VARCHAR(255), index=True)
     owner = db.Column(db.VARCHAR(255))
     cover_art = db.Column(db.VARCHAR(255))
@@ -119,7 +91,44 @@ class PlaylistData(db.Model):
     feature_stats = db.Column(db.JSON)
     temporal_stats = db.Column(db.JSON)
 
+    # Back reference to UserData
     user = db.relationship("UserData", back_populates="playlists")
+
+
+class ArtistData(db.Model):
+    id = db.Column(db.String(100), primary_key=True, index=True)
+    name = db.Column(db.VARCHAR(255), index=True)
+    external_url = db.Column(db.VARCHAR(255))
+    followers = db.Column(db.Integer)
+    genres = db.Column(db.VARCHAR(255))
+    images = db.Column(db.JSON)
+    popularity = db.Column(db.Integer)
+
+    # Cascade delete for features
+    features = db.relationship("FeatureData", back_populates="artist", cascade="all, delete-orphan")
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+
+class FeatureData(db.Model):
+    id = db.Column(db.VARCHAR(255), primary_key=True, index=True)
+    artist_id = db.Column(db.String(100), db.ForeignKey("artist_data.id", ondelete="CASCADE"), index=True)
+    danceability = db.Column(db.Float)
+    energy = db.Column(db.Float)
+    key = db.Column(db.Integer)
+    loudness = db.Column(db.Float)
+    mode = db.Column(db.Integer)
+    speechiness = db.Column(db.Float)
+    acousticness = db.Column(db.Float)
+    instrumentalness = db.Column(db.Float)
+    liveness = db.Column(db.Float)
+    valence = db.Column(db.Float)
+    tempo = db.Column(db.Float)
+    time_signature = db.Column(db.Integer)
+
+    # Back reference to ArtistData
+    artist = db.relationship("ArtistData", back_populates="features")
 
 
 class GenreData(db.Model):

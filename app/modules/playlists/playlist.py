@@ -39,7 +39,8 @@ def show_playlist(playlist_id):
 @limiter.limit("2 per minute")
 @require_spotify_auth
 def refresh_playlist(playlist_id):
-    result = update_playlist_data(playlist_id)
+    spotify_user_id = session["USER_ID"]
+    result = update_playlist_data(playlist_id, spotify_user_id)
     if isinstance(result, tuple):
         return result
     return redirect(url_for("playlist.show_playlist", playlist_id=playlist_id))

@@ -826,27 +826,41 @@ const recommendationModule = (() => {
     div.innerHTML = `
       <div class="result-cover-art-container">
         <div class="cover-art-container">
-          <img src="${trackInfo.cover_art || "/static/dist/img/default-track.svg"}" alt="${trackInfo.name}" class="result-cover-art">
-        </div>        
+          <img src="${trackInfo.cover_art}" alt="Cover Art" class="result-cover-art">
+        </div>
         <div class="caption">
           <h2 title="${trackInfo.trackName}"><i class="rawcon-music"></i>${trackInfo.trackName}</h2>
           <p title="${trackInfo.artist}"><i class="rawcon-user-music"></i>${trackInfo.artist}</p>
-          <a href="${trackInfo.trackUrl}" target="_blank" rel="noopener noreferrer"><i class="rawcon-spotify"></i> Play on Spotify</a>
+          <a href="${trackInfo.trackUrl}" target="_blank" rel="noopener noreferrer">
+            <i class="rawcon-spotify"></i>Play on Spotify
+          </a>
         </div>
         ${
           trackInfo.preview
-            ? `<div class="preview play-button noselect" id="play_${trackInfo.trackid}"><i class="rawcon-play"></i></div>`
+            ? `<div class="preview play-button noselect" id="play_${trackInfo.trackid}" 
+                data-tooltip-play="Play Preview" 
+                data-tooltip-pause="Pause Preview">
+                <i class="rawcon-play"></i>
+               </div>`
             : `<div class="no-preview">Preview N/A</div>`
         }
       </div>
       <div class="dropdown-content">
-        <a href="#" class="add-to-saved" data-trackid="${trackInfo.trackid}"><i class="rawcon-heart"></i></a>
-        <a href="#" class="add-to-playlist" data-trackid="${trackInfo.trackid}"><i class="rawcon-album-plus"></i></a>
+        <a href="#" class="add-to-saved" data-trackid="${trackInfo.trackid}" data-tooltip-liked="Remove from Liked Songs" data-tooltip-unliked="Add to Liked Songs">
+          <i class="heart-icon rawcon-heart"></i>
+        </a>
+        <a href="#" class="add-to-playlist" data-trackid="${trackInfo.trackid}" data-tooltip="Add to Playlist" data-tooltip-added="Remove from Playlist" data-tooltip-unadded="Add to Playlist">
+          <i class="plus-icon rawcon-album-plus"></i>
+        </a>
       </div>
-      <audio controls class="audio-player" id="audio_${trackInfo.trackid}">
-        <source src="${trackInfo.preview}" type="audio/mpeg">
-        Your browser does not support the audio element.
-      </audio>
+      ${
+        trackInfo.preview
+          ? `<audio class="audio-player" id="audio_${trackInfo.trackid}">
+               <source src="${trackInfo.preview}" type="audio/mpeg">
+               Your browser does not support the audio element.
+             </audio>`
+          : ""
+      }
     `;
     return div;
   };

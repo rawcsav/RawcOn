@@ -18,7 +18,7 @@ def get_playlist_data(playlist_id, spotify_user_id):
         sp, error = init_session_client()
         if error:
             return None
-        playlist_data = fetch_and_create_playlist(sp, playlist_id)
+        playlist_data = fetch_and_create_playlist(sp, playlist_id, spotify_user_id)
     else:
         playlist_data = playlist.__dict__
 
@@ -53,13 +53,14 @@ def get_playlist_data(playlist_id, spotify_user_id):
     }
 
 
-def fetch_and_create_playlist(sp, playlist_id):
+def fetch_and_create_playlist(sp, playlist_id, spotify_user_id):
     (playlist_info, track_data, genre_counts, top_artists, feature_stats, temporal_stats) = get_playlist_details(
         sp, playlist_id
     )
 
     new_playlist = PlaylistData(
         id=playlist_info["id"],
+        user_id=spotify_user_id,
         name=playlist_info["name"],
         owner=playlist_info["owner"],
         cover_art=playlist_info["cover_art"],
@@ -711,7 +712,7 @@ def get_playlist_details(sp, playlist_id):
     return playlist_info, track_info_list, genre_counts, top_artists, audio_feature_stats, temporal_stats
 
 
-def update_playlist_data(playlist_id):
+def update_playlist_data(playlist_id, spotify_user_id):
     sp, error = init_session_client()
     if error:
         return json.dumps(error), 401
@@ -727,6 +728,7 @@ def update_playlist_data(playlist_id):
 
     # Update the playlist object
     playlist.name = pl_playlist_info["name"]
+    playlist.user_id = spotify_user_id
     playlist.owner = pl_playlist_info["owner"]
     playlist.cover_art = pl_playlist_info["cover_art"]
     playlist.public = pl_playlist_info["public"]

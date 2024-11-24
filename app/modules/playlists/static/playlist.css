@@ -128,7 +128,7 @@ h3 {
   align-items: center;
   gap: var(--space-6);
   color: var(--neutral-500);
-  justify-content: space-evenly;
+  justify-content: space-between;
   font-size: var(--text-lg);
 }
 
@@ -611,13 +611,13 @@ button:hover {
   display: flex;
   justify-content: space-around;
   padding: var(--space-4);
+  padding-top: var(--space-5);
   background-color: var(--neutral-100);
 }
 
 .dropdown-content a {
   color: var(--neutral-500);
   text-decoration: none;
-  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-lg);
   transition: background-color var(--transition-normal);
 }
@@ -774,7 +774,6 @@ h4 {
   padding: var(--space-6);
   padding-bottom: 0;
   width: 100%;
-  overflow: hidden;
   border-bottom: var(--border-normal) var(--neutral-300);
   transition:
     transform var(--transition-normal),
@@ -791,7 +790,7 @@ h4 {
 .result-cover-art {
   top: 0;
   left: 0;
-  width: 100%;
+  width: 125px;
   height: auto;
   object-fit: cover;
 }
@@ -800,8 +799,9 @@ h4 {
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: var(--space-3);
+  align-items: flex-start;
+  justify-content: flex-start;
 }
 
 .no-preview,
@@ -852,13 +852,13 @@ h4 {
 }
 
 .caption h2 {
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
   font-family: var(--ff-txt), serif;
   margin: 0;
   font-variation-settings:
     "wght" var(--font-medium),
     "ital" 0;
-  color: var(--accent-green-300);
+  color: var(--accent-green-400);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -866,21 +866,24 @@ h4 {
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  gap: var(--space-5);
+  gap: var(--space-3);
 }
 
 .caption p {
-  font-size: var(--text-xl);
-  color: var(--neutral-400);
+  font-size: var(--text-lg);
+  color: var(--neutral-500);
   white-space: nowrap;
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-variation-settings:
+    "wght" var(--font-medium),
+    "ital" 0;
   max-width: 350px;
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  gap: var(--space-5);
+  gap: var(--space-3);
 }
 
 .result-cover-art-container a {
@@ -892,11 +895,24 @@ h4 {
   font-variation-settings:
     "wght" var(--font-bold),
     "ital" 0;
-  gap: var(--space-3);
+  gap: var(--space-2);
   align-items: center;
-  padding: var(--space-1) var(--space-3);
+  padding: var(--space-1) var(--space-2);
   color: var(--spotify-black);
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
+  cursor: pointer;
+  transition:
+    color var(--transition-normal),
+    background-color var(--transition-normal),
+    font-variation-settings var(--transition-normal);
+}
+
+.result-cover-art-container a:hover {
+  background-color: var(--accent-green-300);
+  color: var(--neutral-100);
+  font-variation-settings:
+    "wght" 700,
+    "ital" 12;
 }
 
 .heart-icon,
@@ -1083,4 +1099,129 @@ h4 {
 
 #minmax-title {
   width: 100%;
+}
+
+/* Updated tooltip styles for dynamic content */
+.dropdown-content a.add-to-saved::after {
+  content: attr(data-tooltip-unliked);
+}
+
+.dropdown-content a.add-to-saved:has(.liked)::after {
+  content: attr(data-tooltip-liked);
+}
+
+.dropdown-content a.add-to-playlist:has(.added)::after {
+  content: attr(data-tooltip-added);
+}
+
+.dropdown-content a.add-to-playlist::after {
+  content: attr(data-tooltip-unadded);
+}
+/* Rest of the tooltip styling */
+.dropdown-content a::after {
+  position: absolute;
+  background-color: var(--neutral-500);
+  color: var(--neutral-100);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all var(--transition-normal);
+  z-index: 10;
+  left: 50%;
+  transform: translateX(-50%) translateY(-40px);
+}
+
+.dropdown-content a:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-45px);
+}
+
+/* Enhanced hover states */
+.dropdown-content a:hover {
+  transform: translateY(-2px);
+}
+
+.add-to-playlist {
+  position: relative;
+  cursor: pointer;
+}
+
+.add-to-playlist::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  transform: translateX(-50%);
+  padding: 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s;
+}
+
+.add-to-playlist:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Play button container styles */
+.play-button {
+  position: relative;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all var(--transition-normal);
+}
+
+/* Play button icon styles */
+.play-button i {
+  font-size: var(--text-2xl);
+  color: var(--neutral-500);
+  transition: all var(--transition-normal);
+}
+
+.play-button:hover i {
+  color: var(--accent-green-300);
+}
+
+.play-button.playing:hover i {
+  color: var(--accent-red-300);
+}
+
+/* Play button tooltip styles */
+.play-button::after {
+  content: attr(data-tooltip-play);
+  position: absolute;
+  background-color: var(--neutral-500);
+  color: var(--neutral-100);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all var(--transition-normal);
+  z-index: 10;
+  left: 50%;
+  transform: translateX(-50%) translateY(-40px);
+}
+
+.play-button.playing::after {
+  content: attr(data-tooltip-pause);
+}
+
+.play-button:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-45px);
+}
+
+/* Audio player styles */
+.audio-player {
+  display: none;
 }

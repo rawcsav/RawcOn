@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta
+from typing import Tuple, Optional
 
 import requests
 from flask import current_app
@@ -56,7 +57,6 @@ def update_user_data(user_data_entry, sp, session):
         audio_features,
         genre_specific_data,
         sorted_genres_by_period,
-        recent_tracks,
         playlist_info,
     ) = fetch_and_process_data(sp, time_periods)
 
@@ -66,7 +66,6 @@ def update_user_data(user_data_entry, sp, session):
     user_data_entry.audio_features = audio_features
     user_data_entry.genre_specific_data = genre_specific_data
     user_data_entry.sorted_genres_by_period = sorted_genres_by_period
-    user_data_entry.recent_tracks = recent_tracks
     user_data_entry.playlist_info = playlist_info
     session.merge(user_data_entry)
     session.commit()
@@ -74,9 +73,10 @@ def update_user_data(user_data_entry, sp, session):
     return "User updated successfully"
 
 
-def init_session_client_for_celery(user_id):
+def init_session_client_for_celery(user_id: str) -> Tuple[Optional[Spotify], Optional[str]]:
     db_session = make_session()
     try:
+        # Get user data
         user = db_session.query(UserData).filter_by(spotify_user_id=user_id).first()
         if not user:
             logger.error(f"User {user_id} not found in database")
@@ -86,22 +86,41 @@ def init_session_client_for_celery(user_id):
         refresh_token = user.refresh_token
         token_expiry = user.token_expiry
 
+        # Check if token needs refresh
         if not access_token or (token_expiry and datetime.utcnow() >= token_expiry):
-            refresh_response = refresh(refresh_token)
-            if refresh_response.status_code == 200:
-                token_info = refresh_response.json()
-                user.access_token = token_info.get("access_token")
+            token_info, error = refresh(refresh_token)
+
+            if error:
+                logger.error(f"Failed to refresh token for user {user_id}: {error}")
+                return None, f"Failed to refresh token: {error}"
+
+            if not token_info:
+                logger.error(f"No token info returned for user {user_id}")
+                return None, "Token refresh failed - no token info returned"
+
+            # Update user tokens
+            try:
+                user.access_token = token_info["access_token"]
                 user.refresh_token = token_info.get("refresh_token", user.refresh_token)
                 user.token_expiry = datetime.utcnow() + timedelta(seconds=token_info.get("expires_in", 3600))
                 db_session.commit()
                 access_token = user.access_token
-            else:
-                logger.error(f"Failed to refresh token for user {user_id}")
-                return None, "Failed to refresh token"
+            except KeyError as e:
+                logger.error(f"Missing key in token info for user {user_id}: {e}")
+                return None, f"Invalid token info returned: {e}"
 
-        return Spotify(auth=access_token), None
+        # Initialize Spotify client
+        try:
+            spotify_client = Spotify(auth=access_token)
+            # Verify client is working with a simple API call
+            spotify_client.current_user()  # This will raise an exception if token is invalid
+            return spotify_client, None
+        except Exception as e:
+            logger.error(f"Failed to initialize Spotify client for user {user_id}: {e}")
+            return None, f"Failed to initialize Spotify client: {e}"
+
     except Exception as e:
-        logger.error(f"Error initializing Spotify client for user {user_id}: {str(e)}")
+        logger.error(f"Error in session client initialization for user {user_id}: {str(e)}")
         return None, str(e)
     finally:
         db_session.remove()
