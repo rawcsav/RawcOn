@@ -179,6 +179,5 @@ def initialize_genre_data(app):
         if GenreData.query.count() == 0:
             csv_file_path = app.config.get("GENRE_DATA_CSV_PATH", "app/static/data/genre_data.csv")
             GenreData.populate_from_csv(csv_file_path)
-            print("Genre data populated from CSV.")
         else:
             print("Genre data already exists in the database.")

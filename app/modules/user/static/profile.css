@@ -177,7 +177,7 @@ select {
 }
 
 h4 {
-  font-size: var(--text-2xl);
+  font-size: var(--text-xl);
   padding: 0;
   margin: 0;
 }
@@ -324,12 +324,12 @@ h4 {
 }
 
 .selector-header i {
-  font-size: var(--text-5xl);
+  font-size: var(--text-4xl);
   cursor: pointer;
 }
 
 .selector-title {
-  font-size: var(--text-5xl);
+  font-size: var(--text-4xl);
   font-family: var(--ff-txt);
   color: var(--accent-green-300);
   font-variation-settings:
@@ -388,7 +388,7 @@ h4 {
 
 h3 {
   margin-bottom: var(--space-5);
-  font-size: var(--text-5xl);
+  font-size: var(--text-4xl);
   border-bottom: var(--border-normal) var(--accent-green-300);
   width: 50%;
 }
@@ -465,7 +465,7 @@ h3 {
   width: fit-content;
   padding-left: 20vw;
   height: 10vh;
-  z-index: 1000;
+  z-index: 99;
   font-variation-settings:
     "wght" var(--font-normal),
     "ital" 0;
@@ -633,4 +633,17 @@ h3 {
 
 #minmax-title {
   width: 100%;
+}
+
+.explanation-container {
+  padding: var(--space-4);
+  margin: auto;
+}
+
+.explanation {
+  background-color: var(--neutral-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+
+  font-size: var(--text-sm);
 }

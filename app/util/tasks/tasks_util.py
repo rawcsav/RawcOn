@@ -68,7 +68,6 @@ def update_user_data(user_data_entry, sp, session):
     user_data_entry.sorted_genres_by_period = sorted_genres_by_period
     user_data_entry.recent_tracks = recent_tracks
     user_data_entry.playlist_info = playlist_info
-    print(recent_tracks)
     session.merge(user_data_entry)
     session.commit()
 

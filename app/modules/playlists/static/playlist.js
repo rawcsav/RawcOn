@@ -111,15 +111,20 @@ const chartModule = (() => {
         responsive: false,
         plugins: {
           title: {
-            display: false,
-            text: "Distribution of Track Release Dates",
-            fontSize: 16,
-            align: "center",
-            position: "bottom",
+            display: true,
+            text: "Playlist Temporal Data",
+            font: {
+              size: 18,
+              weight: "bold",
+            },
+            padding: {
+              top: 10,
+              bottom: 10,
+            },
           },
           legend: {
-            position: "left",
-            labels: { boxWidth: 10, padding: 5 },
+            position: "bottom",
+            labels: { boxWidth: 10, padding: 20 },
           },
           tooltip: {
             callbacks: {
@@ -231,10 +236,16 @@ const chartModule = (() => {
         },
         plugins: {
           title: {
-            display: false,
+            display: true,
             text: "Track Popularity Distribution",
-            font: { size: 24, weight: "bold" },
-            padding: { top: 10, bottom: 30 },
+            font: {
+              size: 18,
+              weight: "bold",
+            },
+            padding: {
+              top: 10,
+              bottom: 10,
+            },
           },
           legend: { display: false },
           tooltip: {
@@ -360,13 +371,17 @@ const chartModule = (() => {
         ],
       },
       options: {
+        responsive: true,
+        showTooltips: true,
         scales: {
           r: {
             angleLines: { display: false },
             suggestedMin: 0,
             suggestedMax: 1,
             pointLabels: {
-              font: { size: 12 },
+              font: {
+                size: 12,
+              },
             },
             ticks: {
               display: false,
@@ -374,7 +389,31 @@ const chartModule = (() => {
           },
         },
         plugins: {
+          title: {
+            display: true,
+            text: "Playlist Audio Features",
+            font: {
+              size: 18,
+              weight: "bold",
+            },
+            padding: {
+              top: 10,
+              bottom: 10,
+            },
+          },
+          legend: {
+            display: true,
+            position: "bottom",
+            labels: {
+              font: {
+                size: 12,
+              },
+              padding: 20,
+            },
+            align: "center",
+          },
           tooltip: {
+            enabled: true,
             callbacks: {
               label: function (context) {
                 const feature = context.label.toLowerCase();
@@ -397,56 +436,78 @@ const chartModule = (() => {
         },
         onHover: (event, activeElements) => {
           if (activeElements.length > 0) {
-            const datasetIndex = activeElements[0].datasetIndex;
-            const index = activeElements[0].index;
+            const element = activeElements[0];
+            const datasetIndex = element.datasetIndex;
+            const index = element.index;
             const feature = features[index];
-            let trackInfo;
-            let datasetLabel;
 
-            if (datasetIndex === 1) {
+            // Map dataset index to label
+            const datasetLabel =
+              datasetIndex === 0
+                ? "Average"
+                : datasetIndex === 1
+                  ? "Min"
+                  : datasetIndex === 2
+                    ? "Max"
+                    : null;
+
+            // Get the appropriate track info based on the dataset
+            let trackInfo;
+            if (datasetLabel === "Min") {
               trackInfo = featureStats[feature].min;
-              datasetLabel = "Min";
-            } else if (datasetIndex === 2) {
+            } else if (datasetLabel === "Max") {
               trackInfo = featureStats[feature].max;
-              datasetLabel = "Max";
             }
 
             if (trackInfo) {
               updateMinMaxTrack(
                 feature,
-                trackInfo,
+                [
+                  trackInfo[0], // track name
+                  trackInfo[1], // value
+                  trackInfo[2], // spotify url
+                  trackInfo[3], // artist name
+                  trackInfo[4], // cover art
+                ],
                 datasetLabel,
-                featureStats[feature],
               );
-            } else {
-              clearMinMaxTrack();
             }
-          } else {
-            clearMinMaxTrack();
           }
         },
       },
     });
   };
 
-  function updateMinMaxTrack(feature, trackInfo) {
+  function updateMinMaxTrack(feature, trackInfo, datasetLabel) {
     const minMaxContainer = document.getElementById("minMaxTrack");
-    const [trackName, value, externalUrl, artistName, coverArt] = trackInfo;
+    const [trackName, value, trackUrl, artistName, albumArt] = trackInfo;
     const formattedValue = formatFeatureValue(feature, value);
 
+    // Determine which class to apply based on datasetLabel
+    const titleClass =
+      datasetLabel === "Min"
+        ? "minmax-title-min"
+        : datasetLabel === "Max"
+          ? "minmax-title-max"
+          : "minmax-title-avg";
+
     minMaxContainer.innerHTML = `
-      <h4 class="minmax-track-header">${feature.charAt(0).toUpperCase() + feature.slice(1)}&nbsp;~&nbsp;${formattedValue}</h4>
-      <div class="minmax-track-info">
-      <a href="${externalUrl}" target="_blank" class="minmax-link">
-        <img src="${coverArt}" alt="${trackName}" class="minmax-track-image"></a>
-        <div class="minmax-track-details">
-          <p class="minmax-track" title="${trackName}">${trackName}</p>
-          <p class="minmax-artist" title="${artistName}">${artistName}</p>
+        <h4 id="minmax-title" class="${titleClass}">
+            ${feature.charAt(0).toUpperCase() + feature.slice(1)}&nbsp;~&nbsp;${formattedValue}
+        </h4>
+        <div class="track-info">
+            <img src="${albumArt || "/static/dist/img/default-album.png"}" alt="${trackName}" class="album-art">
+            <div class="track-details">
+                <p class="minmax-track" title="${trackName}">${trackName}</p>
+                <p class="minmax-artist artist-name" title="${artistName}">${artistName}</p>
+                <div class="spotify-button" aria-label="Listen on Spotify">
+                    <i class="rawcon-spotify" onclick="window.open('${trackUrl}', '_blank')"></i>
+                    <span class="spotify-text">Listen on Spotify</span>
+                </div>
+            </div>
         </div>
-      </div>
     `;
   }
-
   function wrapText(text, maxLength) {
     const words = text.split(" ");
     let lines = [];
@@ -471,18 +532,15 @@ const chartModule = (() => {
         return `${value.toFixed(2)} dB`;
       case "tempo":
         return `${value.toFixed(2)} BPM`;
+      case "popularity":
+        return `${Math.round(value)}`;
       default:
         return value.toFixed(2);
     }
   }
 
   function clearMinMaxTrack() {
-    const minMaxContainer = document.getElementById("minMaxTrack");
-    minMaxContainer.innerHTML = `<p>Interact with the chart to explore your playlist audio features.</p><i
-              class="rawcon-arrow-right"
-              style="display: block; margin: auto; text-align: center;
-margin-top: 10px;"
-            ></i>`;
+    // Do not clear the min-max track info to keep it on screen
   }
 
   const initGenreBubbleChart = (genreData, genreScores) => {
@@ -675,16 +733,28 @@ const playlistActionsModule = (() => {
       },
       body: JSON.stringify({ sorting_criterion: criterion }),
     })
-      .then((response) => response.json())
-      .then(() => {
-        showToast("Playlist reordered successfully.", "success");
+      .then((response) => {
+        if (!response.ok) {
+          return response.json().then((data) => Promise.reject(data));
+        }
+        return response.json();
       })
-      .catch((error) =>
+      .then((data) => {
         showToast(
-          `An error occurred while reordering the playlist: ${error}`,
-          "error",
-        ),
-      );
+          data.message || "Playlist reordered successfully.",
+          data.type || "success",
+        );
+      })
+      .catch((error) => {
+        if (error && error.message) {
+          showToast(error.message, error.type || "error");
+        } else {
+          showToast(
+            `An error occurred while reordering the playlist: ${error}`,
+            "error",
+          );
+        }
+      });
   };
 
   return { likeAllSongs, unlikeAllSongs, removeDuplicates, reorderPlaylist };

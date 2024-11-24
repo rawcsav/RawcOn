@@ -64,7 +64,6 @@ def callback():
     stored_state = session.get("spotify_auth_state")
     if state is None or state != stored_state:
         abort(400, description="State mismatch")
-    print("passed")
     code = request.args.get("code")
     payload = {
         "grant_type": "authorization_code",

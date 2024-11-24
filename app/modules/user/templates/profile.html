@@ -74,6 +74,23 @@
     <div class="chart-container">
       <canvas id="genreBubbleChart"></canvas>
     </div>
+    <div class="explanation-container">
+      <p class="explanation">
+        Your genre distribution chart visualizes your listening habits by
+        aggregating the most prominent genres from your top tracks and artists
+        across short-term, medium-term, and long-term periods. Each genre is
+        represented as a bubble, with its size proportional to how frequently it
+        appears in the user's listening data. The spatial positioning of the
+        bubbles is derived from the
+        <a href="https://everynoise.com/" target="_blank"
+          >Every Noise at Once</a
+        >
+        dataset, which maps genres based on their sonic similarities. This
+        allows users to see not only their favorite genres but also how their
+        preferences cluster or diversify over time, offering a clear picture of
+        their evolving musical tastes.
+      </p>
+    </div>
   </div>
   <div class="features-column">
     <h3><i class="rawcon-symbols title-icon"></i>Audio Features</h3>
@@ -102,6 +119,18 @@
     <div class="chart-container">
       <canvas id="audioFeaturesEvolutionChart"></canvas>
     </div>
+    <div class="explanation-container">
+      <p class="explanation">
+        Your Audio Features evolution chart visualizes how key musical
+        attributes in your listening history—such as danceability, energy,
+        valence, acousticness, and tempo—change over time. It analyzes tracks
+        from your short-term, medium-term, and long-term listening periods,
+        normalizing each feature and plotting them as datasets with time periods
+        on the x-axis. A moving average is applied to smooth fluctuations,
+        revealing clearer trends in your musical preferences, such as a shift
+        toward more energetic, acoustic, or mood-driven tracks.
+      </p>
+    </div>
   </div>
 
   {% else %}
@@ -124,9 +153,7 @@
         const audioFeaturesSummary = {{ audio_features_summary | tojson | safe }};
         const topArtistsSummary = {{ top_artists_summary | tojson | safe }};
         const topTracksSummary = {{ top_tracks_summary | tojson | safe }};
-
-        console.log("Script loaded and initial display set");  // Debug log
-    {% else %}
+   {% else %}
         console.log("Some required data is missing");
     {% endif %}
 </script>

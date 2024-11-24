@@ -13,6 +13,8 @@ from itsdangerous import URLSafeTimedSerializer
 from config import ProductionConfig, DevelopmentConfig
 from flask_cors import CORS
 from app.celery_app import celery
+from flask_limiter.errors import RateLimitExceeded
+
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -98,4 +100,13 @@ def create_app():
                 return "All caches cleared"
 
         db.create_all()
+
+        def register_error_handlers(app):
+            @app.errorhandler(RateLimitExceeded)
+            def handle_rate_limit_error(error):
+                return jsonify({"message": str(error.description), "type": "warning"})
+
+        # Add this to your app initialization
+        register_error_handlers(app)
+
         return app

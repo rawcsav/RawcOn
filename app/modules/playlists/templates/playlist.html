@@ -9,19 +9,14 @@
       <div class="playlist-details">
         <div class="playlist-desc">
           <div class="playlist-text">
-            <a
-              class="playlist-url"
-              href="{{ playlist_url }}"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <div class="playlist-url">
               <img
                 class="playlist-cover"
                 src="{{ playlist_data['cover_art'] }}"
                 alt="Playlist Cover"
                 crossorigin="anonymous"
               />
-            </a>
+            </div>
             <div class="glance">
               <div class="playlist-glance total-followers">
                 <i class="rawcon-users"></i>
@@ -95,6 +90,12 @@
               </div>
             </div>
           </div>
+
+        </div>
+        <div class="playlist-spotify-button" aria-label="Listen on Spotify"
+             onclick="window.open('{{ playlist_url }}', '_blank')">
+          <i class="rawcon-spotify"></i>
+          <span class="playlist-spotify-text">View on Spotify</span>
         </div>
       </div>
     </div>
@@ -155,20 +156,21 @@
       <h3 class="top-artists-title"><i class="rawcon-microphone-stand"></i> Top Artists</h3>
       <div class="scroll-container">
         <div id="topArtists" class="row-container">
-          {% for artist, count, image_url, spotify_url, artist_ids in
-        playlist_data.top_artists %}
+          {% for artist, count, image_url, spotify_url, artist_ids in playlist_data.top_artists %}
             <div class="grid-item">
-              <a href="{{ spotify_url }}" target="_blank" rel="noopener noreferrer">
-                <img
-                  class="artist-image"
-                  src="{{ image_url }}"
-                  alt="{{ artist }}'s picture"
-                  crossorigin="anonymous"
-                  loading="lazy"
-                />
-              </a>
+              <img
+                class="artist-image"
+                src="{{ image_url }}"
+                alt="{{ artist }}'s picture"
+                crossorigin="anonymous"
+                loading="lazy"
+              />
               <p class="artist-name">{{ artist }}</p>
               <p class="artist-count">{{ count }} Tracks</p>
+              <div class="spotify-button" aria-label="Listen on Spotify">
+                <i class="rawcon-spotify" onclick="window.open('{{ spotify_url }}', '_blank')"></i>
+                <span class="spotify-text">Listen on Spotify</span>
+              </div>
             </div>
           {% endfor %}
         </div>
@@ -176,19 +178,23 @@
     </div>
     <div class="genre-title-container">
       <h3><i class="rawcon-symbols"></i> Genre Info</h3>
-      <div class="genre-chart">
-        <canvas id="genreBubbleChart"></canvas>
-      </div>
       <div class="genre-container">
         <div id="genre-counts" class="data-view">
-          <h4 class="gen-titles">Top Genres (Frequency)</h4>
+          <h4 class="gen-titles">Top Genres</h4>
           <ul>
             {% for genre, data in top_10_genre_data.items() %}
               <li>
-                {{ genre }}: {{ data.count }}
+                {{ genre }}: {{ data.count }} songs
                 <ul class="artist-genre-list" style="display: none">
                   {% for artist in data.artists %}
-                    <li>{{ artist }}</li>
+                    <li id="genre-top-artist">
+                      {% if data.artist_urls and artist in data.artist_urls %}
+                        <a href="{{ data.artist_urls[artist] }}" target="_blank"
+                           rel="noopener noreferrer">{{ artist }}</a>
+                      {% else %}
+                        {{ artist }}
+                      {% endif %}
+                    </li>
                   {% endfor %}
                 </ul>
               </li>
@@ -198,6 +204,7 @@
 
         <div id="most-similar" class="data-view">
           <h4 class="gen-titles">Most Similar</h4>
+
           <ul>
             {% for entry in genre_scores['most_similar'] %}
               <li>
@@ -223,6 +230,28 @@
           </ul>
         </div>
       </div>
+      <div class="explanation-container">
+        <p class="explanation">Your playlist's genre chart highlights the dominant genres within your playlist by
+          analyzing the genres of its tracks. Each bubble represents a genre, with its size reflecting the number of
+          tracks associated with it. The chart uses spatial coordinates from the <a href="https://everynoise.com/"
+                                                                                    target="_blank">Every Noise at
+            Once</a> dataset to position genres in a way that reflects their sonic relationships, providing a visual
+          representation of the playlist's thematic and stylistic composition. The genre data was extracted using a
+          custom web scraper, available on <a href="https://github.com/rawcsav/ENAOScrape/blob/main/main.go"
+                                              target="_blank">GitHub</a>, which collected genre names and coordinates
+          from Every Noise at Once.</p>
+      </div>
+      <div class="genre-chart">
+        <canvas id="genreBubbleChart"></canvas>
+      </div>
+      <div class="explanation-container">
+
+        <p class="explanation">Genre positions are mapped using x/y coordinates scraped from <a
+          href="https://everynoise.com/">Every Noise at Once</a>, where each genre's position represents acoustic
+          proximity in a high-dimensional feature space reduced to 2D. Artists' genre tags are aggregated and plotted
+          using these coordinates, creating a spatial distribution that preserves genre clustering and stylistic
+          relationships.</p>
+      </div>
     </div>
     <div class="track-stats">
       <h3 class="decade-title"><i class="rawcon-chart-line"></i> Track Stats</h3>
@@ -232,11 +261,11 @@
           <canvas id="YrPieChart" class="year-pie-chart"></canvas>
           <div class="oldest-newest-tracks">
             <div class="oldest-track">
-              <h4 class="time-track-header">Oldest Track</h4>
+              <h4 class="time-track-header">Oldest Track
+                ~ {{ playlist_data['temporal_stats']['oldest_track_date'] }}</h4>
+
               <div class="time-track-info">
-                <a
-                  href="{{ playlist_data['temporal_stats']['oldest_track_url'] }}"
-                  target="_blank"
+                <div
                   class="time-track-link"
                 >
                   <img
@@ -244,7 +273,7 @@
                     alt="Oldest track cover"
                     class="time-track-image"
                   />
-                </a>
+                </div>
                 <div class="time-track-details">
                   <p class="time-track-title">
                     {{ playlist_data['temporal_stats']['oldest_track'] }}
@@ -252,18 +281,20 @@
                   <p class="time-track-artist">
                     {{ playlist_data['temporal_stats']['oldest_track_artist'] }}
                   </p>
+                  <div class="spotify-button" aria-label="Listen on Spotify">
+                    <i class="rawcon-spotify"
+                       onclick="window.open('{{ playlist_data['temporal_stats']['oldest_track_url'] }}', '_blank')"></i>
+                    <span class="spotify-text">Listen on Spotify</span>
+                  </div>
                 </div>
               </div>
-              <p class="time-track-date">
-                {{ playlist_data['temporal_stats']['oldest_track_date'] }}
-              </p>
             </div>
             <div class="newest-track">
-              <h4 class="time-track-header">Newest Track</h4>
+              <h4 class="time-track-header">Newest Track ~ {{ playlist_data['temporal_stats']['newest_track_date'] }}
+              </h4>
+
               <div class="time-track-info">
-                <a
-                  href="{{ playlist_data['temporal_stats']['newest_track_url'] }}"
-                  target="_blank"
+                <div
                   class="time-track-link"
                 >
                   <img
@@ -271,7 +302,7 @@
                     alt="Newest track cover"
                     class="time-track-image"
                   />
-                </a>
+                </div>
                 <div class="time-track-details">
                   <p class="time-track-title">
                     {{ playlist_data['temporal_stats']['newest_track'] }}
@@ -279,11 +310,14 @@
                   <p class="time-track-artist">
                     {{ playlist_data['temporal_stats']['newest_track_artist'] }}
                   </p>
+                  <div class="spotify-button" aria-label="Listen on Spotify">
+                    <i class="rawcon-spotify"
+                       onclick="window.open('{{ playlist_data['temporal_stats']['newest_track_url'] }}', '_blank')"></i>
+                    <span class="spotify-text">Listen on Spotify</span>
+                  </div>
+
                 </div>
               </div>
-              <p class="time-track-date">
-                {{ playlist_data['temporal_stats']['newest_track_date'] }}
-              </p>
             </div>
           </div>
         </div>
@@ -315,14 +349,15 @@
       <h3 class="recommendations-title"><i class="rawcon-music-magnifying-glass"></i> Recommendations</h3>
       <div class="rec-desc">
         <div class="rec-button-container">
-        <button
-          id="recommendations-btn"
-          title="Get recommendations based on this playlist"
-        >
-          <i class="rawcon-list-music"></i> Track Recs
-        </button>
-        <div class="rec-button-reminder"><i class="rawcon-arrow-left"></i><i class="rawcon-hand-pointer"></i><i class="rawcon-fire-flame-curved"></i></div>
-          </div>
+          <button
+            id="recommendations-btn"
+            title="Get recommendations based on this playlist"
+          >
+            <i class="rawcon-list-music"></i> Track Recs
+          </button>
+          <div class="rec-button-reminder"><i class="rawcon-arrow-left"></i><i class="rawcon-hand-pointer"></i><i
+            class="rawcon-fire-flame-curved"></i></div>
+        </div>
         <div class="results-title-spot" style="display: none">
           <div class="results-container">
             <div id="results"></div>
