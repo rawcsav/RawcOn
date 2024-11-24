@@ -18,7 +18,7 @@ def get_playlist_data(playlist_id, spotify_user_id):
         sp, error = init_session_client()
         if error:
             return None
-        playlist_data = fetch_and_create_playlist(sp, playlist_id)
+        playlist_data = fetch_and_create_playlist(sp, playlist_id, spotify_user_id)
     else:
         playlist_data = playlist.__dict__
 
@@ -29,7 +29,8 @@ def get_playlist_data(playlist_id, spotify_user_id):
 
     # Add popularity distribution to the returned data
     popularity_distribution = get_popularity_distribution(playlist_data["tracks"])
-    print(playlist_data.get("feature_stats"))
+    test = dict(sorted(playlist_data["genre_counts"].items(), key=lambda x: x[1]["count"], reverse=True)[:10])
+    print(test)
     return {
         "playlist_id": playlist_id,
         "playlist_url": f"https://open.spotify.com/playlist/{playlist_id}",
@@ -52,13 +53,14 @@ def get_playlist_data(playlist_id, spotify_user_id):
     }
 
 
-def fetch_and_create_playlist(sp, playlist_id):
+def fetch_and_create_playlist(sp, playlist_id, spotify_user_id):
     (playlist_info, track_data, genre_counts, top_artists, feature_stats, temporal_stats) = get_playlist_details(
         sp, playlist_id
     )
 
     new_playlist = PlaylistData(
         id=playlist_info["id"],
+        user_id=spotify_user_id,
         name=playlist_info["name"],
         owner=playlist_info["owner"],
         cover_art=playlist_info["cover_art"],
@@ -165,77 +167,145 @@ from datetime import datetime
 
 
 def reorder_playlist(playlist_id, sorting_criterion):
-    playlist = PlaylistData.query.get(playlist_id)
-    if not playlist:
-        return jsonify(error="Playlist not found"), 404
+    """
+    Reorders a Spotify playlist based on the given sorting criterion.
+    Uses batch operations and position mapping for more efficient reordering.
 
-    # Get tracks from the database
-    tracks = playlist.tracks.copy()  # Create a copy to avoid modifying the original
+    Args:
+        playlist_id (str): The Spotify playlist ID
+        sorting_criterion (str): The criterion to sort by (e.g., "Date Added - Ascending")
 
-    def safe_date_parse(date_string, format):
-        if not date_string:
-            return datetime.min
-        try:
-            return datetime.strptime(date_string, format)
-        except ValueError:
-            return datetime.min
-
-    # Prepare the sorting key and reverse flag based on the criterion
-    if sorting_criterion == "Date Added - Ascending":
-        key = lambda x: safe_date_parse(x.get("added_at"), "%Y-%m-%dT%H:%M:%SZ")
-        reverse = False
-    elif sorting_criterion == "Date Added - Descending":
-        key = lambda x: safe_date_parse(x.get("added_at"), "%Y-%m-%dT%H:%M:%SZ")
-        reverse = True
-    elif sorting_criterion == "Release Date - Ascending":
-        key = lambda x: (
-            safe_date_parse(x.get("release_date"), "%Y-%m-%d")
-            if x.get("release_date") and len(x.get("release_date", "")) == 10
-            else safe_date_parse(x.get("release_date"), "%Y")
-        )
-        reverse = False
-    elif sorting_criterion == "Release Date - Descending":
-        key = lambda x: (
-            safe_date_parse(x.get("release_date"), "%Y-%m-%d")
-            if x.get("release_date") and len(x.get("release_date", "")) == 10
-            else safe_date_parse(x.get("release_date"), "%Y")
-        )
-        reverse = True
-    elif sorting_criterion == "Shuffle":
-        random.shuffle(tracks)
-    else:
-        return jsonify(error="Invalid sorting criterion"), 400
-
-    # Sort the tracks if not shuffling
-    if sorting_criterion != "Shuffle":
-        tracks.sort(key=key, reverse=reverse)
-
-    # Calculate the moves needed to reorder the playlist
-    moves = calculate_reorder_moves(playlist.tracks, tracks)
-
-    # Reorder the playlist using the Spotify API
+    Returns:
+        tuple: (response_message, status_code)
+    """
+    # Initialize Spotify client
     sp, error = init_session_client()
     if error:
         return jsonify(error=error), 401
 
+    # Get playlist from database
+    playlist = PlaylistData.query.get(playlist_id)
+    if not playlist:
+        return jsonify(error="Playlist not found"), 404
+
+    # Create a copy of tracks to avoid modifying the original
+    tracks = [{"index": i, "data": track} for i, track in enumerate(playlist.tracks)]
+
+    def safe_date_parse(date_string, format):
+        """Safely parse dates with fallback to minimum date"""
+        if not date_string:
+            return datetime.min
+        try:
+            return datetime.strptime(date_string, format)
+        except (ValueError, TypeError):
+            return datetime.min
+
+    # Define sorting functions for different criteria
+    sorting_functions = {
+        "Date Added - Ascending": (lambda x: safe_date_parse(x["data"].get("added_at"), "%Y-%m-%dT%H:%M:%SZ"), False),
+        "Date Added - Descending": (lambda x: safe_date_parse(x["data"].get("added_at"), "%Y-%m-%dT%H:%M:%SZ"), True),
+        "Release Date - Ascending": (
+            lambda x: (
+                safe_date_parse(x["data"].get("release_date"), "%Y-%m-%d")
+                if x["data"].get("release_date") and len(x["data"].get("release_date", "")) == 10
+                else safe_date_parse(x["data"].get("release_date"), "%Y")
+            ),
+            False,
+        ),
+        "Release Date - Descending": (
+            lambda x: (
+                safe_date_parse(x["data"].get("release_date"), "%Y-%m-%d")
+                if x["data"].get("release_date") and len(x["data"].get("release_date", "")) == 10
+                else safe_date_parse(x["data"].get("release_date"), "%Y")
+            ),
+            True,
+        ),
+        "Shuffle": (None, None),
+    }
+
+    if sorting_criterion not in sorting_functions:
+        return jsonify(error="Invalid sorting criterion"), 400
+
     try:
-        for move in moves:
-            sp.playlist_reorder_items(
-                playlist_id,
-                range_start=move["range_start"],
-                insert_before=move["insert_before"],
-                range_length=1,
-                snapshot_id=None,
-            )
-    except SpotifyException as e:
-        return jsonify(error=f"Error reordering playlist: {str(e)}"), 400
+        # Handle shuffling separately
+        if sorting_criterion == "Shuffle":
+            random.shuffle(tracks)
+        else:
+            key_func, reverse = sorting_functions[sorting_criterion]
+            tracks.sort(key=key_func, reverse=reverse)
 
-    # Update the playlist data using the existing function
-    update_result = update_playlist_data(playlist_id)
-    if isinstance(update_result, tuple) and update_result[1] != 200:
-        return jsonify(error=f"Error updating playlist data: {update_result[0]}"), update_result[1]
+        # Calculate optimal reordering operations
+        reorder_operations = optimize_reorder_operations([t["index"] for t in tracks], playlist.total_tracks)
 
-    return jsonify(status="Playlist reordered and updated successfully"), 200
+        # Execute reordering operations in batches
+        snapshot_id = playlist.snapshot_id
+        for operation in reorder_operations:
+            try:
+                sp.playlist_reorder_items(
+                    playlist_id,
+                    range_start=operation["range_start"],
+                    insert_before=operation["insert_before"],
+                    range_length=operation["range_length"],
+                    snapshot_id=snapshot_id,
+                )
+                # Get new snapshot ID after each operation
+                snapshot_id = sp.playlist(playlist_id)["snapshot_id"]
+            except SpotifyException as e:
+                if "rate limit" in str(e).lower():
+                    time.sleep(1)  # Wait before retrying
+                    continue
+                return jsonify(error=f"Spotify API error: {str(e)}"), 429
+
+        # Update the playlist data in the database
+        update_result = update_playlist_data(playlist_id)
+        if isinstance(update_result, tuple) and update_result[1] != 200:
+            return jsonify(error=f"Error updating playlist data: {update_result[0]}"), update_result[1]
+
+        return jsonify(status="Playlist reordered successfully"), 200
+
+    except Exception as e:
+        return jsonify(error=f"Error reordering playlist: {str(e)}"), 500
+
+
+def optimize_reorder_operations(new_indices, total_tracks):
+    """
+    Optimizes the sequence of reorder operations to minimize API calls.
+    Uses a modified insertion sort approach that combines adjacent moves.
+
+    Args:
+        new_indices (list): The desired order of track indices
+        total_tracks (int): Total number of tracks in the playlist
+
+    Returns:
+        list: List of reorder operations to perform
+    """
+    operations = []
+    current_positions = list(range(total_tracks))
+
+    def update_positions(start, before, length=1):
+        """Update the position tracking after a move"""
+        moved_items = current_positions[start : start + length]
+        del current_positions[start : start + length]
+        insert_at = before if before < start else before - length
+        current_positions[insert_at:insert_at] = moved_items
+
+    i = 0
+    while i < len(new_indices):
+        # Find consecutive tracks that need to move together
+        range_length = 1
+        while i + range_length < len(new_indices) and new_indices[i + range_length] == new_indices[i] + range_length:
+            range_length += 1
+
+        current_pos = current_positions.index(new_indices[i])
+        target_pos = i
+
+        if current_pos != target_pos:
+            operations.append({"range_start": current_pos, "insert_before": target_pos, "range_length": range_length})
+            update_positions(current_pos, target_pos, range_length)
+
+        i += range_length
+
+    return operations
 
 
 def calculate_reorder_moves(original_tracks, new_order):
@@ -380,6 +450,9 @@ def get_genre_artists_count(track_info_list, top_n=10):
     artist_urls = {}
     artist_ids = {}
 
+    # Keep track of artist URLs for each genre
+    genre_artist_urls = {}
+
     for track_info in track_info_list:
         for artist_dict in track_info["artists"]:
             artist_id = artist_dict.get("id")
@@ -394,10 +467,12 @@ def get_genre_artists_count(track_info_list, top_n=10):
 
             for genre in artist_genres:
                 if genre not in genre_info:
-                    genre_info[genre] = {"count": 0, "artists": set(), "x": None, "y": None}
+                    genre_info[genre] = {"count": 0, "artists": set(), "x": None, "y": None, "artist_urls": {}}
 
                 genre_info[genre]["count"] += 1
                 genre_info[genre]["artists"].add(artist_name)
+                # Store artist URL in the genre info
+                genre_info[genre]["artist_urls"][artist_name] = spotify_url
 
             artist_counts[artist_name] = artist_counts.get(artist_name, 0) + 1
             artist_ids[artist_name] = artist_id
@@ -420,8 +495,11 @@ def get_genre_artists_count(track_info_list, top_n=10):
         for name, count in sorted_artists[:top_n]
     ]
 
+    # Convert sets to lists for JSON serialization and ensure artist_urls are included
     for genre, info in genre_info.items():
         info["artists"] = list(info["artists"])
+        # Ensure we only include URLs for artists that are in the artists list
+        info["artist_urls"] = {artist: url for artist, url in info["artist_urls"].items() if artist in info["artists"]}
 
     return genre_info, top_artists
 
@@ -634,7 +712,7 @@ def get_playlist_details(sp, playlist_id):
     return playlist_info, track_info_list, genre_counts, top_artists, audio_feature_stats, temporal_stats
 
 
-def update_playlist_data(playlist_id):
+def update_playlist_data(playlist_id, spotify_user_id):
     sp, error = init_session_client()
     if error:
         return json.dumps(error), 401
@@ -644,17 +722,13 @@ def update_playlist_data(playlist_id):
         return "Playlist not found", 404
 
     # Fetch the new data
-    (
-        pl_playlist_info,
-        pl_track_data,
-        pl_genre_counts,
-        pl_top_artists,
-        pl_feature_stats,
-        pl_temporal_stats,
-    ) = get_playlist_details(sp, playlist_id)
+    (pl_playlist_info, pl_track_data, pl_genre_counts, pl_top_artists, pl_feature_stats, pl_temporal_stats) = (
+        get_playlist_details(sp, playlist_id)
+    )
 
     # Update the playlist object
     playlist.name = pl_playlist_info["name"]
+    playlist.user_id = spotify_user_id
     playlist.owner = pl_playlist_info["owner"]
     playlist.cover_art = pl_playlist_info["cover_art"]
     playlist.public = pl_playlist_info["public"]

@@ -207,16 +207,21 @@ const uiModule = (() => {
         type === "track"
           ? item.external_urls.spotify
           : item.external_urls.spotify;
+
       element.innerHTML = `
-        <a href="${spotifyUrl}" target="_blank" rel="noopener noreferrer" class="result-link">
-          <img src="${imageUrl || "/static/dist/img/default-track.svg"}" alt="${item.name}" class="result-image">
-        </a>
-        <div class="result-info">
-          <div class="result-name" title="${item.name}">${item.name}</div>
-          <div class="result-subtext">${type === "track" ? item.artists[0].name : "Artist"}</div>
+    <img src="${imageUrl || "/static/dist/img/default-track.svg"}" alt="${item.name}" class="result-image">
+    <div class="result-info">
+      <div class="result-name" title="${item.name}">${item.name}</div>
+      <div class="result-subtext">${type === "track" ? item.artists[0].name : "Artist"}</div>
+                    <div class="spotify-button" aria-label="Listen on Spotify">
+          <i class="rawcon-spotify" onclick="window.open('${spotifyUrl}', '_blank')"></i>
+          <span class="spotify-text">Listen on Spotify</span>
         </div>
-        <button class="add-to-seeds" data-id="${item.id}" data-type="${type}">+</button>
-      `;
+    </div>
+    <div class="result-actions">
+      <button class="add-to-seeds" data-id="${item.id}" data-type="${type}" data-tooltip="Add to seeds">+</button>
+    </div>
+  `;
 
       element.querySelector(".add-to-seeds").addEventListener("click", (e) => {
         e.stopPropagation();
@@ -267,17 +272,27 @@ const uiModule = (() => {
         <div class="caption">
           <h2 title="${trackInfo.trackName}"><i class="rawcon-music"></i>${trackInfo.trackName}</h2>
           <p title="${trackInfo.artist}"><i class="rawcon-user-music"></i>${trackInfo.artist}</p>
-          <a href="${trackInfo.trackUrl}" target="_blank" rel="noopener noreferrer"><i class="rawcon-spotify"></i> Play on Spotify</a>
+          <a href="${trackInfo.trackUrl}" target="_blank" rel="noopener noreferrer">
+            <i class="rawcon-spotify"></i>Play on Spotify
+          </a>
         </div>
         ${
           trackInfo.preview
-            ? `<div class="preview play-button noselect" id="play_${trackInfo.trackid}"><i class="rawcon-play"></i></div>`
+            ? `<div class="preview play-button noselect" id="play_${trackInfo.trackid}" 
+                data-tooltip-play="Play Preview" 
+                data-tooltip-pause="Pause Preview">
+                <i class="rawcon-play"></i>
+               </div>`
             : `<div class="no-preview">Preview N/A</div>`
         }
       </div>
       <div class="dropdown-content">
-        <a href="#" class="add-to-saved" data-trackid="${trackInfo.trackid}"><i class="heart-icon rawcon-heart"></i></a>
-        <a href="#" class="add-to-playlist" data-trackid="${trackInfo.trackid}"><i class="plus-icon rawcon-album-plus"></i></a>
+        <a href="#" class="add-to-saved" data-trackid="${trackInfo.trackid}" data-tooltip-liked="Remove from Liked Songs" data-tooltip-unliked="Add to Liked Songs">
+          <i class="heart-icon rawcon-heart"></i>
+        </a>
+        <a href="#" class="add-to-playlist" data-trackid="${trackInfo.trackid}" data-tooltip="Add to Playlist">
+          <i class="plus-icon rawcon-album-plus"></i>
+        </a>
       </div>
       ${
         trackInfo.preview
@@ -295,7 +310,6 @@ const uiModule = (() => {
       }
     });
   };
-
   return {
     displaySearchResults,
     showDropdown,
@@ -470,6 +484,7 @@ const recommendationModule = (() => {
 // Audio playback module
 const audioModule = (() => {
   let currentPlayingAudio = null;
+  let currentPlayingButton = null;
 
   const setupPlayToggle = (trackId) => {
     const playButton = document.getElementById(`play_${trackId}`);
@@ -484,34 +499,49 @@ const audioModule = (() => {
 
     const playIcon = playButton.querySelector("i");
 
-    playButton.addEventListener("click", () => {
+    const updatePlayState = (isPlaying, button, icon) => {
+      icon.className = isPlaying ? "rawcon-pause" : "rawcon-play";
+      button.classList.toggle("playing", isPlaying);
+    };
+
+    const resetPreviousPlayer = () => {
       if (currentPlayingAudio && currentPlayingAudio !== audioPlayer) {
         currentPlayingAudio.pause();
         currentPlayingAudio.currentTime = 0;
-        const playingId = currentPlayingAudio
-          .getAttribute("id")
-          .replace("audio_", "");
-        const playingButton = document.getElementById(`play_${playingId}`);
-        if (playingButton) {
-          playingButton.querySelector("i").className = "rawcon-play";
+
+        if (currentPlayingButton) {
+          const previousIcon = currentPlayingButton.querySelector("i");
+          updatePlayState(false, currentPlayingButton, previousIcon);
         }
       }
+    };
+
+    playButton.addEventListener("click", () => {
+      resetPreviousPlayer();
 
       if (audioPlayer.paused) {
         audioPlayer.play();
-        playIcon.className = "rawcon-pause";
+        updatePlayState(true, playButton, playIcon);
         currentPlayingAudio = audioPlayer;
+        currentPlayingButton = playButton;
       } else {
         audioPlayer.pause();
-        playIcon.className = "rawcon-play";
+        updatePlayState(false, playButton, playIcon);
         currentPlayingAudio = null;
+        currentPlayingButton = null;
       }
+    });
+
+    // Add ended event listener to reset the play button
+    audioPlayer.addEventListener("ended", () => {
+      updatePlayState(false, playButton, playIcon);
+      currentPlayingAudio = null;
+      currentPlayingButton = null;
     });
   };
 
   return { setupPlayToggle };
 })();
-
 // Playlist module
 const playlistModule = (() => {
   const addToPlaylist = async (trackId, playlistId) => {
@@ -600,6 +630,7 @@ const trackModule = (() => {
       });
       if (response.ok) {
         heartIcon.classList.add("liked");
+        // Update tooltip text through the parent anchor
         showToast("Added to Liked Songs.", "success");
       } else {
         throw new Error("Error liking the track");
@@ -623,6 +654,7 @@ const trackModule = (() => {
       if (response.ok) {
         showToast("Removed from Liked Songs.", "success");
         heartIcon.classList.remove("liked");
+        // Update tooltip text through the parent anchor
       } else {
         throw new Error("Error unsaving the track");
       }
@@ -634,7 +666,6 @@ const trackModule = (() => {
 
   return { saveTrack, unsaveTrack };
 })();
-
 // Event listeners
 document.addEventListener("DOMContentLoaded", () => {
   const debouncedSearch = util.debounce(searchModule.performSearch, 300);

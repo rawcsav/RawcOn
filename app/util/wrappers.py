@@ -15,7 +15,6 @@ def require_spotify_auth(f):
         tokens = session.get("tokens", {})
         expiry_time = datetime.fromisoformat(tokens.get("expiry_time", "2000-01-01"))
         if now >= expiry_time - timedelta(minutes=5):
-            print("expired")
             return redirect(url_for("auth.refresh", next=request.url))
 
         return f(*args, **kwargs)

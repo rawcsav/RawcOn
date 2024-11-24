@@ -48,9 +48,6 @@
 
   <div class="genres-column">
     <h3><i class="rawcon-sparkles title-icon"></i>Top Genres</h3>
-    <div class="chart-container">
-      <canvas id="genreBubbleChart"></canvas>
-    </div>
     <div id="topGenres"></div>
     <div id="genreOverlay" class="overlay">
       <div class="overlay-content">
@@ -59,14 +56,40 @@
         <div class="genre-content">
           <div id="genre-artists">
             <h4>Top Artists</h4>
-            <ul id="genre-artists-list" class="grid-container"></ul>
+            <ul
+              id="genre-artists-list"
+              class="grid-container artist-grid-container"
+            ></ul>
           </div>
           <div id="genre-tracks">
             <h4>Top Tracks</h4>
-            <ul id="genre-tracks-list" class="grid-container"></ul>
+            <ul
+              id="genre-tracks-list"
+              class="grid-container track-grid-container"
+            ></ul>
           </div>
         </div>
       </div>
+    </div>
+    <div class="chart-container">
+      <canvas id="genreBubbleChart"></canvas>
+    </div>
+    <div class="explanation-container">
+      <p class="explanation">
+        Your genre distribution chart visualizes your listening habits by
+        aggregating the most prominent genres from your top tracks and artists
+        across short-term, medium-term, and long-term periods. Each genre is
+        represented as a bubble, with its size proportional to how frequently it
+        appears in the user's listening data. The spatial positioning of the
+        bubbles is derived from the
+        <a href="https://everynoise.com/" target="_blank"
+          >Every Noise at Once</a
+        >
+        dataset, which maps genres based on their sonic similarities. This
+        allows users to see not only their favorite genres but also how their
+        preferences cluster or diversify over time, offering a clear picture of
+        their evolving musical tastes.
+      </p>
     </div>
   </div>
   <div class="features-column">
@@ -76,7 +99,10 @@
         <canvas id="audioFeaturesChart"></canvas>
       </div>
       <div id="minMaxTrack">
-        <p>Interact with the chart to explore your playlist audio features.</p>
+        <p>
+          Interact with the chart to explore the audio features of your top
+          tracks.
+        </p>
         <i
           class="rawcon-arrow-left"
           style="
@@ -88,10 +114,24 @@
         ></i>
       </div>
     </div>
+    <div id="stats-blurbs-container"></div>
+
     <div class="chart-container">
       <canvas id="audioFeaturesEvolutionChart"></canvas>
+      <div class="explanation-container">
+        <p class="explanation">
+          Your Audio Features evolution chart visualizes how key musical
+          attributes in your listening history—such as danceability, energy,
+          valence, acousticness, and tempo—change over time. It analyzes tracks
+          from your short-term, medium-term, and long-term listening periods,
+          normalizing each feature and plotting them as datasets with time
+          periods on the x-axis. A moving average is applied to smooth
+          fluctuations, revealing clearer trends in your musical preferences,
+          such as a shift toward more energetic, acoustic, or mood-driven
+          tracks.
+        </p>
+      </div>
     </div>
-    <div id="stats-blurbs-container"></div>
   </div>
 
   {% else %}
@@ -114,9 +154,7 @@
         const audioFeaturesSummary = {{ audio_features_summary | tojson | safe }};
         const topArtistsSummary = {{ top_artists_summary | tojson | safe }};
         const topTracksSummary = {{ top_tracks_summary | tojson | safe }};
-
-        console.log("Script loaded and initial display set");  // Debug log
-    {% else %}
+   {% else %}
         console.log("Some required data is missing");
     {% endif %}
 </script>

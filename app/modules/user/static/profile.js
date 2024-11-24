@@ -41,6 +41,14 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function handleScroll(container, loadMoreFunction) {
+    // Add scroll gradient logic
+    if (container.scrollLeft > 20) {
+      container.classList.add("is-scrolled");
+    } else {
+      container.classList.remove("is-scrolled");
+    }
+
+    // Original infinite scroll logic
     if (
       container.scrollLeft + container.clientWidth >=
       container.scrollWidth - 20
@@ -96,12 +104,18 @@ document.addEventListener("DOMContentLoaded", function () {
     const fragment = document.createDocumentFragment();
     artists.forEach((artist) => {
       const div = document.createElement("div");
-      div.className = "grid-item";
+      div.className = "grid-item artist-item";
       div.innerHTML = `
-        <a href="${artist.spotify_url}" target="_blank" rel="noopener noreferrer">
-          <img src="/static/dist/img/default-artist.svg" data-src="${artist.image_url || "/static/dist/img/default-artist.svg"}" alt="${artist.name}" class="artist-image lazy-load" loading="lazy">
+        <img src="/static/dist/img/default-artist.svg" data-src="${
+          artist.image_url || "/static/dist/img/default-artist.svg"
+        }" alt="${artist.name}" class="artist-image lazy-load" loading="lazy">
+        <div>
           <p title="${artist.name}">${artist.name}</p>
-        </a>
+          <div class="spotify-button" aria-label="Listen on Spotify">
+            <i class="rawcon-spotify" onclick="window.open('${artist.spotify_url}', '_blank')"></i>
+            <span class="spotify-text">View on Spotify</span>
+          </div>
+        </div>
       `;
       fragment.appendChild(div);
     });
@@ -113,13 +127,21 @@ document.addEventListener("DOMContentLoaded", function () {
     const fragment = document.createDocumentFragment();
     tracks.forEach((track) => {
       const div = document.createElement("div");
-      div.className = "grid-item";
+      div.className = "grid-item track-item";
       div.innerHTML = `
-        <a href="${track.spotify_url}" target="_blank" rel="noopener noreferrer">
-          <img src="/static/dist/img/default-track.svg" data-src="${track.image_url || "/static/dist/img/default-track.svg"}" alt="${track.name}" class="track-image lazy-load" loading="lazy">
-          <p title="${track.name}">${track.name}</p>
-          <p class="artist-name" title="${track.artists.join(", ")}">${track.artists.join(", ")}</p>
-        </a>
+        <img src="/static/dist/img/default-track.svg" data-src="${
+          track.image_url || "/static/dist/img/default-track.svg"
+        }" alt="${track.name}" class="track-image lazy-load" loading="lazy">
+          <div class="grid-column">
+            <p title="${track.name}">${track.name}</p>
+            <p class="artist-name" title="${track.artists.join(", ")}">${track.artists.join(
+              ", ",
+            )}</p>
+          <div class="spotify-button" aria-label="Listen on Spotify">
+            <i class="rawcon-spotify" onclick="window.open('${track.spotify_url}', '_blank')"></i>
+            <span class="spotify-text">Listen on Spotify</span>
+          </div>
+        </div>
       `;
       fragment.appendChild(div);
     });
@@ -164,6 +186,7 @@ document.addEventListener("DOMContentLoaded", function () {
       })
       .catch((error) => console.error("Error:", error));
   }
+
   function createGenreBubbleChart() {
     fetch("/user/genre_bubble_chart")
       .then((response) => response.json())
@@ -305,49 +328,53 @@ document.addEventListener("DOMContentLoaded", function () {
 
     genreArtistsList.innerHTML = data.top_artists
       .map((artist) => {
-        const externalUrl =
-          artist.external_url && artist.external_url.spotify
-            ? artist.external_url.spotify
-            : "#";
         const imageUrl =
           artist.images && artist.images.length > 0
             ? artist.images[0].url
             : "/static/dist/img/default-artist.png";
+        const spotifyUrl = artist.external_urls?.spotify || "#";
+
         return `
-        <li class="grid-item">
-          <a href="${externalUrl}" target="_blank" rel="noopener noreferrer">
-            <img src="${imageUrl}" alt="${artist.name}" class="artist-image">
-            <p title="${artist.name}">${artist.name}</p>
-          </a>
-        </li>
-      `;
+      <li class="grid-item artist-item">
+        <img src="${imageUrl}" alt="${artist.name}" class="artist-image">
+        <div>
+          <p title="${artist.name}">${artist.name}</p>
+          <div class="spotify-button" aria-label="Listen on Spotify">
+            <i class="rawcon-spotify" onclick="window.open('${spotifyUrl}', '_blank')"></i>
+            <span class="spotify-text">View on Spotify</span>
+          </div>
+        </div>
+      </li>
+    `;
       })
       .join("");
+
     genreTracksList.innerHTML = data.top_tracks
       .map((track) => {
-        const externalUrl =
-          track.external_urls && track.external_urls.spotify
-            ? track.external_urls.spotify
-            : "#";
         const imageUrl =
           track.album && track.album.images && track.album.images.length > 0
             ? track.album.images[0].url
             : "/static/dist/img/default-album.png";
+        const spotifyUrl = track.external_urls?.spotify || "#";
+
         return `
-        <li class="grid-item">
-          <a href="${externalUrl}" target="_blank" rel="noopener noreferrer">
-            <img src="${imageUrl}" alt="${track.name}" class="track-image">
-            <p title="${track.name}">${track.name}</p>
-            <p class="artist-name" title="${track.artists[0].name}">${track.artists[0].name}</p>
-          </a>
-        </li>
-      `;
+      <li class="grid-item track-item">
+        <img src="${imageUrl}" alt="${track.name}" class="track-image">
+        <div class="grid-column">
+          <p title="${track.name}">${track.name}</p>
+          <p class="artist-name" title="${track.artists[0].name}">${track.artists[0].name}</p>
+          <div class="spotify-button" aria-label="Listen on Spotify">
+            <i class="rawcon-spotify" onclick="window.open('${spotifyUrl}', '_blank')"></i>
+            <span class="spotify-text">Listen on Spotify</span>
+          </div>
+        </div>
+      </li>
+    `;
       })
       .join("");
 
     overlay.style.display = "block";
   }
-
   function closeGenreOverlay() {
     document.getElementById("genreOverlay").style.display = "none";
   }
@@ -425,7 +452,7 @@ document.addEventListener("DOMContentLoaded", function () {
         labels: features,
         datasets: [
           {
-            label: "Audio Features",
+            label: "Average",
             data: features.map((feature) =>
               normalizeFeature(
                 feature,
@@ -439,6 +466,36 @@ document.addEventListener("DOMContentLoaded", function () {
             pointHoverBackgroundColor: "#fff",
             pointHoverBorderColor: "rgb(29, 185, 84)",
           },
+          {
+            label: "Min",
+            data: features.map((feature) =>
+              normalizeFeature(
+                feature,
+                periodData[currentPeriod].min_values[feature],
+              ),
+            ),
+            backgroundColor: "rgba(255, 99, 132, 0.2)",
+            borderColor: "rgb(255, 99, 132)",
+            pointBackgroundColor: "rgb(255, 99, 132)",
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: "rgb(255, 99, 132)",
+          },
+          {
+            label: "Max",
+            data: features.map((feature) =>
+              normalizeFeature(
+                feature,
+                periodData[currentPeriod].max_values[feature],
+              ),
+            ),
+            backgroundColor: "rgba(54, 162, 235, 0.2)",
+            borderColor: "rgb(54, 162, 235)",
+            pointBackgroundColor: "rgb(54, 162, 235)",
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: "rgb(54, 162, 235)",
+          },
         ],
       },
       options: {
@@ -448,7 +505,9 @@ document.addEventListener("DOMContentLoaded", function () {
             suggestedMin: 0,
             suggestedMax: 1,
             pointLabels: {
-              font: 12,
+              font: {
+                size: 12,
+              },
             },
             ticks: {
               display: false,
@@ -456,6 +515,29 @@ document.addEventListener("DOMContentLoaded", function () {
           },
         },
         plugins: {
+          title: {
+            display: true,
+            text: "Explore your Audio Features",
+            font: {
+              size: 18,
+              weight: "bold",
+            },
+            padding: {
+              top: 10,
+              bottom: 10,
+            },
+          },
+          legend: {
+            display: true,
+            position: "bottom",
+            labels: {
+              font: {
+                size: 12,
+              },
+              padding: 20,
+            },
+            align: "center",
+          },
           tooltip: {
             callbacks: {
               label: function (context) {
@@ -499,11 +581,13 @@ document.addEventListener("DOMContentLoaded", function () {
               clearMinMaxTrack();
             }
           } else {
-            clearMinMaxTrack();
+            // Do not clear the min-max track info when the user hovers off
+            // This allows the info to stay on screen for interaction
           }
         },
       },
     });
+
     function wrapText(text, maxLength) {
       const words = text.split(" ");
       let lines = [];
@@ -573,7 +657,7 @@ document.addEventListener("DOMContentLoaded", function () {
       ];
 
       chart.update();
-      clearMinMaxTrack();
+      // Do not clear min-max track info when updating the chart
     }
 
     function updateMinMaxTrack(feature, trackInfo, datasetLabel) {
@@ -581,22 +665,36 @@ document.addEventListener("DOMContentLoaded", function () {
       const value =
         datasetLabel === "Min"
           ? periodData[currentPeriod].min_values[feature]
-          : periodData[currentPeriod].max_values[feature];
+          : datasetLabel === "Max"
+            ? periodData[currentPeriod].max_values[feature]
+            : audioFeaturesSummary[currentPeriod][feature];
       const formattedValue = formatFeatureValue(feature, value);
 
       const albumArt =
         trackInfo.album.images[0]?.url || "/static/dist/img/default-album.png";
       const trackUrl = trackInfo.external_urls.spotify;
 
+      // Determine which class to apply based on datasetLabel
+      const titleClass =
+        datasetLabel === "Min"
+          ? "minmax-title-min"
+          : datasetLabel === "Max"
+            ? "minmax-title-max"
+            : "minmax-title-avg";
+
       minMaxContainer.innerHTML = `
-    <h4>${feature.charAt(0).toUpperCase() + feature.slice(1)}&nbsp;~&nbsp;${formattedValue}</h4>
+    <h4 id="minmax-title" class="${titleClass}">
+      ${feature.charAt(0).toUpperCase() + feature.slice(1)}&nbsp;~&nbsp;${formattedValue}
+    </h4>
     <div class="track-info">
-      <a href="${trackUrl}" target="_blank" rel="noopener noreferrer">
-        <img src="${albumArt}" alt="${trackInfo.name}" class="album-art">
-      </a>
+      <img src="${albumArt}" alt="${trackInfo.name}" class="album-art">
       <div class="track-details">
-        <a class="minmax-track" href="${trackUrl}" target="_blank" rel="noopener noreferrer" title="${trackInfo.name}">${trackInfo.name}</a>
-        <p class="minmax-artist" title="${trackInfo.artists[0].name}">${trackInfo.artists[0].name}</p>
+        <p class="minmax-track" title="${trackInfo.name}">${trackInfo.name}</p>
+        <p class="minmax-artist artist-name" title="${trackInfo.artists[0].name}">${trackInfo.artists[0].name}</p>
+        <div class="spotify-button" aria-label="Listen on Spotify">
+          <i class="rawcon-spotify" onclick="window.open('${trackUrl}', '_blank')"></i>
+          <span class="spotify-text">Listen on Spotify</span>
+        </div>
       </div>
     </div>
   `;
@@ -616,12 +714,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function clearMinMaxTrack() {
-      const minMaxContainer = document.getElementById("minMaxTrack");
-      minMaxContainer.innerHTML = `<p>Interact with the chart to explore your playlist audio features.</p><i
-              class="rawcon-arrow-left"
-              style="display: block; margin: auto; text-align: center;
-margin-top: 10px;"
-            ></i>`;
+      // Do not clear the min-max track info to keep it on screen
     }
 
     const controlsContainer = document.createElement("div");
@@ -646,7 +739,6 @@ margin-top: 10px;"
       });
     });
   }
-
   function createAudioFeaturesEvolutionChart() {
     fetch("/user/audio_features_evolution")
       .then((response) => response.json())
