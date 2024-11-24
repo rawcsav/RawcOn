@@ -22,7 +22,7 @@ select {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: var(--space-6);
 }
 
@@ -41,17 +41,42 @@ select {
   transform: scale(1.05);
 }
 
-.grid-item {
+.track-item {
   position: relative;
   overflow: visible;
+  border-radius: var(--radius-lg);
+  background-color: var(--neutral-200);
+  display: flex;
+  gap: var(--space-2);
+}
+
+.artist-item {
+  position: relative;
+  overflow: visible;
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  padding-bottom: var(--space-1);
+  background-color: var(--neutral-200);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
 }
 
 .grid-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   padding: var(--space-5);
+  gap: var(--space-3);
   padding-top: 0;
+  padding-left: 0;
   grid-row-gap: var(--space-6);
+}
+
+.artist-grid-container {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+
+.track-grid-container {
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
 }
 
 #minMaxTrack {
@@ -64,7 +89,7 @@ select {
   width: 100%;
   background-color: var(--neutral-200);
   color: var(--neutral-600);
-  padding: var(--space-5);
+  padding: var(--space-3);
   border-radius: var(--radius-lg);
   font-weight: 700;
   box-shadow: var(--shadow-sm);
@@ -79,7 +104,7 @@ select {
 .artist-image,
 .track-image {
   max-height: 125px;
-  object-fit: contain;
+  object-fit: cover;
   max-width: 125px;
 }
 
@@ -213,12 +238,17 @@ h4 {
   align-items: flex-start;
 }
 
+.features-column {
+  gap: var(--space-10);
+}
+
 .features-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
   gap: var(--space-12);
+  min-width: 100%;
 }
 
 .title-icon {
@@ -228,7 +258,7 @@ h4 {
 .row-container {
   display: flex;
   width: 100%;
-  gap: var(--space-12);
+  gap: var(--space-10);
 }
 
 .scroll-container {
@@ -365,20 +395,30 @@ h3 {
 
 .track-info {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   margin-top: var(--space-4);
+  gap: var(--space-2);
 }
 
 .album-art {
-  width: 64px;
-  height: 64px;
+  width: 100px;
+  height: 100px;
   object-fit: cover;
-  border-radius: var(--radius-lg);
-  margin-right: var(--space-5);
+}
+
+.minmax-title-min {
+  color: rgb(255, 99, 132);
+  font-weight: 600;
+  border-bottom: var(--border-normal) rgb(255, 99, 132);
+}
+
+.minmax-title-max {
+  color: rgb(54, 162, 235);
+  font-weight: 600;
+  border-bottom: var(--border-normal) rgb(54, 162, 235);
 }
 
 .minmax-artist {
-  color: var(--neutral-500);
   font-style: italic;
   font-size: var(--text-lg);
 }
@@ -395,10 +435,6 @@ h3 {
   text-decoration: none;
   color: var(--neutral-500);
   font-size: var(--text-lg);
-}
-
-.minmax-track:hover {
-  text-decoration: underline;
 }
 
 .chart-container {
@@ -535,4 +571,66 @@ h3 {
     margin-right: 0;
     margin-bottom: 0.5rem;
   }
+}
+
+.spotify-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--spotify-green);
+  background-color: transparent;
+  border: none;
+  text-decoration: none;
+  padding: 0;
+  transition: color 0.3s ease;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.spotify-button:hover {
+  color: var(--spotify-green);
+}
+
+.spotify-button .rawcon-spotify {
+  font-size: var(--text-xl);
+  position: relative;
+  z-index: 2;
+}
+
+.spotify-button span {
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s ease;
+  pointer-events: none; /* Prevents the span from interfering with hover */
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+}
+
+/* Only show text when the icon is hovered */
+.spotify-button .rawcon-spotify:hover + span {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Ensure the text remains visible while hovering over it after icon hover */
+.spotify-button .rawcon-spotify:hover + span,
+.spotify-button span:hover {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.rawcon-spotify {
+  cursor: pointer;
+}
+
+.grid-column {
+  display: flex;
+  justify-content: center;
+  padding-right: var(--space-3);
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+#minmax-title {
+  width: 100%;
 }

@@ -48,9 +48,6 @@
 
   <div class="genres-column">
     <h3><i class="rawcon-sparkles title-icon"></i>Top Genres</h3>
-    <div class="chart-container">
-      <canvas id="genreBubbleChart"></canvas>
-    </div>
     <div id="topGenres"></div>
     <div id="genreOverlay" class="overlay">
       <div class="overlay-content">
@@ -59,14 +56,23 @@
         <div class="genre-content">
           <div id="genre-artists">
             <h4>Top Artists</h4>
-            <ul id="genre-artists-list" class="grid-container"></ul>
+            <ul
+              id="genre-artists-list"
+              class="grid-container artist-grid-container"
+            ></ul>
           </div>
           <div id="genre-tracks">
             <h4>Top Tracks</h4>
-            <ul id="genre-tracks-list" class="grid-container"></ul>
+            <ul
+              id="genre-tracks-list"
+              class="grid-container track-grid-container"
+            ></ul>
           </div>
         </div>
       </div>
+    </div>
+    <div class="chart-container">
+      <canvas id="genreBubbleChart"></canvas>
     </div>
   </div>
   <div class="features-column">
@@ -76,7 +82,10 @@
         <canvas id="audioFeaturesChart"></canvas>
       </div>
       <div id="minMaxTrack">
-        <p>Interact with the chart to explore your playlist audio features.</p>
+        <p>
+          Interact with the chart to explore the audio features of your top
+          tracks.
+        </p>
         <i
           class="rawcon-arrow-left"
           style="
@@ -88,10 +97,11 @@
         ></i>
       </div>
     </div>
+    <div id="stats-blurbs-container"></div>
+
     <div class="chart-container">
       <canvas id="audioFeaturesEvolutionChart"></canvas>
     </div>
-    <div id="stats-blurbs-container"></div>
   </div>
 
   {% else %}

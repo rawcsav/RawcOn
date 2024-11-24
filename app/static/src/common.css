@@ -50,6 +50,9 @@
   --accent-green-600: #165030;
   --accent-green-700: #082b18;
 
+  --spotify-black: #191414;
+  --spotify-green: #1ed760;
+
   /* Font sizes */
   --text-xs: 12px;
   --text-sm: 14px;
@@ -118,7 +121,6 @@
   --transition-fast: 150ms ease-in-out;
   --transition-normal: 300ms ease-in-out;
   --transition-slow: 500ms ease-in-out;
-  --spotify-black: #191414;
 }
 
 @font-face {
