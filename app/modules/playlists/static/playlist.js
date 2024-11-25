@@ -39,12 +39,14 @@ function closeToast(toast) {
     }, 300); // Wait for the transition to finish
   }
 }
+
 // eslint-disable-next-line no-unused-vars
 function getCsrfToken() {
   return document
     .querySelector('meta[name="csrf-token"]')
     .getAttribute("content");
 }
+
 const util = {
   toggleDivVisibility: (selector) => {
     const el = document.querySelector(selector);
@@ -508,6 +510,7 @@ const chartModule = (() => {
         </div>
     `;
   }
+
   function wrapText(text, maxLength) {
     const words = text.split(" ");
     let lines = [];

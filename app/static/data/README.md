@@ -2,11 +2,14 @@
 
 ## Data Source
 
-All genre data used in this project is scraped from [Every Noise At Once](https://everynoise.com/), a comprehensive resource for music genre classification and exploration.
+All genre data used in this project is scraped from [Every Noise At Once](https://everynoise.com/), a comprehensive
+resource for music genre classification and exploration.
 
 ## Data Collection Method
 
-The data was collected using a custom Go-based web scraper, [ENAOScrape](https://github.com/rawcsav/ENAOScrape). This scraper was developed to efficiently and responsibly gather detailed information about music genres from the Every Noise at Once website.
+The data was collected using a custom Go-based web scraper, [ENAOScrape](https://github.com/rawcsav/ENAOScrape). This
+scraper was developed to efficiently and responsibly gather detailed information about music genres from the Every Noise
+at Once website.
 
 ## Data Format
 
@@ -25,4 +28,6 @@ The genre data is stored in a CSV file with the following columns:
 
 ## Data Usage
 
-This data is used within the project to provide comprehensive information about music genres, their relationships, and associated visual attributes. It forms the basis for various features such as genre recommendations, visualizations, and playlist generation.
+This data is used within the project to provide comprehensive information about music genres, their relationships, and
+associated visual attributes. It forms the basis for various features such as genre recommendations, visualizations, and
+playlist generation.

@@ -7,6 +7,7 @@ body {
   overflow-x: hidden;
   max-width: 100vw;
 }
+
 h3,
 h4,
 h5,
@@ -181,6 +182,7 @@ h4 {
   padding: 0;
   margin: 0;
 }
+
 .audio-features {
   max-width: 70%;
   flex: 2;
@@ -376,6 +378,7 @@ h4 {
 .time-selector {
   padding: var(--space-12);
 }
+
 .time-option:hover {
   border-color: var(--accent-green-200);
 }
@@ -445,6 +448,7 @@ h3 {
 #genreBubbleChart {
   height: 500px;
 }
+
 #minMaxTrack p {
   margin: 0;
   padding: 0;
@@ -601,18 +605,16 @@ h3 {
   opacity: 0;
   transform: translateX(-10px);
   transition: all 0.3s ease;
-  pointer-events: none; /* Prevents the span from interfering with hover */
+  pointer-events: none;
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
 }
 
-/* Only show text when the icon is hovered */
 .spotify-button .rawcon-spotify:hover + span {
   opacity: 1;
   transform: translateX(0);
 }
 
-/* Ensure the text remains visible while hovering over it after icon hover */
 .spotify-button .rawcon-spotify:hover + span,
 .spotify-button span:hover {
   opacity: 1;

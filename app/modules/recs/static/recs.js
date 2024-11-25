@@ -45,6 +45,7 @@ function getCsrfToken() {
     .querySelector('meta[name="csrf-token"]')
     .getAttribute("content");
 }
+
 const util = {
   debounce: (func, delay) => {
     let debounceTimer;

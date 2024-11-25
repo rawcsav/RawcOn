@@ -102,8 +102,8 @@
     {% endassets %}
     <script>
       {% if user_data is defined and playlist_summary is defined %}
-      const userData = {{ user_data | tojson | safe }};
-      const playlistSummary = {{ playlist_summary | tojson | safe }};
+        const userData = {{ user_data | tojson | safe }};
+        const playlistSummary = {{ playlist_summary | tojson | safe }};
       {% endif %}
     </script>
     {% block scripts %} {% endblock %}

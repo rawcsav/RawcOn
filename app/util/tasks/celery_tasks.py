@@ -1,6 +1,8 @@
-from sqlalchemy import or_
-from celery import shared_task
 from datetime import datetime, timedelta
+
+from celery import shared_task
+from sqlalchemy import or_
+
 from app.models.user_models import UserData
 from app.util.logging_util import configure_logging
 from app.util.tasks.tasks_util import make_session, init_session_client_for_celery, update_user_data

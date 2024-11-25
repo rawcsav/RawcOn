@@ -1,17 +1,16 @@
 # app/modules/user/user_util.py
 
-import json
 import random
 from collections import defaultdict, deque
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from spotipy import Spotify
 from flask import current_app, session, redirect
+from spotipy import Spotify
+
 from app.models.user_models import UserData, GenreData
-from app import db
 from app.modules.auth.auth import refresh
-from app.util.database_util import get_or_fetch_artist_info, get_or_fetch_audio_features
 from app.modules.auth.auth_util import verify_session, fetch_user_data
+from app.util.database_util import get_or_fetch_artist_info, get_or_fetch_audio_features
 
 FEATURES = [
     "acousticness",

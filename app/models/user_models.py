@@ -2,12 +2,12 @@ import csv
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.dialects.mysql import insert
-
-from app import db
 from cryptography.fernet import Fernet
 from flask import current_app
+from sqlalchemy.dialects.mysql import insert
+from sqlalchemy.ext.hybrid import hybrid_property
+
+from app import db
 
 
 def encrypt_token(token: str) -> str:
@@ -20,9 +20,6 @@ def decrypt_token(encrypted_token: str) -> str:
     key = current_app.config["ENCRYPTION_KEY"]
     f = Fernet(key)
     return f.decrypt(encrypted_token.encode()).decode()
-
-
-from sqlalchemy.orm import relationship
 
 
 class UserData(db.Model):

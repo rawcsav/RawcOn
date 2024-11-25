@@ -1,13 +1,15 @@
 import json
+
 from flask import Blueprint, jsonify, render_template, request, session, json
-from app import db, limiter, cache
+
+from app import db, limiter
 from app.models.user_models import UserData
 from app.modules.auth.auth_util import fetch_user_data
-from app.util.wrappers import require_spotify_auth
 from app.modules.auth.auth_util import verify_session
 from app.modules.recs.recs_util import spotify_search, get_recommendations
 from app.modules.user.user_util import init_session_client, format_track_info, get_playlist_summary
 from app.util.database_util import add_artist_to_db
+from app.util.wrappers import require_spotify_auth
 
 recs_bp = Blueprint("recs", __name__, template_folder="templates", static_folder="static", url_prefix="/recs")
 

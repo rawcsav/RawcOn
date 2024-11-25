@@ -149,14 +149,14 @@
 ></script>
 <script>
   {% if user_data and period_data and top_genres and audio_features_summary and top_artists_summary and top_tracks_summary and playlist_summary %}
-        const periodData = {{ period_data | tojson | safe }};
-        const topGenres = {{ top_genres | tojson | safe }};
-        const audioFeaturesSummary = {{ audio_features_summary | tojson | safe }};
-        const topArtistsSummary = {{ top_artists_summary | tojson | safe }};
-        const topTracksSummary = {{ top_tracks_summary | tojson | safe }};
-   {% else %}
-        console.log("Some required data is missing");
-    {% endif %}
+    const periodData = {{ period_data | tojson | safe }};
+    const topGenres = {{ top_genres | tojson | safe }};
+    const audioFeaturesSummary = {{ audio_features_summary | tojson | safe }};
+    const topArtistsSummary = {{ top_artists_summary | tojson | safe }};
+    const topTracksSummary = {{ top_tracks_summary | tojson | safe }};
+  {% else %}
+    console.log("Some required data is missing");
+  {% endif %}
 </script>
 {% assets "user_js_bundle" %}
 <script src="{{ ASSET_URL }}"></script>

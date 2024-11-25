@@ -1,9 +1,9 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
+
 from sqlalchemy.exc import SQLAlchemyError
 
-
-from app import db, cache
+from app import db
 from app.models.user_models import ArtistData, FeatureData, UserData, GenreData
 
 

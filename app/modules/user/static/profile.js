@@ -375,6 +375,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     overlay.style.display = "block";
   }
+
   function closeGenreOverlay() {
     document.getElementById("genreOverlay").style.display = "none";
   }
@@ -739,6 +740,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
   }
+
   function createAudioFeaturesEvolutionChart() {
     fetch("/user/audio_features_evolution")
       .then((response) => response.json())
@@ -845,6 +847,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       });
   }
+
   createGenreBubbleChart();
   createAudioFeaturesEvolutionChart();
   updateDisplay("short_term");

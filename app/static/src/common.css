@@ -165,7 +165,6 @@
 }
 
 i {
-  /* use !important to prevent issues with browser extensions that change fonts */
   font-family: "rawcon" !important;
   speak: never;
   font-style: normal;
@@ -174,7 +173,6 @@ i {
   text-transform: none;
   line-height: 1;
 
-  /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -182,444 +180,591 @@ i {
 .rawcon-circle-chevron-up:before {
   content: "\e98a";
 }
+
 .rawcon-circle-chevron-down:before {
   content: "\e98b";
 }
+
 .rawcon-fire-flame-curved:before {
   content: "\e98c";
 }
+
 .rawcon-masks-theater:before {
   content: "\e98d";
 }
+
 .rawcon-gauge-high:before {
   content: "\e98e";
 }
+
 .rawcon-saxophone:before {
   content: "\e98f";
 }
+
 .rawcon-bolt:before {
   content: "\e990";
 }
+
 .rawcon-wave-sine:before {
   content: "\e991";
 }
+
 .rawcon-guitars:before {
   content: "\e992";
 }
+
 .rawcon-satellite-dish:before {
   content: "\e930";
 }
+
 .rawcon-scale-balanced:before {
   content: "\e993";
 }
+
 .rawcon-screwdriver-wrench:before {
   content: "\e931";
 }
+
 .rawcon-speaker:before {
   content: "\e932";
 }
+
 .rawcon-speakers:before {
   content: "\e933";
 }
+
 .rawcon-star-shooting:before {
   content: "\e934";
 }
+
 .rawcon-symbols:before {
   content: "\e935";
 }
+
 .rawcon-ticket-simple:before {
   content: "\e936";
 }
+
 .rawcon-timer:before {
   content: "\e937";
 }
+
 .rawcon-toggle-large-off:before {
   content: "\e938";
 }
+
 .rawcon-toggle-large-on:before {
   content: "\e939";
 }
+
 .rawcon-toggle-off:before {
   content: "\e93a";
 }
+
 .rawcon-toggle-on:before {
   content: "\e93b";
 }
+
 .rawcon-trademark:before {
   content: "\e93c";
 }
+
 .rawcon-traffic-cone:before {
   content: "\e93d";
 }
+
 .rawcon-tower-cell:before {
   content: "\e93e";
 }
+
 .rawcon-trash-can:before {
   content: "\e93f";
 }
+
 .rawcon-turntable:before {
   content: "\e940";
 }
+
 .rawcon-tv-music:before {
   content: "\e941";
 }
+
 .rawcon-user-tie:before {
   content: "\e942";
 }
+
 .rawcon-users-rectangle:before {
   content: "\e943";
 }
+
 .rawcon-floppy-disk:before {
   content: "\e944";
 }
+
 .rawcon-folder-open:before {
   content: "\e945";
 }
+
 .rawcon-folder-tree:before {
   content: "\e946";
 }
+
 .rawcon-gifts:before {
   content: "\e947";
 }
+
 .rawcon-globe:before {
   content: "\e948";
 }
+
 .rawcon-gramophone:before {
   content: "\e949";
 }
+
 .rawcon-hand-pointer:before {
   content: "\e94a";
 }
+
 .rawcon-hand-holding-seedling:before {
   content: "\e94b";
 }
+
 .rawcon-heart-pulse:before {
   content: "\e94c";
 }
+
 .rawcon-heart-crack:before {
   content: "\e94d";
 }
+
 .rawcon-hourglass:before {
   content: "\e94e";
 }
+
 .rawcon-image:before {
   content: "\e94f";
 }
+
 .rawcon-language:before {
   content: "\e950";
 }
+
 .rawcon-layer-plus:before {
   content: "\e951";
 }
+
 .rawcon-light-emergency:before {
   content: "\e952";
 }
+
 .rawcon-light-emergency-on:before {
   content: "\e953";
 }
+
 .rawcon-link-simple:before {
   content: "\e954";
 }
+
 .rawcon-link-horizontal:before {
   content: "\e955";
 }
+
 .rawcon-lock:before {
   content: "\e956";
 }
+
 .rawcon-lock-open:before {
   content: "\e957";
 }
+
 .rawcon-mailbox-flag-up:before {
   content: "\e958";
 }
+
 .rawcon-mailbox:before {
   content: "\e959";
 }
+
 .rawcon-map-location-dot:before {
   content: "\e95a";
 }
+
 .rawcon-microphone-stand:before {
   content: "\e95b";
 }
+
 .rawcon-microphone:before {
   content: "\e95c";
 }
+
 .rawcon-mobile-button:before {
   content: "\e95d";
 }
+
 .rawcon-monument:before {
   content: "\e95e";
 }
+
 .rawcon-mp3-player:before {
   content: "\e95f";
 }
+
 .rawcon-music-magnifying-glass:before {
   content: "\e960";
 }
+
 .rawcon-object-group:before {
   content: "\e961";
 }
+
 .rawcon-people-roof:before {
   content: "\e962";
 }
+
 .rawcon-radar:before {
   content: "\e963";
 }
+
 .rawcon-radio-tuner:before {
   content: "\e964";
 }
+
 .rawcon-radio:before {
   content: "\e965";
 }
+
 .rawcon-record-vinyl:before {
   content: "\e966";
 }
+
 .rawcon-rectangle-history:before {
   content: "\e967";
 }
+
 .rawcon-rectangle-history-circle-user:before {
   content: "\e968";
 }
+
 .rawcon-rectangles-mixed:before {
   content: "\e969";
 }
+
 .rawcon-rotate-exclamation:before {
   content: "\e96a";
 }
+
 .rawcon-bookmark:before {
   content: "\e96b";
 }
+
 .rawcon-boombox:before {
   content: "\e96c";
 }
+
 .rawcon-chart-pie:before {
   content: "\e96d";
 }
+
 .rawcon-chart-line:before {
   content: "\e96e";
 }
+
 .rawcon-chart-tree-map:before {
   content: "\e96f";
 }
+
 .rawcon-circle-play:before {
   content: "\e970";
 }
+
 .rawcon-circle-plus:before {
   content: "\e971";
 }
+
 .rawcon-circle-pause:before {
   content: "\e972";
 }
+
 .rawcon-circle-minus:before {
   content: "\e973";
 }
+
 .rawcon-circle-stop:before {
   content: "\e974";
 }
+
 .rawcon-clone:before {
   content: "\e975";
 }
+
 .rawcon-comment-lines:before {
   content: "\e976";
 }
+
 .rawcon-compass:before {
   content: "\e977";
 }
+
 .rawcon-compact-disc:before {
   content: "\e978";
 }
+
 .rawcon-copyright:before {
   content: "\e979";
 }
+
 .rawcon-database:before {
   content: "\e97a";
 }
+
 .rawcon-envelope:before {
   content: "\e97b";
 }
+
 .rawcon-eyes:before {
   content: "\e97c";
 }
+
 .rawcon-face-smile-relaxed:before {
   content: "\e97d";
 }
+
 .rawcon-face-sunglasses:before {
   content: "\e97e";
 }
+
 .rawcon-filter-list:before {
   content: "\e97f";
 }
+
 .rawcon-filter:before {
   content: "\e980";
 }
+
 .rawcon-filter-slash:before {
   content: "\e981";
 }
+
 .rawcon-flag:before {
   content: "\e982";
 }
+
 .rawcon-badge-dollar:before {
   content: "\e983";
 }
+
 .rawcon-badge:before {
   content: "\e984";
 }
+
 .rawcon-album-collection-circle-user:before {
   content: "\e985";
 }
+
 .rawcon-arrow-down-a-z:before {
   content: "\e986";
 }
+
 .rawcon-arrow-down-small-big:before {
   content: "\e987";
 }
+
 .rawcon-arrow-down-z-a:before {
   content: "\e988";
 }
+
 .rawcon-house-chimney:before {
   content: "\e92f";
 }
+
 .rawcon-github:before {
   content: "\e92d";
 }
+
 .rawcon-linkedin:before {
   content: "\e92e";
 }
+
 .rawcon-left-from-line:before {
   content: "\e90e";
 }
+
 .rawcon-location-dot:before {
   content: "\e92c";
 }
+
 .rawcon-pause:before {
   content: "\e92a";
 }
+
 .rawcon-play:before {
   content: "\e92b";
 }
+
 .rawcon-spotify:before {
   content: "\e900";
 }
+
 .rawcon-sparkles:before {
   content: "\e901";
 }
+
 .rawcon-wand:before {
   content: "\e902";
 }
+
 .rawcon-waves:before {
   content: "\e903";
 }
+
 .rawcon-volume:before {
   content: "\e904";
 }
+
 .rawcon-thumbs-down:before {
   content: "\e905";
 }
+
 .rawcon-thumbs-up:before {
   content: "\e906";
 }
+
 .rawcon-sort-down:before {
   content: "\e907";
 }
+
 .rawcon-sort-up:before {
   content: "\e908";
 }
+
 .rawcon-signal:before {
   content: "\e909";
 }
+
 .rawcon-shuffle:before {
   content: "\e90a";
 }
+
 .rawcon-content:before {
   content: "\e90b";
 }
+
 .rawcon-list-music:before {
   content: "\e90c";
 }
+
 .rawcon-layer-minus:before {
   content: "\e90d";
 }
+
 .rawcon-key:before {
   content: "\e989";
 }
+
 .rawcon-hd:before {
   content: "\e90f";
 }
+
 .rawcon-gear:before {
   content: "\e910";
 }
+
 .rawcon-folder-music:before {
   content: "\e911";
 }
+
 .rawcon-download:before {
   content: "\e912";
 }
+
 .rawcon-circle-info:before {
   content: "\e913";
 }
+
 .rawcon-chart:before {
   content: "\e914";
 }
+
 .rawcon-calendar-down:before {
   content: "\e915";
 }
+
 .rawcon-calendar-up:before {
   content: "\e916";
 }
+
 .rawcon-calendar:before {
   content: "\e917";
 }
+
 .rawcon-bars:before {
   content: "\e918";
 }
+
 .rawcon-album-plus:before {
   content: "\e919";
 }
+
 .rawcon-album-collection:before {
   content: "\e91a";
 }
+
 .rawcon-angle-down:before {
   content: "\e91b";
 }
+
 .rawcon-brightness:before {
   content: "\e91c";
 }
+
 .rawcon-user-music:before {
   content: "\e91d";
 }
+
 .rawcon-music:before {
   content: "\e91e";
 }
+
 .rawcon-users:before {
   content: "\e91f";
 }
+
 .rawcon-user:before {
   content: "\e920";
 }
+
 .rawcon-heart:before {
   content: "\e921";
 }
+
 .rawcon-seed:before {
   content: "\e922";
 }
+
 .rawcon-search:before {
   content: "\e923";
 }
+
 .rawcon-album:before {
   content: "\e924";
 }
+
 .rawcon-arrow-down:before {
   content: "\e925";
 }
+
 .rawcon-arrow-left:before {
   content: "\e926";
 }
+
 .rawcon-arrow-right:before {
   content: "\e927";
 }
+
 .rawcon-arrow-up:before {
   content: "\e928";
 }
+
 .rawcon-arrows-rotate:before {
   content: "\e929";
 }
@@ -748,6 +893,7 @@ ul {
   cursor: pointer;
   color: var(--accent-green-300);
 }
+
 .icon {
   width: var(--space-4);
   margin-right: var(--space-1);
@@ -970,6 +1116,7 @@ ul {
 .user-country i {
   font-size: var(--text-lg);
 }
+
 .playlist-nav.open {
   background-color: var(--accent-green-300);
   color: var(--neutral-100) !important;
@@ -1004,9 +1151,9 @@ ul {
   display: flex;
   background-color: rgba(0, 0, 0, 0.9);
   z-index: 1000;
-  justify-content: center; /* horizontally center children */
-  align-items: center; /* vertically center children */
-  transition: opacity 0.5s ease-out; /* 0.5s fade out */
+  justify-content: center;
+  align-items: center;
+  transition: opacity 0.5s ease-out;
 }
 
 #loading-overlay svg {
@@ -1021,6 +1168,7 @@ ul {
   position: relative;
   cursor: pointer;
 }
+
 .info-content {
   display: none;
   position: absolute;
@@ -1035,6 +1183,7 @@ ul {
   border-radius: var(--radius-md);
   white-space: nowrap;
 }
+
 .info-item:hover .info-content {
   display: block;
 }
@@ -1048,6 +1197,7 @@ ul {
   flex-direction: column-reverse;
   gap: var(--space-3);
 }
+
 .toast {
   padding: var(--space-3) var(--space-5);
   border-radius: var(--radius-sm);
@@ -1057,22 +1207,28 @@ ul {
   transition: all 0.3s ease;
   cursor: pointer;
 }
+
 .toast.show {
   opacity: 1;
   transform: translateY(0);
 }
+
 .success {
   background-color: var(--accent-green-300);
 }
+
 .error {
   background-color: var(--accent-red-300);
 }
+
 .info {
   background-color: var(--main-300);
 }
+
 .warning {
   background-color: var(--accent-yellow-300);
 }
+
 .menu-bottom {
   display: flex;
   flex-direction: column;

@@ -1,13 +1,13 @@
-import json
 from datetime import datetime, timedelta
 from typing import Tuple, Optional
 
 import requests
 from flask import current_app
+from spotipy import Spotify
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.pool import QueuePool
-from spotipy import Spotify
+
 from app.models.user_models import UserData
 from app.modules.user.user_util import fetch_and_process_data
 from app.util.logging_util import configure_logging

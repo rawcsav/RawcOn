@@ -3,11 +3,10 @@ from datetime import datetime
 from flask import Blueprint, render_template, session, request, jsonify
 from pytz import timezone
 
-from app import db, limiter, cache
+from app import db, limiter
 from app.models.user_models import UserData
-from ..auth.auth_util import fetch_user_data
-from app.util.wrappers import require_spotify_auth, handle_errors
 from app.modules.auth.auth_util import verify_session
+from app.util.wrappers import require_spotify_auth, handle_errors
 from .user_util import (
     init_session_client,
     fetch_and_process_data,
@@ -22,6 +21,7 @@ from .user_util import (
     get_audio_features_evolution,
     generate_stats_blurbs,
 )
+from ..auth.auth_util import fetch_user_data
 
 user_bp = Blueprint("user", __name__, template_folder="templates", static_folder="static", url_prefix="/user")
 

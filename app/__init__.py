@@ -1,20 +1,21 @@
 import os
+
 from flask import Flask, request, Response, jsonify
 from flask_assets import Environment
+from flask_bcrypt import Bcrypt
 from flask_caching import Cache
+from flask_cors import CORS
 from flask_limiter import Limiter
+from flask_limiter.errors import RateLimitExceeded
 from flask_limiter.util import get_remote_address
 from flask_migrate import Migrate
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
-from flask_bcrypt import Bcrypt
 from flask_wtf.csrf import CSRFProtect
 from itsdangerous import URLSafeTimedSerializer
-from config import ProductionConfig, DevelopmentConfig
-from flask_cors import CORS
-from app.celery_app import celery
-from flask_limiter.errors import RateLimitExceeded
 
+from app.celery_app import celery
+from config import ProductionConfig, DevelopmentConfig
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()

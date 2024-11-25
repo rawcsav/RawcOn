@@ -92,11 +92,11 @@
           </div>
 
         </div>
-              <div class="playlist-spotify-button" aria-label="Listen on Spotify"
-                   onclick="window.open('{{ playlist_url }}', '_blank')">
-                <i class="rawcon-spotify"></i>
-                <span class="playlist-spotify-text">View on Spotify</span>
-              </div>
+        <div class="playlist-spotify-button" aria-label="Listen on Spotify"
+             onclick="window.open('{{ playlist_url }}', '_blank')">
+          <i class="rawcon-spotify"></i>
+          <span class="playlist-spotify-text">View on Spotify</span>
+        </div>
       </div>
     </div>
     <div class="playlist-functions">
@@ -231,8 +231,15 @@
         </div>
       </div>
       <div class="explanation-container">
-        <p class="explanation"> Your genre similarity and opposition scores are calculated using a weighted adjacency matrix based on spatial and acoustic proximity from
-        <a href="https://everynoise.com/" target="_blank">Every Noise at Once</a>'s genre positioning. Similarity weights represent closeness, while opposition weights reflect maximum spatial distance between genres. For each genre in your playlist, its frequency is multiplied by these weights relative to other genres, and the results are summed to produce scores that measure alignment or contrast with your playlist's overall genre makeup. Genres already present in the playlist are excluded from these calculations to focus on external genres, ensuring the rankings highlight related or contrasting genres outside your playlist's existing composition.</p>
+        <p class="explanation"> Your genre similarity and opposition scores are calculated using a weighted adjacency
+          matrix based on spatial and acoustic proximity from
+          <a href="https://everynoise.com/" target="_blank">Every Noise at Once</a>'s genre positioning. Similarity
+          weights represent closeness, while opposition weights reflect maximum spatial distance between genres. For
+          each genre in your playlist, its frequency is multiplied by these weights relative to other genres, and the
+          results are summed to produce scores that measure alignment or contrast with your playlist's overall genre
+          makeup. Genres already present in the playlist are excluded from these calculations to focus on external
+          genres, ensuring the rankings highlight related or contrasting genres outside your playlist's existing
+          composition.</p>
       </div>
       <div class="genre-chart">
         <canvas id="genreBubbleChart"></canvas>

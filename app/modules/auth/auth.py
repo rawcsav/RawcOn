@@ -1,13 +1,14 @@
 import time
 from datetime import datetime, timedelta
 from urllib.parse import urlencode
+
 from flask import Blueprint, abort, redirect, render_template, request, session, url_for, current_app
 from flask import make_response
-from app import cache, limiter
 
+from app import cache, limiter
 from app.modules.auth.auth_util import generate_state, prepare_auth_payload, request_tokens, get_spotify_user_id
-from app.util.wrappers import handle_errors
 from app.util.database_util import save_tokens_to_db
+from app.util.wrappers import handle_errors
 
 auth_bp = Blueprint("auth", __name__, template_folder="templates", static_folder="static", url_prefix="/")
 

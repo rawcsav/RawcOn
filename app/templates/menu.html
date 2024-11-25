@@ -3,7 +3,7 @@
 <div class="profile-menu">
   <div class="profile-top-section">
     <div id="profile-container">
-      <a class="user-name" href="{{ user_data.external_urls['spotify']}}">
+      <a class="user-name" href="{{ user_data.external_urls['spotify'] }}">
         {% if user_data.display_name %} {{ user_data.display_name }} {% else %}
         {{ user_data.id }} {% endif %}
       </a>

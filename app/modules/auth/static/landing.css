@@ -26,6 +26,7 @@ html {
   max-width: 30%;
   height: auto;
 }
+
 .header {
   color: var(--main-300);
   grid-column: 3;
@@ -42,10 +43,12 @@ html {
   justify-content: center;
   align-items: center;
 }
+
 .main-image img {
   max-width: 70%;
   max-height: 100%;
 }
+
 .actions {
   display: flex;
   justify-content: space-between;
@@ -64,6 +67,7 @@ html {
   color: var(--accent-green-300);
   text-decoration: none;
 }
+
 .login-button {
   text-decoration: none;
   background-color: var(--neutral-700);
@@ -285,7 +289,6 @@ strong {
     "ital" 0;
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
   .about-rawc-on {
     padding: var(--space-5);
@@ -304,7 +307,6 @@ strong {
   }
 }
 
-/* Additional enhancements */
 .terms-list li::before {
   content: "•";
   color: var(--accent-green-300);
@@ -313,7 +315,6 @@ strong {
   margin-left: -1em;
 }
 
-/* Highlight effect for important sections */
 .terms-subtitle:target {
   animation: highlight 2s ease;
 }
@@ -327,7 +328,6 @@ strong {
   }
 }
 
-/* Improve readability on larger screens */
 @media (min-width: 1200px) {
   .about-rawc-on {
     max-width: 1000px;

@@ -1,15 +1,16 @@
-from collections import defaultdict
-from datetime import timedelta
-from spotipy import SpotifyException
-from app.util.database_util import get_or_fetch_audio_features, get_or_fetch_artist_info
-
 import json
 import random
+from collections import defaultdict
+from datetime import timedelta
+
 from flask import jsonify
+from spotipy import SpotifyException
+
 from app import db
 from app.models.user_models import UserData, PlaylistData, GenreData
-from app.modules.user.user_util import init_session_client, get_playlist_summary, format_track_info
 from app.modules.recs.recs_util import get_recommendations
+from app.modules.user.user_util import init_session_client, get_playlist_summary, format_track_info
+from app.util.database_util import get_or_fetch_audio_features, get_or_fetch_artist_info
 
 
 def get_playlist_data(playlist_id, spotify_user_id):

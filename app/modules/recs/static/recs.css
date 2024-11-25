@@ -44,6 +44,7 @@ button[type="submit"].disabled {
 #get-recommendations:hover.disabled i {
   color: var(--neutral-500);
 }
+
 #seeds-section {
   border-bottom: var(--border-normal) var(--neutral-300);
   width: 100%;
@@ -99,6 +100,7 @@ button[type="submit"].disabled {
 #limit:focus-visible {
   outline-color: var(--accent-green-200);
 }
+
 h1,
 h2 {
   margin-bottom: var(--space-6);
@@ -170,6 +172,8 @@ input:focus-visible {
 }
 
 .dropdown-item:hover {
+  transform: translateY(-2px);
+
   background-color: rgba(var(--neutral-200), 0.1);
 }
 
@@ -355,6 +359,7 @@ button:hover {
 }
 
 .audio-player {
+  display: none;
   visibility: hidden;
   height: 0;
   width: 0;
@@ -373,7 +378,8 @@ button:hover {
 
 .play-button i {
   font-size: var(--text-2xl);
-  color: var(--neutral-400);
+  color: var(--neutral-500);
+  transition: all var(--transition-normal);
 }
 
 .result-art-caption {
@@ -382,7 +388,6 @@ button:hover {
   gap: var(--space-5);
 }
 
-/* Search Results Styling */
 #search-dropdown {
   border: var(--border-normal) var(--accent-green-200);
   display: none;
@@ -392,6 +397,8 @@ button:hover {
   overflow-y: auto;
   background-color: var(--neutral-100);
   box-shadow: var(--shadow-sm);
+  width: calc(100% - 38px);
+  box-sizing: border-box;
 }
 
 input:focus-visible + .search-btn {
@@ -475,7 +482,6 @@ input:focus-visible + .search-btn {
   justify-content: flex-start;
 }
 
-/* Seed Item */
 .seed-item {
   display: flex;
   align-items: center;
@@ -485,7 +491,7 @@ input:focus-visible + .search-btn {
   transition:
     transform var(--transition-normal),
     background-color var(--transition-normal);
-  max-width: 200px; /* Adjust as needed */
+  max-width: 200px;
 }
 
 .seed-item:hover {
@@ -494,7 +500,7 @@ input:focus-visible + .search-btn {
 
 .seed-info {
   flex-grow: 1;
-  min-width: 0; /* Allows text to shrink below min-content */
+  min-width: 0;
 }
 
 .seed-name {
@@ -514,7 +520,6 @@ input:focus-visible + .search-btn {
   text-decoration: underline;
 }
 
-/* Seed Subtext */
 .seed-subtext {
   font-size: var(--text-xs);
   color: var(--neutral-300);
@@ -523,7 +528,6 @@ input:focus-visible + .search-btn {
   text-overflow: ellipsis;
 }
 
-/* Remove Seed Button */
 .remove-seed {
   background: none;
   border: none;
@@ -539,7 +543,6 @@ input:focus-visible + .search-btn {
   color: var(--accent-red-300);
 }
 
-/* Recommendation Results Styling */
 .results-container {
   display: flex;
   flex-direction: column;
@@ -614,6 +617,7 @@ input:focus-visible + .search-btn {
 #seed-step.hidden {
   display: none;
 }
+
 .dropdown-content {
   display: flex;
   justify-content: space-around;
@@ -674,6 +678,7 @@ input:focus-visible + .search-btn {
   background-color: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(5px);
 }
+
 .modal-content {
   background-color: var(--neutral-100);
   margin: 15% auto;
@@ -715,7 +720,6 @@ input:focus-visible + .search-btn {
   transform: scale(1.1);
 }
 
-/* Playlist modal specific styles */
 #playlistModal h2 {
   color: var(--accent-green-300);
   margin-bottom: var(--space-6);
@@ -792,6 +796,7 @@ input:focus-visible + .search-btn {
   font-size: var(--text-lg);
   color: var(--neutral-500);
 }
+
 .recommendations-guide {
   border-radius: var(--radius-md);
   padding: var(--space-2);
@@ -811,7 +816,6 @@ input:focus-visible + .search-btn {
   flex-direction: column;
   gap: var(--space-6);
   margin-top: 30px;
-  /* margin: auto; */
 }
 
 .guide-step {
@@ -872,18 +876,16 @@ input:focus-visible + .search-btn {
   opacity: 0;
   transform: translateX(-10px);
   transition: all 0.3s ease;
-  pointer-events: none; /* Prevents the span from interfering with hover */
+  pointer-events: none;
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
 }
 
-/* Only show text when the icon is hovered */
 .spotify-button .rawcon-spotify:hover + span {
   opacity: 1;
   transform: translateX(0);
 }
 
-/* Ensure the text remains visible while hovering over it after icon hover */
 .spotify-button .rawcon-spotify:hover + span,
 .spotify-button span:hover {
   opacity: 1;
@@ -894,7 +896,6 @@ input:focus-visible + .search-btn {
   cursor: pointer;
 }
 
-/* Updated tooltip styles for dynamic content */
 .dropdown-content a.add-to-saved::after {
   content: attr(data-tooltip-unliked);
 }
@@ -903,7 +904,6 @@ input:focus-visible + .search-btn {
   content: attr(data-tooltip-liked);
 }
 
-/* Rest of the tooltip styling */
 .dropdown-content a::after {
   position: absolute;
   background-color: var(--neutral-500);
@@ -923,11 +923,6 @@ input:focus-visible + .search-btn {
 .dropdown-content a:hover::after {
   opacity: 1;
   transform: translateX(-50%) translateY(-45px);
-}
-
-/* Enhanced hover states */
-.dropdown-content a:hover {
-  transform: translateY(-2px);
 }
 
 .add-to-playlist {
@@ -952,7 +947,6 @@ input:focus-visible + .search-btn {
   visibility: visible;
 }
 
-/* Play button container styles */
 .play-button {
   position: relative;
   cursor: pointer;
@@ -965,13 +959,6 @@ input:focus-visible + .search-btn {
   transition: all var(--transition-normal);
 }
 
-/* Play button icon styles */
-.play-button i {
-  font-size: var(--text-2xl);
-  color: var(--neutral-500);
-  transition: all var(--transition-normal);
-}
-
 .play-button:hover i {
   color: var(--accent-green-300);
 }
@@ -980,7 +967,6 @@ input:focus-visible + .search-btn {
   color: var(--accent-red-300);
 }
 
-/* Play button tooltip styles */
 .play-button::after {
   content: attr(data-tooltip-play);
   position: absolute;
@@ -1005,14 +991,4 @@ input:focus-visible + .search-btn {
 .play-button:hover::after {
   opacity: 1;
   transform: translateX(-50%) translateY(-45px);
-}
-
-/* Audio player styles */
-.audio-player {
-  display: none;
-}
-
-#search-dropdown {
-  width: calc(100% - 38px); /* Match the width of the input */
-  box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }

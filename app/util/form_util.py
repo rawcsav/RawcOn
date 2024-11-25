@@ -1,6 +1,6 @@
+from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, SubmitField, FloatField
 from wtforms.validators import Optional, NumberRange
-from flask_wtf import FlaskForm
 
 
 class RecommendationsForm(FlaskForm):
