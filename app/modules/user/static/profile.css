@@ -115,7 +115,7 @@ select {
   max-width: 100%;
   font-family: var(--ff-txt);
   font-variation-settings:
-    "wght" var(--font-medium),
+    "wght" var(--font-normal),
     "ital" 0;
   white-space: wrap;
   overflow: hidden;
@@ -631,6 +631,7 @@ h3 {
   padding-right: var(--space-3);
   flex-direction: column;
   gap: var(--space-2);
+  max-height: 125px;
 }
 
 #minmax-title {

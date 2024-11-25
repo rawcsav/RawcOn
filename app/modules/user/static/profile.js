@@ -861,7 +861,8 @@ document.addEventListener("DOMContentLoaded", function () {
   function updateStickyPeriod() {
     const selectedOption = document.querySelector(".time-option.selected");
     if (selectedOption) {
-      stickyPeriodText.textContent = selectedOption.textContent.trim();
+      stickyPeriodText.textContent =
+        "Your past " + selectedOption.textContent.trim();
     }
   }
 
@@ -929,7 +930,6 @@ document.addEventListener("DOMContentLoaded", function () {
     ];
     return icons[Math.floor(Math.random() * icons.length)];
   }
-
   function fetchBlurbs() {
     fetch("/user/stats_blurbs")
       .then((response) => response.json())
