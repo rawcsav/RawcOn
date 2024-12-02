@@ -1,5 +1,3 @@
-# app/modules/user/user_util.py
-
 import random
 from collections import defaultdict, deque
 from datetime import datetime
@@ -11,6 +9,10 @@ from app.models.user_models import UserData, GenreData
 from app.modules.auth.auth import refresh
 from app.modules.auth.auth_util import verify_session, fetch_user_data
 from app.util.database_util import get_or_fetch_artist_info, get_or_fetch_audio_features
+
+from app.util.logging_util import get_logger
+
+logger = get_logger(__name__)
 
 FEATURES = [
     "acousticness",
@@ -200,7 +202,7 @@ def fetch_and_process_data(sp, time_periods):
             playlist_info,
         )
     except Exception as e:
-        print("Exception:", str(e))
+        logger.warning("Exception fetching user data:", str(e))
         return (None,) * 8
 
 

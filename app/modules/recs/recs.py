@@ -10,6 +10,9 @@ from app.modules.recs.recs_util import spotify_search, get_recommendations
 from app.modules.user.user_util import init_session_client, format_track_info, get_playlist_summary
 from app.util.database_util import add_artist_to_db
 from app.util.wrappers import require_spotify_auth
+from app.util.logging_util import get_logger
+
+logger = get_logger(__name__)
 
 recs_bp = Blueprint("recs", __name__, template_folder="templates", static_folder="static", url_prefix="/recs")
 
@@ -74,7 +77,7 @@ def get_recommendations_route():
     recommendations_data = get_recommendations(sp, **seeds, limit=limit, **sliders, market=user_market)
 
     if "error" in recommendations_data:
-        print(recommendations_data)
+        logger.error(recommendations_data["error"])
         return jsonify(recommendations_data), 400
 
     track_info_list = [format_track_info(track) for track in recommendations_data["tracks"]]
@@ -87,6 +90,7 @@ def get_recommendations_route():
 def save_track():
     sp, error = init_session_client()
     if error:
+        logger.error()
         return json.dumps(error), 401
 
     track_id = request.json["track_id"]

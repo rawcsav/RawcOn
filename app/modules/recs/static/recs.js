@@ -559,29 +559,20 @@ const playlistModule = (() => {
       if (data.error) {
         throw new Error(data.error);
       }
-
-      console.log(
-        `Searching for plus icon with selector: .add-to-playlist[data-trackid="${trackId}"] .plus-icon`,
-      );
       const plusIcon = document.querySelector(
         `.add-to-playlist[data-trackid="${trackId}"] .plus-icon`,
       );
 
       if (plusIcon) {
-        console.log("Plus icon found, adding 'added' class");
         plusIcon.classList.add("added");
       } else {
-        console.log("Plus icon not found. Debugging information:");
-        console.log("Track ID:", trackId);
-        console.log("Playlist ID:", playlistId);
-        console.log("DOM at this point:", document.body.innerHTML);
+        console.log("Plus icon not found");
       }
 
       elements.playlistModal.style.display = "none";
       showToast("Track added to playlist successfully.", "success");
     } catch (error) {
       showToast("Error adding track to playlist. Please try again.", "error");
-      console.error("Error:", error);
     }
   };
   const loadUserPlaylists = async () => {

@@ -10,9 +10,10 @@ from sqlalchemy.pool import QueuePool
 
 from app.models.user_models import UserData
 from app.modules.user.user_util import fetch_and_process_data
-from app.util.logging_util import configure_logging
+from app.util.logging_util import get_logger
 
-logger = configure_logging()
+
+logger = get_logger(__name__)
 
 
 def make_engine_with_pool_options():

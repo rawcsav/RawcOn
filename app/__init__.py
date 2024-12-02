@@ -1,5 +1,4 @@
 import os
-
 from flask import Flask, request, Response, jsonify
 from flask_assets import Environment
 from flask_bcrypt import Bcrypt
@@ -16,6 +15,9 @@ from itsdangerous import URLSafeTimedSerializer
 
 from app.celery_app import celery
 from config import ProductionConfig, DevelopmentConfig
+from app.util.logging_util import get_logger, notify_error
+
+logger = get_logger(__name__)
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -94,11 +96,18 @@ def create_app():
             @csrf.exempt
             def clear_caches_route():
                 cache.clear()
-
-                # Clear all Redis databases
                 redis_client = cache.cache._read_client
                 redis_client.flushall()
                 return "All caches cleared"
+
+            @app.route("/trigger/test-logging")
+            @csrf.exempt
+            def test_logging():
+                logger.info("Flask route logging test - info message")
+                logger.error("Flask route logging test - error message")
+                notify_error("Flask Test", "This is a test error from Flask route")
+                celery.send_task("tasks.test_logging")
+                return "Logging tests initiated. Check your logs and email."
 
         db.create_all()
 
@@ -107,7 +116,6 @@ def create_app():
             def handle_rate_limit_error(error):
                 return jsonify({"message": str(error.description), "type": "warning"})
 
-        # Add this to your app initialization
         register_error_handlers(app)
 
         return app

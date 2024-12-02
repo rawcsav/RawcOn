@@ -22,6 +22,9 @@ from .user_util import (
     generate_stats_blurbs,
 )
 from ..auth.auth_util import fetch_user_data
+from app.util.logging_util import get_logger
+
+logger = get_logger(__name__)
 
 user_bp = Blueprint("user", __name__, template_folder="templates", static_folder="static", url_prefix="/user")
 
@@ -47,9 +50,9 @@ def profile():
         user_data_entry = UserData.query.filter_by(spotify_user_id=spotify_user_id).first()
 
         if not user_data_entry or user_data_entry.new_account:
-            print("Fetching new data")
             sp, error = init_session_client()
             if error:
+                logger.error(f"Failed to initialize Spotify client for user {spotify_user_id}: {error}")
                 return error
             time_periods = ["short_term", "medium_term", "long_term"]
             (
@@ -63,6 +66,7 @@ def profile():
             ) = fetch_and_process_data(sp, time_periods)
 
             if not user_data_entry:
+                logger.info(f"Creating new user data entry for {spotify_user_id}")
                 user_data_entry = UserData(spotify_user_id=spotify_user_id)
                 db.session.add(user_data_entry)
 
@@ -78,10 +82,8 @@ def profile():
 
             db.session.commit()
 
-        # Rest of the code remains the same
         time_periods = ["short_term", "medium_term", "long_term", "overall"]
         period_data = {}
-        print("3")
         for period in time_periods:
             period_tracks = (
                 user_data_entry.top_tracks[period]
@@ -96,8 +98,7 @@ def profile():
                 period_data[period]["min_values"],
                 period_data[period]["max_values"],
             ) = calculate_averages_for_period(period_tracks, user_data_entry.audio_features)
-        print("4")
-        # Prepare additional data for the profile page
+
         top_genres = {period: get_top_genres(user_data_entry, period) for period in time_periods[:3]}
         audio_features_summary = {
             period: get_audio_features_summary(user_data_entry, period) for period in time_periods[:3]
@@ -106,7 +107,6 @@ def profile():
         top_tracks_summary = {period: get_top_tracks_summary(user_data_entry, period) for period in time_periods[:3]}
         playlist_summary = get_playlist_summary(user_data_entry)
         stats_blurbs = generate_stats_blurbs(audio_features_summary, top_genres)
-        print("5")
         return render_template(
             "profile.html",
             user_data=res_data,
@@ -122,39 +122,9 @@ def profile():
         )
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"An error occurred while loading a user's profile: {e}")
         db.session.rollback()
         return str(e), 500
-
-
-@user_bp.route("/get_mode", methods=["GET"])
-@limiter.limit("10 per minute")
-@handle_errors
-@require_spotify_auth
-def get_mode():
-    try:
-        user_data = get_user_data()
-        mode = "dark" if user_data.isDarkMode else "light"
-        return jsonify({"mode": mode})
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return jsonify({"error": str(e)}), 500
-
-
-@user_bp.route("/update_mode", methods=["POST"])
-@limiter.limit("10 per minute")
-@handle_errors
-@require_spotify_auth
-def update_mode():
-    try:
-        mode = request.json.get("mode")
-        user_data = get_user_data()
-        user_data.isDarkMode = mode == "dark"
-        db.session.commit()
-        return jsonify({"message": "Mode updated successfully!"}), 200
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return jsonify({"error": str(e)}), 500
 
 
 @user_bp.route("/top_genres/<time_range>")
@@ -166,7 +136,7 @@ def top_genres(time_range):
         genres = get_top_genres(user_data, time_range)
         return jsonify(genres)
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"An error ocurred while gathering a user's top genres: {e}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -204,7 +174,7 @@ def top_artists(time_range):
         artists = get_top_artists_summary(user_data, time_range)
         return jsonify(artists)
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"An error ocurred while fetching a user's top artists: {e}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -218,6 +188,7 @@ def top_tracks(time_range):
         tracks = get_top_tracks_summary(user_data, time_range)
         return jsonify(tracks)
     except Exception as e:
+        logger.error(f"An error occurred while fetching a user's top tracks: {e}")
         print(f"An error occurred: {e}")
         return jsonify({"error": str(e)}), 500
 
@@ -232,7 +203,7 @@ def playlists():
         playlist_summary = get_playlist_summary(user_data)
         return jsonify(playlist_summary)
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"An error occurred while fetching a user's playlists: {e}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -246,7 +217,7 @@ def genre_bubble_chart():
         bubble_chart_data = get_genre_bubble_chart_data(user_data)
         return jsonify(bubble_chart_data)
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"An error occurred while generating a user's genre chart: {e}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -260,7 +231,7 @@ def audio_features_evolution():
         evolution_data = get_audio_features_evolution(user_data)
         return jsonify(evolution_data)
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"An error occurred while fetching a user's audio features chart: {e}")
         return jsonify({"error": str(e)}), 500
 
 

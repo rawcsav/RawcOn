@@ -76,7 +76,6 @@ const chartModule = (() => {
   };
 
   const initYearPieChart = (temporalStats) => {
-    console.log("Initializing Year Pie Chart");
     const yearCountData = temporalStats.year_count;
 
     const canvas = document.getElementById("YrPieChart");

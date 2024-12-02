@@ -4,10 +4,10 @@ from celery import shared_task
 from sqlalchemy import or_
 
 from app.models.user_models import UserData
-from app.util.logging_util import configure_logging
+from app.util.logging_util import get_logger, notify_error
 from app.util.tasks.tasks_util import make_session, init_session_client_for_celery, update_user_data
 
-logger = configure_logging()
+logger = get_logger(__name__)
 
 
 @shared_task(name="tasks.update_stale_user_data")
@@ -73,3 +73,11 @@ def delete_inactive_users_task():
         return f"Error deleting inactive users: {str(e)}"
     finally:
         db_session.remove()
+
+
+@shared_task(name="tasks.test_logging")
+def test_logging_task():
+    logger.info("Celery logging test - info message")
+    logger.error("Celery logging test - error message")
+    notify_error("Celery Test", "This is a test error from Celery task")
+    return "Logging test complete"

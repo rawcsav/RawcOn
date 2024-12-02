@@ -1,10 +1,10 @@
-import logging
 import traceback
 from datetime import datetime, timedelta
 
 from flask import session, redirect, url_for, request, current_app
+from app.util.logging_util import get_logger
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = get_logger(__name__)
 
 
 def require_spotify_auth(f):
@@ -31,12 +31,8 @@ def handle_errors(f):
         try:
             return f(*args, **kwargs)
         except Exception as e:
-            # Get the full traceback
             tb = traceback.extract_tb(e.__traceback__)
-
-            # Find the relevant part of the traceback (in your app code)
             app_trace = next((t for t in tb if "site-packages" not in t.filename), None)
-
             if app_trace:
                 filename = app_trace.filename
                 line_number = app_trace.lineno
@@ -61,7 +57,6 @@ def handle_errors(f):
             current_app.logger.error(f"Error in {function_name} ({filename}:{line_number}): {str(e)}")
             current_app.logger.error(f"Problematic code: {line_content}")
 
-            # In debug mode, include full traceback
             if current_app.debug:
                 error_details["full_traceback"] = traceback.format_exc()
 

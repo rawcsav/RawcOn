@@ -11,6 +11,9 @@ from app.models.user_models import UserData, PlaylistData, GenreData
 from app.modules.recs.recs_util import get_recommendations
 from app.modules.user.user_util import init_session_client, get_playlist_summary, format_track_info
 from app.util.database_util import get_or_fetch_audio_features, get_or_fetch_artist_info
+from app.util.logging_util import get_logger
+
+logger = get_logger(__name__)
 
 
 def get_playlist_data(playlist_id, spotify_user_id):
@@ -30,8 +33,6 @@ def get_playlist_data(playlist_id, spotify_user_id):
 
     # Add popularity distribution to the returned data
     popularity_distribution = get_popularity_distribution(playlist_data["tracks"])
-    test = dict(sorted(playlist_data["genre_counts"].items(), key=lambda x: x[1]["count"], reverse=True)[:10])
-    print(test)
     return {
         "playlist_id": playlist_id,
         "playlist_url": f"https://open.spotify.com/playlist/{playlist_id}",
@@ -157,7 +158,6 @@ def remove_duplicates(playlist_id):
             {"uri": f"spotify:track:{all_track_ids[pos]}", "positions": [pos]}
             for pos in positions_to_remove[i : i + 100]
         ]
-        print(batch)
         sp.playlist_remove_specific_occurrences_of_items(playlist_id, batch, snapshot_id)
 
     update_playlist_data(playlist_id)
@@ -269,17 +269,6 @@ def reorder_playlist(playlist_id, sorting_criterion):
 
 
 def optimize_reorder_operations(new_indices, total_tracks):
-    """
-    Optimizes the sequence of reorder operations to minimize API calls.
-    Uses a modified insertion sort approach that combines adjacent moves.
-
-    Args:
-        new_indices (list): The desired order of track indices
-        total_tracks (int): Total number of tracks in the playlist
-
-    Returns:
-        list: List of reorder operations to perform
-    """
     operations = []
     current_positions = list(range(total_tracks))
 
@@ -538,8 +527,9 @@ def get_audio_features_stats(track_info_list):
                         )
                     audio_feature_stats[feature]["total"] += value
                 except KeyError:
-                    print(
-                        f"KeyError at track index {idx}, track name: {track_info['name']}, missing feature: {feature}"
+                    logger.error(
+                        "KeyError for audio feature stats:",
+                        f" error on track index {idx}, track name: {track_info['name']}, missing feature: {feature}",
                     )
                     continue
 

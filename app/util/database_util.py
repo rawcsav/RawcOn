@@ -5,6 +5,10 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app import db
 from app.models.user_models import ArtistData, FeatureData, UserData, GenreData
+from app.util.logging_util import get_logger
+
+
+logger = get_logger(__name__)
 
 
 def get_today_date():
@@ -50,11 +54,9 @@ def add_artist_to_db(artist_data):
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
-        print(f"Error adding/updating artist {artist_data['id']}: {str(e)}")
-        # You might want to log this error or handle it in some way
+        logger.error(f"Error adding/updating artist {artist_data['id']}: {str(e)}")
     except KeyError as e:
-        print(f"Missing key in artist data: {str(e)}")
-        # Handle missing data in the artist_data dictionary
+        logger.error(f"Missing key in artist data: {str(e)}")
 
 
 def get_or_fetch_artist_info(sp, artist_ids):
@@ -180,4 +182,4 @@ def initialize_genre_data(app):
             csv_file_path = app.config.get("GENRE_DATA_CSV_PATH", "app/static/data/genre_data.csv")
             GenreData.populate_from_csv(csv_file_path)
         else:
-            print("Genre data already exists in the database.")
+            logger.info("Genre data already initialized")

@@ -56,6 +56,14 @@ class Config(object):
     CLOUD_API_KEY = os.getenv("CLOUDINARY_API_KEY")
     CLOUD_SECRET = os.getenv("CLOUDINARY_SECRET")
 
+    # Email Config
+    MAIL_SERVER = "smtp.gmail.com"
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
+    MAIL_USE_SSL = False
+    MAIL_USERNAME = os.getenv("ADMIN_EMAIL")
+    MAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+
     # Cors
     CORS_ORIGINS = "*"
     CORS_SUPPORTS_CREDENTIALS = True
