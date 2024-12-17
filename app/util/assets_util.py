@@ -15,11 +15,13 @@ def compile_static_assets(assets):
     assets.register("recs_style_bundle", recs_style_bundle)
 
     common_js_bundle = Bundle("src/common.js", filters="jsmin", output="dist/js/common.js")
+    auth_js_bundle = Bundle("auth/landing.js", filters="jsmin", output="dist/js/auth.js")
     user_js_bundle = Bundle("user/profile.js", filters="jsmin", output="dist/js/user.js")
     playlist_js_bundle = Bundle("playlist/playlist.js", filters="jsmin", output="dist/js/playlist.js")
     recs_js_bundle = Bundle("recs/recs.js", filters="jsmin", output="dist/js/recs.js")
 
     assets.register("common_js_bundle", common_js_bundle)
+    assets.register("auth_js_bundle", auth_js_bundle)
     assets.register("user_js_bundle", user_js_bundle)
     assets.register("playlist_js_bundle", playlist_js_bundle)
     assets.register("recs_js_bundle", recs_js_bundle)
@@ -32,6 +34,7 @@ def compile_static_assets(assets):
         recs_style_bundle.build()
 
         common_js_bundle.build()
+        auth_js_bundle.build()
         user_js_bundle.build()
         playlist_js_bundle.build()
         recs_js_bundle.build()
