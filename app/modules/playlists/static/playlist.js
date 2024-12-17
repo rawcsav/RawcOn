@@ -497,7 +497,7 @@ const chartModule = (() => {
             ${feature.charAt(0).toUpperCase() + feature.slice(1)}&nbsp;~&nbsp;${formattedValue}
         </h4>
         <div class="track-info">
-            <img src="${albumArt || "/static/dist/img/default-album.png"}" alt="${trackName}" class="album-art">
+            <img src="${albumArt || "/static/dist/img/default-album.svg"}" alt="${trackName}" class="album-art">
             <div class="track-details">
                 <p class="minmax-track" title="${trackName}">${trackName}</p>
                 <p class="minmax-artist artist-name" title="${artistName}">${artistName}</p>

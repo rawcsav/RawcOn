@@ -1,38 +1,743 @@
-document.addEventListener("DOMContentLoaded",function(){const timeSelector=document.querySelector(".time-selector");const timeOptions=document.querySelectorAll(".time-option");const topArtistsList=document.getElementById("topArtists");const topTracksList=document.getElementById("topTracks");const topGenresList=document.getElementById("topGenres");let chart;let artistsOffset=0;let tracksOffset=0;const ITEMS_PER_LOAD=20;let currentPeriod="short_term";function lazyLoadImages(){const images=document.querySelectorAll("img.lazy-load");const options={root:null,rootMargin:"0px",threshold:0.1,};const imageObserver=new IntersectionObserver((entries,observer)=>{entries.forEach((entry)=>{if(entry.isIntersecting){const img=entry.target;img.src=img.dataset.src;img.classList.remove("lazy-load");imageObserver.unobserve(img);}});},options);images.forEach((img)=>imageObserver.observe(img));}
-function getCurrentTimePeriod(){const selectedOption=document.querySelector(".time-option.selected");return selectedOption?selectedOption.getAttribute("data-value"):"short_term";}
-function handleScroll(container,loadMoreFunction){if(container.scrollLeft>20){container.classList.add("is-scrolled");}else{container.classList.remove("is-scrolled");}
-if(container.scrollLeft+container.clientWidth>=container.scrollWidth-20){loadMoreFunction(getCurrentTimePeriod());}}
-const artistsContainer=topArtistsList.parentElement;const tracksContainer=topTracksList.parentElement;artistsContainer.addEventListener("scroll",()=>handleScroll(artistsContainer,loadMoreArtists),);tracksContainer.addEventListener("scroll",()=>handleScroll(tracksContainer,loadMoreTracks),);function updateDisplay(period){artistsOffset=0;tracksOffset=0;topArtistsList.innerHTML="";topTracksList.innerHTML="";loadMoreArtists(period);loadMoreTracks(period);updateTopGenres(period);lazyLoadImages();}
-function loadMoreArtists(period){if(topArtistsSummary&&topArtistsSummary[period]){const artists=topArtistsSummary[period].slice(artistsOffset,artistsOffset+ITEMS_PER_LOAD,);displayArtists(artists);artistsOffset+=ITEMS_PER_LOAD;}}
-function loadMoreTracks(period){if(topTracksSummary&&topTracksSummary[period]){const tracks=topTracksSummary[period].slice(tracksOffset,tracksOffset+ITEMS_PER_LOAD,);displayTracks(tracks);tracksOffset+=ITEMS_PER_LOAD;}}
-function displayArtists(artists){const fragment=document.createDocumentFragment();artists.forEach((artist)=>{const div=document.createElement("div");div.className="grid-item artist-item";div.innerHTML=`<img src="/static/dist/img/default-artist.svg"data-src="${
-          artist.image_url || "/static/dist/img/default-artist.svg"
-        }"alt="${artist.name}"class="artist-image lazy-load"loading="lazy"><div><p title="${artist.name}">${artist.name}</p><div class="spotify-button"aria-label="Listen on Spotify"><i class="rawcon-spotify"onclick="window.open('${artist.spotify_url}', '_blank')"></i><span class="spotify-text">View on Spotify</span></div></div>`;fragment.appendChild(div);});topArtistsList.appendChild(fragment);lazyLoadImages();}
-function displayTracks(tracks){const fragment=document.createDocumentFragment();tracks.forEach((track)=>{const div=document.createElement("div");div.className="grid-item track-item";div.innerHTML=`<img src="/static/dist/img/default-track.svg"data-src="${
-          track.image_url || "/static/dist/img/default-track.svg"
-        }"alt="${track.name}"class="track-image lazy-load"loading="lazy"><div class="grid-column"><p title="${track.name}">${track.name}</p><p class="artist-name"title="${track.artists.join(",")}">${track.artists.join(", ",)}</p><div class="spotify-button"aria-label="Listen on Spotify"><i class="rawcon-spotify"onclick="window.open('${track.spotify_url}', '_blank')"></i><span class="spotify-text">Listen on Spotify</span></div></div>`;fragment.appendChild(div);});topTracksList.appendChild(fragment);lazyLoadImages();}
-function updateTopGenres(period){if(topGenres&&topGenres[period]){topGenresList.innerHTML=topGenres[period].map((genre)=>`<a href="#"class="genre-link"data-period="${period}"data-genre="${genre[0]}">${genre[0]}</a>`,).join(" ");addGenreEventListeners();}else{topGenresList.innerHTML="No data available";}}
-function addGenreEventListeners(){const genreLinks=document.querySelectorAll(".genre-link");genreLinks.forEach((link)=>{link.addEventListener("click",function(e){e.preventDefault();const period=this.dataset.period;const genre=this.dataset.genre;fetchGenreData(period,genre);});});}
-function fetchGenreData(period,genre){fetch(`/user/genre_data/${period}/${encodeURIComponent(genre)}`).then((response)=>response.json()).then((data)=>{displayGenreData(genre,period,data);}).catch((error)=>console.error("Error:",error));}
-function createGenreBubbleChart(){fetch("/user/genre_bubble_chart").then((response)=>response.json()).then((data)=>{const ctx=document.getElementById("genreBubbleChart").getContext("2d");const datasets=data.map((period,index)=>({label:period.period==="short_term"?"Last\u00A04\u00A0Weeks":period.period==="medium_term"?"Last\u00A06\u00A0Months":"All\u00A0Time",data:period.data,backgroundColor:index===0?"rgba(75, 192, 192, 0.5)":index===1?"rgba(54, 162, 235, 0.5)":"rgba(255, 99, 132, 0.5)",borderColor:index===0?"rgb(75, 192, 192)":index===1?"rgb(54, 162, 235)":"rgba(255, 99, 132, 1)",borderWidth:1,}));new Chart(ctx,{type:"bubble",data:{datasets:datasets,},options:{responsive:true,maintainAspectRatio:false,scales:{x:{title:{display:false,text:"Energy",font:{size:14,weight:"bold",},},ticks:{align:"start",callback:function(value,index,values){if(index===0)return"Low\u00A0Energy";if(index===values.length-1)return"High\u00A0Energy";return"";},crossAlign:"near",maxRotation:0,autoSkip:false,},},y:{title:{display:false,text:"Danceability",font:{size:14,weight:"bold",},},ticks:{align:"start",callback:function(value,index,values){if(index===0)return"Less\u00A0Danceable";if(index===values.length-1)
-return"More\u00A0Danceable";return"";},},},},plugins:{zoom:{pan:{enabled:true,mode:"xy",},zoom:{wheel:{enabled:true,},pinch:{enabled:true,},mode:"xy",},},tooltip:{callbacks:{label:(context)=>{const label=context.raw.genre;return`${label}:\u00A0${context.raw.r}\u00A0tracks`;},},},legend:{position:"bottom",},title:{display:true,text:"Genre\u00A0Distribution\u00A0and\u00A0Evolution",align:"center",font:{size:18,weight:"bold",},},},},});}).catch((error)=>console.error("Error:",error));}
-function getRandomColor(opacity){const r=Math.floor(Math.random()*255);const g=Math.floor(Math.random()*255);const b=Math.floor(Math.random()*255);return`rgba(${r},${g},${b},${opacity})`;}
-function displayGenreData(genre,period,data){const overlay=document.getElementById("genreOverlay");const genreTitle=document.getElementById("genre-title");const genreArtistsList=document.getElementById("genre-artists-list");const genreTracksList=document.getElementById("genre-tracks-list");genreTitle.textContent=`${genre}`;genreArtistsList.innerHTML=data.top_artists.map((artist)=>{const imageUrl=artist.images&&artist.images.length>0?artist.images[0].url:"/static/dist/img/default-artist.png";const spotifyUrl=artist.external_urls?.spotify||"#";return`<li class="grid-item artist-item"><img src="${imageUrl}"alt="${artist.name}"class="artist-image"><div><p title="${artist.name}">${artist.name}</p><div class="spotify-button"aria-label="Listen on Spotify"><i class="rawcon-spotify"onclick="window.open('${spotifyUrl}', '_blank')"></i><span class="spotify-text">View on Spotify</span></div></div></li>`;}).join("");genreTracksList.innerHTML=data.top_tracks.map((track)=>{const imageUrl=track.album&&track.album.images&&track.album.images.length>0?track.album.images[0].url:"/static/dist/img/default-album.png";const spotifyUrl=track.external_urls?.spotify||"#";return`<li class="grid-item track-item"><img src="${imageUrl}"alt="${track.name}"class="track-image"><div class="grid-column"><p title="${track.name}">${track.name}</p><p class="artist-name"title="${track.artists[0].name}">${track.artists[0].name}</p><div class="spotify-button"aria-label="Listen on Spotify"><i class="rawcon-spotify"onclick="window.open('${spotifyUrl}', '_blank')"></i><span class="spotify-text">Listen on Spotify</span></div></div></li>`;}).join("");overlay.style.display="block";}
-function closeGenreOverlay(){document.getElementById("genreOverlay").style.display="none";}
-document.querySelector(".close-btn").addEventListener("click",closeGenreOverlay);window.addEventListener("click",function(event){if(event.target==document.getElementById("genreOverlay")){closeGenreOverlay();}});function createEnhancedAudioFeaturesChart(audioFeaturesSummary,periodData){const ctx=document.getElementById("audioFeaturesChart").getContext("2d");const features=["acousticness","danceability","energy","instrumentalness","liveness","speechiness","valence","loudness","tempo",];const featureRanges={acousticness:[0,1],danceability:[0,1],energy:[0,1],instrumentalness:[0,1],liveness:[0,1],speechiness:[0,1],valence:[0,1],loudness:[-60,0],tempo:[0,250],};const featureExplanations={acousticness:"A confidence measure from 0.0 to 1.0 of whether the track is acoustic.",danceability:"Describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity. 0.0 is least danceable and 1.0 is most danceable.",energy:"Represents a perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy. Scale of 0.0 to 1.0.",instrumentalness:"Predicts whether a track contains no vocals. The closer the instrumentalness value is to 1.0, the greater likelihood the track contains no vocal content.",liveness:"Detects the presence of an audience in the recording. Higher liveness values represent an increased probability that the track was performed live. Scale of 0.0 to 1.0.",speechiness:"Detects the presence of spoken words in a track. Values above 0.66 describe tracks that are probably made entirely of spoken words, values between 0.33 and 0.66 describe tracks that may contain both music and speech, and values below 0.33 most likely represent music and other non-speech-like tracks.",valence:"A measure describing the musical positiveness conveyed by a track. Tracks with high valence sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry). Scale of 0.0 to 1.0.",loudness:"The overall loudness of a track in decibels (dB). Loudness values are averaged across the entire track. Values typically range between -60 and 0 db.",tempo:"The overall estimated tempo of a track in beats per minute (BPM).",};function normalizeFeature(feature,value){const[min,max]=featureRanges[feature];return(value-min)/(max-min);}
-function denormalizeFeature(feature,value){const[min,max]=featureRanges[feature];return value*(max-min)+min;}
-let chart=new Chart(ctx,{type:"radar",data:{labels:features,datasets:[{label:"Average",data:features.map((feature)=>normalizeFeature(feature,audioFeaturesSummary[currentPeriod][feature],),),backgroundColor:"rgba(29, 185, 84, 0.2)",borderColor:"rgb(29, 185, 84)",pointBackgroundColor:"rgb(29, 185, 84)",pointBorderColor:"#fff",pointHoverBackgroundColor:"#fff",pointHoverBorderColor:"rgb(29, 185, 84)",},{label:"Min",data:features.map((feature)=>normalizeFeature(feature,periodData[currentPeriod].min_values[feature],),),backgroundColor:"rgba(255, 99, 132, 0.2)",borderColor:"rgb(255, 99, 132)",pointBackgroundColor:"rgb(255, 99, 132)",pointBorderColor:"#fff",pointHoverBackgroundColor:"#fff",pointHoverBorderColor:"rgb(255, 99, 132)",},{label:"Max",data:features.map((feature)=>normalizeFeature(feature,periodData[currentPeriod].max_values[feature],),),backgroundColor:"rgba(54, 162, 235, 0.2)",borderColor:"rgb(54, 162, 235)",pointBackgroundColor:"rgb(54, 162, 235)",pointBorderColor:"#fff",pointHoverBackgroundColor:"#fff",pointHoverBorderColor:"rgb(54, 162, 235)",},],},options:{scales:{r:{angleLines:{display:false},suggestedMin:0,suggestedMax:1,pointLabels:{font:{size:12,},},ticks:{display:false,},},},plugins:{title:{display:true,text:"Explore your Audio Features",font:{size:18,weight:"bold",},padding:{top:10,bottom:10,},},legend:{display:true,position:"bottom",labels:{font:{size:12,},padding:20,},align:"center",},tooltip:{callbacks:{label:function(context){const feature=context.label.toLowerCase();const value=denormalizeFeature(feature,context.raw);const unit=feature==="loudness"?"dB":feature==="tempo"?"BPM":"";return`${value.toFixed(2)}${unit?" "+unit:""}`;},afterLabel:function(context){const feature=context.label.toLowerCase();const explanation=featureExplanations[feature];return wrapText(explanation,40);},},},},onHover:(event,activeElements)=>{if(activeElements.length>0){const datasetIndex=activeElements[0].datasetIndex;const index=activeElements[0].index;const feature=features[index];let trackInfo;let datasetLabel;if(datasetIndex===1){trackInfo=periodData[currentPeriod].min_track[feature];datasetLabel="Min";}else if(datasetIndex===2){trackInfo=periodData[currentPeriod].max_track[feature];datasetLabel="Max";}
-if(trackInfo){updateMinMaxTrack(feature,trackInfo,datasetLabel);}else{clearMinMaxTrack();}}else{}},},});function wrapText(text,maxLength){const words=text.split(" ");let lines=[];let currentLine="";words.forEach((word)=>{if((currentLine+word).length<=maxLength){currentLine+=(currentLine?" ":"")+word;}else{lines.push(currentLine);currentLine=word;}});lines.push(currentLine);return lines;}
-function updateChart(){if(!chart)return;const avgData=features.map((feature)=>normalizeFeature(feature,audioFeaturesSummary[currentPeriod][feature]),);chart.data.datasets=[{label:"Average",data:avgData,backgroundColor:"rgba(29, 185, 84, 0.2)",borderColor:"rgb(29, 185, 84)",pointBackgroundColor:"rgb(29, 185, 84)",pointBorderColor:"#fff",pointHoverBackgroundColor:"#fff",pointHoverBorderColor:"rgb(29, 185, 84)",},{label:"Min",data:features.map((feature)=>normalizeFeature(feature,periodData[currentPeriod].min_values[feature],),),backgroundColor:"rgba(255, 99, 132, 0.2)",borderColor:"rgb(255, 99, 132)",pointBackgroundColor:"rgb(255, 99, 132)",pointBorderColor:"#fff",pointHoverBackgroundColor:"#fff",pointHoverBorderColor:"rgb(255, 99, 132)",},{label:"Max",data:features.map((feature)=>normalizeFeature(feature,periodData[currentPeriod].max_values[feature],),),backgroundColor:"rgba(54, 162, 235, 0.2)",borderColor:"rgb(54, 162, 235)",pointBackgroundColor:"rgb(54, 162, 235)",pointBorderColor:"#fff",pointHoverBackgroundColor:"#fff",pointHoverBorderColor:"rgb(54, 162, 235)",},];chart.update();}
-function updateMinMaxTrack(feature,trackInfo,datasetLabel){const minMaxContainer=document.getElementById("minMaxTrack");const value=datasetLabel==="Min"?periodData[currentPeriod].min_values[feature]:datasetLabel==="Max"?periodData[currentPeriod].max_values[feature]:audioFeaturesSummary[currentPeriod][feature];const formattedValue=formatFeatureValue(feature,value);const albumArt=trackInfo.album.images[0]?.url||"/static/dist/img/default-album.png";const trackUrl=trackInfo.external_urls.spotify;const titleClass=datasetLabel==="Min"?"minmax-title-min":datasetLabel==="Max"?"minmax-title-max":"minmax-title-avg";minMaxContainer.innerHTML=`<h4 id="minmax-title"class="${titleClass}">${feature.charAt(0).toUpperCase()+feature.slice(1)}&nbsp;~&nbsp;${formattedValue}</h4><div class="track-info"><img src="${albumArt}"alt="${trackInfo.name}"class="album-art"><div class="track-details"><p class="minmax-track"title="${trackInfo.name}">${trackInfo.name}</p><p class="minmax-artist artist-name"title="${trackInfo.artists[0].name}">${trackInfo.artists[0].name}</p><div class="spotify-button"aria-label="Listen on Spotify"><i class="rawcon-spotify"onclick="window.open('${trackUrl}', '_blank')"></i><span class="spotify-text">Listen on Spotify</span></div></div></div>`;}
-function formatFeatureValue(feature,value){switch(feature){case"loudness":return`${value.toFixed(2)}dB`;case"tempo":return`${value.toFixed(2)}BPM`;case"popularity":return`${Math.round(value)}`;default:return value.toFixed(2);}}
-function clearMinMaxTrack(){}
-const controlsContainer=document.createElement("div");controlsContainer.className="audio-features-controls";document.getElementById("audioFeaturesChart").parentNode.insertBefore(controlsContainer,document.getElementById("audioFeaturesChart"),);updateChart();timeOptions.forEach((option)=>{option.addEventListener("click",()=>{timeOptions.forEach((opt)=>opt.classList.remove("selected"));option.classList.add("selected");const selectedValue=option.getAttribute("data-value");updateDisplay(selectedValue);currentPeriod=selectedValue;updateChart();});});}
-function createAudioFeaturesEvolutionChart(){fetch("/user/audio_features_evolution").then((response)=>response.json()).then((data)=>{const ctx=document.getElementById("audioFeaturesEvolutionChart").getContext("2d");const colors=["rgb(255, 99, 132)","rgb(255, 159, 64)","rgb(255, 205, 86)","rgb(75, 192, 192)","rgb(54, 162, 235)","rgb(153, 102, 255)","rgb(201, 203, 207)","rgb(255, 99, 255)","rgb(100, 200, 100)","rgb(200, 100, 100)",];const datasets=data.datasets.map((dataset,index)=>({...dataset,borderColor:colors[index],backgroundColor:colors[index].replace("rgb","rgba").replace(")",", 0.2)"),borderWidth:2,pointRadius:0,pointHoverRadius:0,fill:false,tension:0.4,}));new Chart(ctx,{type:"line",data:{labels:data.labels.map((label)=>{switch(label){case"short_term":return"Last\u00A04\u00A0Weeks";case"medium_term":return"Last\u00A06\u00A0Months";case"long_term":return"All\u00A0Time";default:return label;}}),datasets:datasets,},options:{responsive:true,plugins:{title:{display:true,text:"Audio\u00A0Features\u00A0Evolution",font:{size:18,weight:"bold",},},legend:{position:"right",labels:{boxWidth:15,padding:15,},},},scales:{x:{display:true,title:{display:true,text:"Time\u00A0Period",font:{weight:"bold",},},},y:{display:true,title:{display:true,text:"Feature\u00A0Value",font:{weight:"bold",},},suggestedMin:0,suggestedMax:1,},},interaction:{mode:"index",intersect:false,},hover:{mode:"nearest",intersect:true,},},});});}
-createGenreBubbleChart();createAudioFeaturesEvolutionChart();updateDisplay("short_term");createEnhancedAudioFeaturesChart(audioFeaturesSummary,periodData);const stickyPeriod=document.getElementById("sticky-period");const stickyPeriodText=document.getElementById("sticky-period-text");let timeSelectorRect=timeSelector.getBoundingClientRect();let timeSelectorBottom=timeSelectorRect.bottom+window.pageYOffset;function updateStickyPeriod(){const selectedOption=document.querySelector(".time-option.selected");if(selectedOption){stickyPeriodText.textContent="Your past "+selectedOption.textContent.trim();}}
-function handleScroll(){if(window.pageYOffset>timeSelectorBottom){stickyPeriod.classList.add("visible");}else{stickyPeriod.classList.remove("visible");}}
-function handleResize(){timeSelectorRect=timeSelector.getBoundingClientRect();timeSelectorBottom=timeSelectorRect.bottom+window.pageYOffset;}
-timeOptions.forEach((option)=>{option.addEventListener("click",function(){timeOptions.forEach((opt)=>opt.classList.remove("selected"));this.classList.add("selected");updateStickyPeriod();});});window.addEventListener("scroll",handleScroll);window.addEventListener("resize",handleResize);updateStickyPeriod();const blurbContainer=document.getElementById("stats-blurbs-container");function displayBlurbs(blurbs){blurbContainer.innerHTML="";blurbs.forEach((blurb,index)=>{const blurbElement=document.createElement("div");blurbElement.className="stat-blurb";const icon=document.createElement("i");icon.className=getRandomIcon();const textElement=document.createElement("p");textElement.textContent=blurb;blurbElement.appendChild(icon);blurbElement.appendChild(textElement);setTimeout(()=>{blurbElement.style.opacity="1";blurbElement.style.transform="translateY(0)";},index*200);blurbContainer.appendChild(blurbElement);});}
-function getRandomIcon(){const icons=["fas fa-chart-line","fas fa-music","fas fa-headphones","fas fa-guitar","fas fa-drum","fas fa-microphone-alt",];return icons[Math.floor(Math.random()*icons.length)];}
-function fetchBlurbs(){fetch("/user/stats_blurbs").then((response)=>response.json()).then((data)=>{displayBlurbs(data.blurbs);}).catch((error)=>{console.error("Error fetching stats blurbs:",error);blurbContainer.innerHTML='<p class="error-message">Unable to load stats blurbs. Please try again later.</p>';});}
-fetchBlurbs();});
+document.addEventListener("DOMContentLoaded", function () {
+  const timeSelector = document.querySelector(".time-selector");
+  const timeOptions = document.querySelectorAll(".time-option");
+  const topArtistsList = document.getElementById("topArtists");
+  const topTracksList = document.getElementById("topTracks");
+  const topGenresList = document.getElementById("topGenres");
+  let chart;
+  let artistsOffset = 0;
+  let tracksOffset = 0;
+  const ITEMS_PER_LOAD = 20;
+  let currentPeriod = "short_term";
+  function lazyLoadImages() {
+    const images = document.querySelectorAll("img.lazy-load");
+    const options = { root: null, rootMargin: "0px", threshold: 0.1 };
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          img.src = img.dataset.src;
+          img.classList.remove("lazy-load");
+          imageObserver.unobserve(img);
+        }
+      });
+    }, options);
+    images.forEach((img) => imageObserver.observe(img));
+  }
+  function getCurrentTimePeriod() {
+    const selectedOption = document.querySelector(".time-option.selected");
+    return selectedOption
+      ? selectedOption.getAttribute("data-value")
+      : "short_term";
+  }
+  function handleScroll(container, loadMoreFunction) {
+    if (container.scrollLeft > 20) {
+      container.classList.add("is-scrolled");
+    } else {
+      container.classList.remove("is-scrolled");
+    }
+    if (
+      container.scrollLeft + container.clientWidth >=
+      container.scrollWidth - 20
+    ) {
+      loadMoreFunction(getCurrentTimePeriod());
+    }
+  }
+  const artistsContainer = topArtistsList.parentElement;
+  const tracksContainer = topTracksList.parentElement;
+  artistsContainer.addEventListener("scroll", () =>
+    handleScroll(artistsContainer, loadMoreArtists),
+  );
+  tracksContainer.addEventListener("scroll", () =>
+    handleScroll(tracksContainer, loadMoreTracks),
+  );
+  function updateDisplay(period) {
+    artistsOffset = 0;
+    tracksOffset = 0;
+    topArtistsList.innerHTML = "";
+    topTracksList.innerHTML = "";
+    loadMoreArtists(period);
+    loadMoreTracks(period);
+    updateTopGenres(period);
+    lazyLoadImages();
+  }
+  function loadMoreArtists(period) {
+    if (topArtistsSummary && topArtistsSummary[period]) {
+      const artists = topArtistsSummary[period].slice(
+        artistsOffset,
+        artistsOffset + ITEMS_PER_LOAD,
+      );
+      displayArtists(artists);
+      artistsOffset += ITEMS_PER_LOAD;
+    }
+  }
+  function loadMoreTracks(period) {
+    if (topTracksSummary && topTracksSummary[period]) {
+      const tracks = topTracksSummary[period].slice(
+        tracksOffset,
+        tracksOffset + ITEMS_PER_LOAD,
+      );
+      displayTracks(tracks);
+      tracksOffset += ITEMS_PER_LOAD;
+    }
+  }
+  function displayArtists(artists) {
+    const fragment = document.createDocumentFragment();
+    artists.forEach((artist) => {
+      const div = document.createElement("div");
+      div.className = "grid-item artist-item";
+      div.innerHTML = `<img src="/static/dist/img/default-artist.svg"data-src="${
+        artist.image_url || "/static/dist/img/default-artist.svg"
+      }"alt="${artist.name}"class="artist-image lazy-load"loading="lazy"><div><p title="${artist.name}">${artist.name}</p><div class="spotify-button"aria-label="Listen on Spotify"><i class="rawcon-spotify"onclick="window.open('${artist.spotify_url}', '_blank')"></i><span class="spotify-text">View on Spotify</span></div></div>`;
+      fragment.appendChild(div);
+    });
+    topArtistsList.appendChild(fragment);
+    lazyLoadImages();
+  }
+  function displayTracks(tracks) {
+    const fragment = document.createDocumentFragment();
+    tracks.forEach((track) => {
+      const div = document.createElement("div");
+      div.className = "grid-item track-item";
+      div.innerHTML = `<img src="/static/dist/img/default-track.svg"data-src="${
+        track.image_url || "/static/dist/img/default-track.svg"
+      }"alt="${track.name}"class="track-image lazy-load"loading="lazy"><div class="grid-column"><p title="${track.name}">${track.name}</p><p class="artist-name"title="${track.artists.join(",")}">${track.artists.join(", ")}</p><div class="spotify-button"aria-label="Listen on Spotify"><i class="rawcon-spotify"onclick="window.open('${track.spotify_url}', '_blank')"></i><span class="spotify-text">Listen on Spotify</span></div></div>`;
+      fragment.appendChild(div);
+    });
+    topTracksList.appendChild(fragment);
+    lazyLoadImages();
+  }
+  function updateTopGenres(period) {
+    if (topGenres && topGenres[period]) {
+      topGenresList.innerHTML = topGenres[period]
+        .map(
+          (genre) =>
+            `<a href="#"class="genre-link"data-period="${period}"data-genre="${genre[0]}">${genre[0]}</a>`,
+        )
+        .join(" ");
+      addGenreEventListeners();
+    } else {
+      topGenresList.innerHTML = "No data available";
+    }
+  }
+  function addGenreEventListeners() {
+    const genreLinks = document.querySelectorAll(".genre-link");
+    genreLinks.forEach((link) => {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        const period = this.dataset.period;
+        const genre = this.dataset.genre;
+        fetchGenreData(period, genre);
+      });
+    });
+  }
+  function fetchGenreData(period, genre) {
+    fetch(`/user/genre_data/${period}/${encodeURIComponent(genre)}`)
+      .then((response) => response.json())
+      .then((data) => {
+        displayGenreData(genre, period, data);
+      })
+      .catch((error) => console.error("Error:", error));
+  }
+  function createGenreBubbleChart() {
+    fetch("/user/genre_bubble_chart")
+      .then((response) => response.json())
+      .then((data) => {
+        const ctx = document
+          .getElementById("genreBubbleChart")
+          .getContext("2d");
+        const datasets = data.map((period, index) => ({
+          label:
+            period.period === "short_term"
+              ? "Last\u00A04\u00A0Weeks"
+              : period.period === "medium_term"
+                ? "Last\u00A06\u00A0Months"
+                : "All\u00A0Time",
+          data: period.data,
+          backgroundColor:
+            index === 0
+              ? "rgba(75, 192, 192, 0.5)"
+              : index === 1
+                ? "rgba(54, 162, 235, 0.5)"
+                : "rgba(255, 99, 132, 0.5)",
+          borderColor:
+            index === 0
+              ? "rgb(75, 192, 192)"
+              : index === 1
+                ? "rgb(54, 162, 235)"
+                : "rgba(255, 99, 132, 1)",
+          borderWidth: 1,
+        }));
+        new Chart(ctx, {
+          type: "bubble",
+          data: { datasets: datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                title: {
+                  display: false,
+                  text: "Energy",
+                  font: { size: 14, weight: "bold" },
+                },
+                ticks: {
+                  align: "start",
+                  callback: function (value, index, values) {
+                    if (index === 0) return "Low\u00A0Energy";
+                    if (index === values.length - 1) return "High\u00A0Energy";
+                    return "";
+                  },
+                  crossAlign: "near",
+                  maxRotation: 0,
+                  autoSkip: false,
+                },
+              },
+              y: {
+                title: {
+                  display: false,
+                  text: "Danceability",
+                  font: { size: 14, weight: "bold" },
+                },
+                ticks: {
+                  align: "start",
+                  callback: function (value, index, values) {
+                    if (index === 0) return "Less\u00A0Danceable";
+                    if (index === values.length - 1)
+                      return "More\u00A0Danceable";
+                    return "";
+                  },
+                },
+              },
+            },
+            plugins: {
+              zoom: {
+                pan: { enabled: true, mode: "xy" },
+                zoom: {
+                  wheel: { enabled: true },
+                  pinch: { enabled: true },
+                  mode: "xy",
+                },
+              },
+              tooltip: {
+                callbacks: {
+                  label: (context) => {
+                    const label = context.raw.genre;
+                    return `${label}:\u00A0${context.raw.r}\u00A0tracks`;
+                  },
+                },
+              },
+              legend: { position: "bottom" },
+              title: {
+                display: true,
+                text: "Genre\u00A0Distribution\u00A0and\u00A0Evolution",
+                align: "center",
+                font: { size: 18, weight: "bold" },
+              },
+            },
+          },
+        });
+      })
+      .catch((error) => console.error("Error:", error));
+  }
+  function getRandomColor(opacity) {
+    const r = Math.floor(Math.random() * 255);
+    const g = Math.floor(Math.random() * 255);
+    const b = Math.floor(Math.random() * 255);
+    return `rgba(${r},${g},${b},${opacity})`;
+  }
+  function displayGenreData(genre, period, data) {
+    const overlay = document.getElementById("genreOverlay");
+    const genreTitle = document.getElementById("genre-title");
+    const genreArtistsList = document.getElementById("genre-artists-list");
+    const genreTracksList = document.getElementById("genre-tracks-list");
+    genreTitle.textContent = `${genre}`;
+    genreArtistsList.innerHTML = data.top_artists
+      .map((artist) => {
+        const imageUrl =
+          artist.images && artist.images.length > 0
+            ? artist.images[0].url
+            : "/static/dist/img/default-artist.svg";
+        const spotifyUrl = artist.external_urls?.spotify || "#";
+        return `<li class="grid-item artist-item"><img src="${imageUrl}"alt="${artist.name}"class="artist-image"><div><p title="${artist.name}">${artist.name}</p><div class="spotify-button"aria-label="Listen on Spotify"><i class="rawcon-spotify"onclick="window.open('${spotifyUrl}', '_blank')"></i><span class="spotify-text">View on Spotify</span></div></div></li>`;
+      })
+      .join("");
+    genreTracksList.innerHTML = data.top_tracks
+      .map((track) => {
+        const imageUrl =
+          track.album && track.album.images && track.album.images.length > 0
+            ? track.album.images[0].url
+            : "/static/dist/img/default-album.svg";
+        const spotifyUrl = track.external_urls?.spotify || "#";
+        return `<li class="grid-item track-item"><img src="${imageUrl}"alt="${track.name}"class="track-image"><div class="grid-column"><p title="${track.name}">${track.name}</p><p class="artist-name"title="${track.artists[0].name}">${track.artists[0].name}</p><div class="spotify-button"aria-label="Listen on Spotify"><i class="rawcon-spotify"onclick="window.open('${spotifyUrl}', '_blank')"></i><span class="spotify-text">Listen on Spotify</span></div></div></li>`;
+      })
+      .join("");
+    overlay.style.display = "block";
+  }
+  function closeGenreOverlay() {
+    document.getElementById("genreOverlay").style.display = "none";
+  }
+  document
+    .querySelector(".close-btn")
+    .addEventListener("click", closeGenreOverlay);
+  window.addEventListener("click", function (event) {
+    if (event.target == document.getElementById("genreOverlay")) {
+      closeGenreOverlay();
+    }
+  });
+  function createEnhancedAudioFeaturesChart(audioFeaturesSummary, periodData) {
+    const ctx = document.getElementById("audioFeaturesChart").getContext("2d");
+    const features = [
+      "acousticness",
+      "danceability",
+      "energy",
+      "instrumentalness",
+      "liveness",
+      "speechiness",
+      "valence",
+      "loudness",
+      "tempo",
+    ];
+    const featureRanges = {
+      acousticness: [0, 1],
+      danceability: [0, 1],
+      energy: [0, 1],
+      instrumentalness: [0, 1],
+      liveness: [0, 1],
+      speechiness: [0, 1],
+      valence: [0, 1],
+      loudness: [-60, 0],
+      tempo: [0, 250],
+    };
+    const featureExplanations = {
+      acousticness:
+        "A confidence measure from 0.0 to 1.0 of whether the track is acoustic.",
+      danceability:
+        "Describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity. 0.0 is least danceable and 1.0 is most danceable.",
+      energy:
+        "Represents a perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy. Scale of 0.0 to 1.0.",
+      instrumentalness:
+        "Predicts whether a track contains no vocals. The closer the instrumentalness value is to 1.0, the greater likelihood the track contains no vocal content.",
+      liveness:
+        "Detects the presence of an audience in the recording. Higher liveness values represent an increased probability that the track was performed live. Scale of 0.0 to 1.0.",
+      speechiness:
+        "Detects the presence of spoken words in a track. Values above 0.66 describe tracks that are probably made entirely of spoken words, values between 0.33 and 0.66 describe tracks that may contain both music and speech, and values below 0.33 most likely represent music and other non-speech-like tracks.",
+      valence:
+        "A measure describing the musical positiveness conveyed by a track. Tracks with high valence sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry). Scale of 0.0 to 1.0.",
+      loudness:
+        "The overall loudness of a track in decibels (dB). Loudness values are averaged across the entire track. Values typically range between -60 and 0 db.",
+      tempo:
+        "The overall estimated tempo of a track in beats per minute (BPM).",
+    };
+    function normalizeFeature(feature, value) {
+      const [min, max] = featureRanges[feature];
+      return (value - min) / (max - min);
+    }
+    function denormalizeFeature(feature, value) {
+      const [min, max] = featureRanges[feature];
+      return value * (max - min) + min;
+    }
+    let chart = new Chart(ctx, {
+      type: "radar",
+      data: {
+        labels: features,
+        datasets: [
+          {
+            label: "Average",
+            data: features.map((feature) =>
+              normalizeFeature(
+                feature,
+                audioFeaturesSummary[currentPeriod][feature],
+              ),
+            ),
+            backgroundColor: "rgba(29, 185, 84, 0.2)",
+            borderColor: "rgb(29, 185, 84)",
+            pointBackgroundColor: "rgb(29, 185, 84)",
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: "rgb(29, 185, 84)",
+          },
+          {
+            label: "Min",
+            data: features.map((feature) =>
+              normalizeFeature(
+                feature,
+                periodData[currentPeriod].min_values[feature],
+              ),
+            ),
+            backgroundColor: "rgba(255, 99, 132, 0.2)",
+            borderColor: "rgb(255, 99, 132)",
+            pointBackgroundColor: "rgb(255, 99, 132)",
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: "rgb(255, 99, 132)",
+          },
+          {
+            label: "Max",
+            data: features.map((feature) =>
+              normalizeFeature(
+                feature,
+                periodData[currentPeriod].max_values[feature],
+              ),
+            ),
+            backgroundColor: "rgba(54, 162, 235, 0.2)",
+            borderColor: "rgb(54, 162, 235)",
+            pointBackgroundColor: "rgb(54, 162, 235)",
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: "rgb(54, 162, 235)",
+          },
+        ],
+      },
+      options: {
+        scales: {
+          r: {
+            angleLines: { display: false },
+            suggestedMin: 0,
+            suggestedMax: 1,
+            pointLabels: { font: { size: 12 } },
+            ticks: { display: false },
+          },
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: "Explore your Audio Features",
+            font: { size: 18, weight: "bold" },
+            padding: { top: 10, bottom: 10 },
+          },
+          legend: {
+            display: true,
+            position: "bottom",
+            labels: { font: { size: 12 }, padding: 20 },
+            align: "center",
+          },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                const feature = context.label.toLowerCase();
+                const value = denormalizeFeature(feature, context.raw);
+                const unit =
+                  feature === "loudness"
+                    ? "dB"
+                    : feature === "tempo"
+                      ? "BPM"
+                      : "";
+                return `${value.toFixed(2)}${unit ? " " + unit : ""}`;
+              },
+              afterLabel: function (context) {
+                const feature = context.label.toLowerCase();
+                const explanation = featureExplanations[feature];
+                return wrapText(explanation, 40);
+              },
+            },
+          },
+        },
+        onHover: (event, activeElements) => {
+          if (activeElements.length > 0) {
+            const datasetIndex = activeElements[0].datasetIndex;
+            const index = activeElements[0].index;
+            const feature = features[index];
+            let trackInfo;
+            let datasetLabel;
+            if (datasetIndex === 1) {
+              trackInfo = periodData[currentPeriod].min_track[feature];
+              datasetLabel = "Min";
+            } else if (datasetIndex === 2) {
+              trackInfo = periodData[currentPeriod].max_track[feature];
+              datasetLabel = "Max";
+            }
+            if (trackInfo) {
+              updateMinMaxTrack(feature, trackInfo, datasetLabel);
+            } else {
+              clearMinMaxTrack();
+            }
+          } else {
+          }
+        },
+      },
+    });
+    function wrapText(text, maxLength) {
+      const words = text.split(" ");
+      let lines = [];
+      let currentLine = "";
+      words.forEach((word) => {
+        if ((currentLine + word).length <= maxLength) {
+          currentLine += (currentLine ? " " : "") + word;
+        } else {
+          lines.push(currentLine);
+          currentLine = word;
+        }
+      });
+      lines.push(currentLine);
+      return lines;
+    }
+    function updateChart() {
+      if (!chart) return;
+      const avgData = features.map((feature) =>
+        normalizeFeature(feature, audioFeaturesSummary[currentPeriod][feature]),
+      );
+      chart.data.datasets = [
+        {
+          label: "Average",
+          data: avgData,
+          backgroundColor: "rgba(29, 185, 84, 0.2)",
+          borderColor: "rgb(29, 185, 84)",
+          pointBackgroundColor: "rgb(29, 185, 84)",
+          pointBorderColor: "#fff",
+          pointHoverBackgroundColor: "#fff",
+          pointHoverBorderColor: "rgb(29, 185, 84)",
+        },
+        {
+          label: "Min",
+          data: features.map((feature) =>
+            normalizeFeature(
+              feature,
+              periodData[currentPeriod].min_values[feature],
+            ),
+          ),
+          backgroundColor: "rgba(255, 99, 132, 0.2)",
+          borderColor: "rgb(255, 99, 132)",
+          pointBackgroundColor: "rgb(255, 99, 132)",
+          pointBorderColor: "#fff",
+          pointHoverBackgroundColor: "#fff",
+          pointHoverBorderColor: "rgb(255, 99, 132)",
+        },
+        {
+          label: "Max",
+          data: features.map((feature) =>
+            normalizeFeature(
+              feature,
+              periodData[currentPeriod].max_values[feature],
+            ),
+          ),
+          backgroundColor: "rgba(54, 162, 235, 0.2)",
+          borderColor: "rgb(54, 162, 235)",
+          pointBackgroundColor: "rgb(54, 162, 235)",
+          pointBorderColor: "#fff",
+          pointHoverBackgroundColor: "#fff",
+          pointHoverBorderColor: "rgb(54, 162, 235)",
+        },
+      ];
+      chart.update();
+    }
+    function updateMinMaxTrack(feature, trackInfo, datasetLabel) {
+      const minMaxContainer = document.getElementById("minMaxTrack");
+      const value =
+        datasetLabel === "Min"
+          ? periodData[currentPeriod].min_values[feature]
+          : datasetLabel === "Max"
+            ? periodData[currentPeriod].max_values[feature]
+            : audioFeaturesSummary[currentPeriod][feature];
+      const formattedValue = formatFeatureValue(feature, value);
+      const albumArt =
+        trackInfo.album.images[0]?.url || "/static/dist/img/default-album.svg";
+      const trackUrl = trackInfo.external_urls.spotify;
+      const titleClass =
+        datasetLabel === "Min"
+          ? "minmax-title-min"
+          : datasetLabel === "Max"
+            ? "minmax-title-max"
+            : "minmax-title-avg";
+      minMaxContainer.innerHTML = `<h4 id="minmax-title"class="${titleClass}">${feature.charAt(0).toUpperCase() + feature.slice(1)}&nbsp;~&nbsp;${formattedValue}</h4><div class="track-info"><img src="${albumArt}"alt="${trackInfo.name}"class="album-art"><div class="track-details"><p class="minmax-track"title="${trackInfo.name}">${trackInfo.name}</p><p class="minmax-artist artist-name"title="${trackInfo.artists[0].name}">${trackInfo.artists[0].name}</p><div class="spotify-button"aria-label="Listen on Spotify"><i class="rawcon-spotify"onclick="window.open('${trackUrl}', '_blank')"></i><span class="spotify-text">Listen on Spotify</span></div></div></div>`;
+    }
+    function formatFeatureValue(feature, value) {
+      switch (feature) {
+        case "loudness":
+          return `${value.toFixed(2)}dB`;
+        case "tempo":
+          return `${value.toFixed(2)}BPM`;
+        case "popularity":
+          return `${Math.round(value)}`;
+        default:
+          return value.toFixed(2);
+      }
+    }
+    function clearMinMaxTrack() {}
+    const controlsContainer = document.createElement("div");
+    controlsContainer.className = "audio-features-controls";
+    document
+      .getElementById("audioFeaturesChart")
+      .parentNode.insertBefore(
+        controlsContainer,
+        document.getElementById("audioFeaturesChart"),
+      );
+    updateChart();
+    timeOptions.forEach((option) => {
+      option.addEventListener("click", () => {
+        timeOptions.forEach((opt) => opt.classList.remove("selected"));
+        option.classList.add("selected");
+        const selectedValue = option.getAttribute("data-value");
+        updateDisplay(selectedValue);
+        currentPeriod = selectedValue;
+        updateChart();
+      });
+    });
+  }
+  function createAudioFeaturesEvolutionChart() {
+    fetch("/user/audio_features_evolution")
+      .then((response) => response.json())
+      .then((data) => {
+        const ctx = document
+          .getElementById("audioFeaturesEvolutionChart")
+          .getContext("2d");
+        const colors = [
+          "rgb(255, 99, 132)",
+          "rgb(255, 159, 64)",
+          "rgb(255, 205, 86)",
+          "rgb(75, 192, 192)",
+          "rgb(54, 162, 235)",
+          "rgb(153, 102, 255)",
+          "rgb(201, 203, 207)",
+          "rgb(255, 99, 255)",
+          "rgb(100, 200, 100)",
+          "rgb(200, 100, 100)",
+        ];
+        const datasets = data.datasets.map((dataset, index) => ({
+          ...dataset,
+          borderColor: colors[index],
+          backgroundColor: colors[index]
+            .replace("rgb", "rgba")
+            .replace(")", ", 0.2)"),
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          fill: false,
+          tension: 0.4,
+        }));
+        new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: data.labels.map((label) => {
+              switch (label) {
+                case "short_term":
+                  return "Last\u00A04\u00A0Weeks";
+                case "medium_term":
+                  return "Last\u00A06\u00A0Months";
+                case "long_term":
+                  return "All\u00A0Time";
+                default:
+                  return label;
+              }
+            }),
+            datasets: datasets,
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: "Audio\u00A0Features\u00A0Evolution",
+                font: { size: 18, weight: "bold" },
+              },
+              legend: {
+                position: "right",
+                labels: { boxWidth: 15, padding: 15 },
+              },
+            },
+            scales: {
+              x: {
+                display: true,
+                title: {
+                  display: true,
+                  text: "Time\u00A0Period",
+                  font: { weight: "bold" },
+                },
+              },
+              y: {
+                display: true,
+                title: {
+                  display: true,
+                  text: "Feature\u00A0Value",
+                  font: { weight: "bold" },
+                },
+                suggestedMin: 0,
+                suggestedMax: 1,
+              },
+            },
+            interaction: { mode: "index", intersect: false },
+            hover: { mode: "nearest", intersect: true },
+          },
+        });
+      });
+  }
+  createGenreBubbleChart();
+  createAudioFeaturesEvolutionChart();
+  updateDisplay("short_term");
+  createEnhancedAudioFeaturesChart(audioFeaturesSummary, periodData);
+  const stickyPeriod = document.getElementById("sticky-period");
+  const stickyPeriodText = document.getElementById("sticky-period-text");
+  let timeSelectorRect = timeSelector.getBoundingClientRect();
+  let timeSelectorBottom = timeSelectorRect.bottom + window.pageYOffset;
+  function updateStickyPeriod() {
+    const selectedOption = document.querySelector(".time-option.selected");
+    if (selectedOption) {
+      stickyPeriodText.textContent =
+        "Your past " + selectedOption.textContent.trim();
+    }
+  }
+  function handleScroll() {
+    if (window.pageYOffset > timeSelectorBottom) {
+      stickyPeriod.classList.add("visible");
+    } else {
+      stickyPeriod.classList.remove("visible");
+    }
+  }
+  function handleResize() {
+    timeSelectorRect = timeSelector.getBoundingClientRect();
+    timeSelectorBottom = timeSelectorRect.bottom + window.pageYOffset;
+  }
+  timeOptions.forEach((option) => {
+    option.addEventListener("click", function () {
+      timeOptions.forEach((opt) => opt.classList.remove("selected"));
+      this.classList.add("selected");
+      updateStickyPeriod();
+    });
+  });
+  window.addEventListener("scroll", handleScroll);
+  window.addEventListener("resize", handleResize);
+  updateStickyPeriod();
+  const blurbContainer = document.getElementById("stats-blurbs-container");
+  function displayBlurbs(blurbs) {
+    blurbContainer.innerHTML = "";
+    blurbs.forEach((blurb, index) => {
+      const blurbElement = document.createElement("div");
+      blurbElement.className = "stat-blurb";
+      const icon = document.createElement("i");
+      icon.className = getRandomIcon();
+      const textElement = document.createElement("p");
+      textElement.textContent = blurb;
+      blurbElement.appendChild(icon);
+      blurbElement.appendChild(textElement);
+      setTimeout(() => {
+        blurbElement.style.opacity = "1";
+        blurbElement.style.transform = "translateY(0)";
+      }, index * 200);
+      blurbContainer.appendChild(blurbElement);
+    });
+  }
+  function getRandomIcon() {
+    const icons = [
+      "fas fa-chart-line",
+      "fas fa-music",
+      "fas fa-headphones",
+      "fas fa-guitar",
+      "fas fa-drum",
+      "fas fa-microphone-alt",
+    ];
+    return icons[Math.floor(Math.random() * icons.length)];
+  }
+  function fetchBlurbs() {
+    fetch("/user/stats_blurbs")
+      .then((response) => response.json())
+      .then((data) => {
+        displayBlurbs(data.blurbs);
+      })
+      .catch((error) => {
+        console.error("Error fetching stats blurbs:", error);
+        blurbContainer.innerHTML =
+          '<p class="error-message">Unable to load stats blurbs. Please try again later.</p>';
+      });
+  }
+  fetchBlurbs();
+});

@@ -80,7 +80,7 @@ def create_app():
 
         if os.getenv("FLASK_ENV") == "development":
 
-            @app.route("/trigger/update-stale-user-data", methods=["POST"])
+            @app.route("/trigger/update-stale-users", methods=["POST"])
             @csrf.exempt
             def trigger_update_stale_user_data():
                 celery.send_task("tasks.update_stale_user_data")
@@ -92,7 +92,7 @@ def create_app():
                 celery.send_task("tasks.delete_inactive_users")
                 return jsonify({"message": "Task delete_inactive_users triggered successfully"}), 202
 
-            @app.route("/trigger/clear_all_caches")
+            @app.route("/trigger/clear-cache")
             @csrf.exempt
             def clear_caches_route():
                 cache.clear()

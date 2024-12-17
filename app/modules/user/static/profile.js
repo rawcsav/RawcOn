@@ -331,7 +331,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const imageUrl =
           artist.images && artist.images.length > 0
             ? artist.images[0].url
-            : "/static/dist/img/default-artist.png";
+            : "/static/dist/img/default-artist.svg";
         const spotifyUrl = artist.external_urls?.spotify || "#";
 
         return `
@@ -354,7 +354,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const imageUrl =
           track.album && track.album.images && track.album.images.length > 0
             ? track.album.images[0].url
-            : "/static/dist/img/default-album.png";
+            : "/static/dist/img/default-album.svg";
         const spotifyUrl = track.external_urls?.spotify || "#";
 
         return `
@@ -672,7 +672,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const formattedValue = formatFeatureValue(feature, value);
 
       const albumArt =
-        trackInfo.album.images[0]?.url || "/static/dist/img/default-album.png";
+        trackInfo.album.images[0]?.url || "/static/dist/img/default-album.svg";
       const trackUrl = trackInfo.external_urls.spotify;
 
       // Determine which class to apply based on datasetLabel
