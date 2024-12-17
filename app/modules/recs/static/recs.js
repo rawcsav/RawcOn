@@ -262,49 +262,49 @@ const uiModule = (() => {
 
   const displayRecommendations = (recommendations) => {
     elements.resultsContainer.innerHTML = "";
-
     recommendations.forEach((trackInfo) => {
       const trackElement = util.createElement("div", "result-item");
       trackElement.innerHTML = `
-      <div class="result-cover-art-container">
-        <div class="cover-art-container">
-          <img src="${trackInfo.cover_art}" alt="Cover Art" class="result-cover-art">
+        <div class="result-cover-art-container">
+          <div class="cover-art-container">
+            <img src="${trackInfo.cover_art}" alt="Cover Art" class="result-cover-art">
+          </div>
+          <div class="caption">
+            <h2 title="${trackInfo.trackName}"><i class="rawcon-music"></i>${trackInfo.trackName}</h2>
+            <p title="${trackInfo.artist}"><i class="rawcon-user-music"></i>${trackInfo.artist}</p>
+            <a href="${trackInfo.trackUrl}" target="_blank" rel="noopener noreferrer">
+              <i class="rawcon-spotify"></i>Play on Spotify
+            </a>
+          </div>
+          ${
+            trackInfo.preview
+              ? `<div class="preview play-button noselect" id="play_${trackInfo.trackid}"
+                   data-tooltip-play="Play Preview"
+                   data-tooltip-pause="Pause Preview">
+                   <i class="rawcon-play"></i>
+                 </div>`
+              : `<div class="no-preview">Preview N/A</div>`
+          }
         </div>
-        <div class="caption">
-          <h2 title="${trackInfo.trackName}"><i class="rawcon-music"></i>${trackInfo.trackName}</h2>
-          <p title="${trackInfo.artist}"><i class="rawcon-user-music"></i>${trackInfo.artist}</p>
-          <a href="${trackInfo.trackUrl}" target="_blank" rel="noopener noreferrer">
-            <i class="rawcon-spotify"></i>Play on Spotify
+        <div class="dropdown-content">
+          <a href="#" class="add-to-saved" data-trackid="${trackInfo.trackid}"
+             data-tooltip-liked="Remove from Liked Songs"
+             data-tooltip-unliked="Add to Liked Songs">
+            <i class="heart-icon ${trackInfo.is_saved ? "rawcon-spotify-liked" : "rawcon-spotify-like"}"></i>
+          </a>
+          <a href="#" class="add-to-playlist" data-trackid="${trackInfo.trackid}"
+             data-tooltip="Add to Playlist">
+            <i class="plus-icon rawcon-album-plus"></i>
           </a>
         </div>
         ${
           trackInfo.preview
-            ? `<div class="preview play-button noselect" id="play_${trackInfo.trackid}" 
-                data-tooltip-play="Play Preview" 
-                data-tooltip-pause="Pause Preview">
-                <i class="rawcon-play"></i>
-               </div>`
-            : `<div class="no-preview">Preview N/A</div>`
-        }
-      </div>
-      <div class="dropdown-content">
-        <a href="#" class="add-to-saved" data-trackid="${trackInfo.trackid}" data-tooltip-liked="Remove from Liked Songs" data-tooltip-unliked="Add to Liked Songs">
-          <i class="heart-icon rawcon-spotify-like"></i>
-        </a>
-        <a href="#" class="add-to-playlist" data-trackid="${trackInfo.trackid}" data-tooltip="Add to Playlist">
-          <i class="plus-icon rawcon-album-plus"></i>
-        </a>
-      </div>
-      ${
-        trackInfo.preview
-          ? `<audio class="audio-player" id="audio_${trackInfo.trackid}">
-               <source src="${trackInfo.preview}" type="audio/mpeg">
-               Your browser does not support the audio element.
-             </audio>`
-          : ""
-      }
-    `;
-
+            ? `<audio class="audio-player" id="audio_${trackInfo.trackid}">
+                <source src="${trackInfo.preview}" type="audio/mpeg">
+                Your browser does not support the audio element.
+               </audio>`
+            : ""
+        }`;
       elements.resultsContainer.appendChild(trackElement);
       if (trackInfo.preview) {
         audioModule.setupPlayToggle(trackInfo.trackid);
@@ -543,7 +543,6 @@ const audioModule = (() => {
 
   return { setupPlayToggle };
 })();
-// Playlist module
 const playlistModule = (() => {
   const addToPlaylist = async (trackId, playlistId) => {
     try {
@@ -621,8 +620,8 @@ const trackModule = (() => {
         body: JSON.stringify({ track_id: trackId }),
       });
       if (response.ok) {
-        heartIcon.classList.add("liked");
-        // Update tooltip text through the parent anchor
+        heartIcon.classList.remove("rawcon-spotify-like");
+        heartIcon.classList.add("rawcon-spotify-liked");
         showToast("Added to Liked Songs.", "success");
       } else {
         throw new Error("Error liking the track");
@@ -644,8 +643,9 @@ const trackModule = (() => {
         body: JSON.stringify({ track_id: trackId }),
       });
       if (response.ok) {
+        heartIcon.classList.remove("rawcon-spotify-liked");
+        heartIcon.classList.add("rawcon-spotify-like");
         showToast("Removed from Liked Songs.", "success");
-        heartIcon.classList.remove("liked");
       } else {
         throw new Error("Error unsaving the track");
       }
@@ -703,7 +703,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .querySelector(".heart-icon");
       const trackId = event.target.closest(".add-to-saved").dataset.trackid;
 
-      if (heartIcon.classList.contains("liked")) {
+      if (heartIcon.classList.contains("rawcon-spotify-liked")) {
         trackModule.unsaveTrack(trackId, heartIcon);
       } else {
         trackModule.saveTrack(trackId, heartIcon);

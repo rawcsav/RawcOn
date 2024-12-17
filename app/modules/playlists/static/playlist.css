@@ -282,7 +282,6 @@ button:hover {
   padding: var(--space-5);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  white-space: pre-wrap;
 }
 
 #minMaxTrack p {
@@ -494,6 +493,11 @@ button:hover {
   gap: var(--space-12);
   width: 85%;
   padding: var(--space-5);
+}
+
+#feature-stats li {
+  background-color: var(--neutral-100);
+  padding: 1rem;
 }
 
 #feature-stats li {

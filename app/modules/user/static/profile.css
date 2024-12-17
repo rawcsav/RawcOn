@@ -91,7 +91,6 @@ select {
   border-radius: var(--radius-lg);
   font-weight: 700;
   box-shadow: var(--shadow-sm);
-  white-space: pre-wrap;
 }
 
 .grid-item a {
@@ -282,7 +281,7 @@ h4 {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.71);
   z-index: 1000;
   overflow-y: auto;
 }

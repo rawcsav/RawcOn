@@ -65,6 +65,8 @@ def create_app():
 
         from app.util.assets_util import compile_static_assets
 
+        assets.debug = True  # Enable debug mode to see more information
+
         compile_static_assets(assets)
 
         @app.before_request

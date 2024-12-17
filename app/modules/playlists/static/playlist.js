@@ -927,7 +927,6 @@ const audioModule = (() => {
   return { setupPlayToggle };
 })();
 
-// Track actions module
 const trackActionsModule = (() => {
   const addToPlaylist = (playlistId, trackId, plusIcon) => {
     fetch("/recs/add_to_playlist", {

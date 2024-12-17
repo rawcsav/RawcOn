@@ -12,7 +12,7 @@ html {
 .presents-text {
   font-family: var(--ff-serif);
   font-size: var(--text-5xl);
-  color: black;
+  color: #000000;
   line-height: 1;
   margin-left: var(--space-8);
 }
