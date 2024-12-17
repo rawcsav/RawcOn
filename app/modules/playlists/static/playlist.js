@@ -497,7 +497,7 @@ const chartModule = (() => {
             ${feature.charAt(0).toUpperCase() + feature.slice(1)}&nbsp;~&nbsp;${formattedValue}
         </h4>
         <div class="track-info">
-            <img src="${albumArt || "/static/dist/img/default-album.png"}" alt="${trackName}" class="album-art">
+            <img src="${albumArt || "/static/dist/img/default-album.svg"}" alt="${trackName}" class="album-art">
             <div class="track-details">
                 <p class="minmax-track" title="${trackName}">${trackName}</p>
                 <p class="minmax-artist artist-name" title="${artistName}">${artistName}</p>
@@ -539,10 +539,6 @@ const chartModule = (() => {
       default:
         return value.toFixed(2);
     }
-  }
-
-  function clearMinMaxTrack() {
-    // Do not clear the min-max track info to keep it on screen
   }
 
   const initGenreBubbleChart = (genreData, genreScores) => {
@@ -813,7 +809,7 @@ const recommendationModule = (() => {
         }
       } else if (target.classList.contains("add-to-saved")) {
         const heartIcon = target.querySelector("i");
-        if (heartIcon.classList.contains("liked")) {
+        if (heartIcon.classList.contains("rawcon-spotify-liked")) {
           trackActionsModule.unsaveTrack(trackId, heartIcon);
         } else {
           trackActionsModule.saveTrack(trackId, heartIcon);
@@ -848,10 +844,17 @@ const recommendationModule = (() => {
         }
       </div>
       <div class="dropdown-content">
-        <a href="#" class="add-to-saved" data-trackid="${trackInfo.trackid}" data-tooltip-liked="Remove from Liked Songs" data-tooltip-unliked="Add to Liked Songs">
-          <i class="heart-icon rawcon-heart"></i>
-        </a>
-        <a href="#" class="add-to-playlist" data-trackid="${trackInfo.trackid}" data-tooltip="Add to Playlist" data-tooltip-added="Remove from Playlist" data-tooltip-unadded="Add to Playlist">
+      <a href="#" class="add-to-saved" data-trackid="${trackInfo.trackid}" 
+         data-tooltip-liked="Remove from Liked Songs" 
+         data-tooltip-unliked="Add to Liked Songs">
+        <i class="heart-icon ${
+          trackInfo.is_saved ? "rawcon-spotify-liked" : "rawcon-spotify-like"
+        }"></i>
+      </a>
+        <a href="#" class="add-to-playlist" data-trackid="${trackInfo.trackid}" 
+           data-tooltip="Add to Playlist" 
+           data-tooltip-added="Remove from Playlist" 
+           data-tooltip-unadded="Add to Playlist">
           <i class="plus-icon rawcon-album-plus"></i>
         </a>
       </div>
@@ -882,7 +885,6 @@ const recommendationModule = (() => {
     recommendationsFetched,
   };
 })();
-
 // Audio module
 const audioModule = (() => {
   let currentPlayingAudio = null;
@@ -973,47 +975,60 @@ const trackActionsModule = (() => {
       });
   };
 
-  const saveTrack = (trackId, heartIcon) => {
-    fetch("/recs/save_track", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": getCsrfToken(),
-      },
-      body: JSON.stringify({ track_id: trackId }),
-    })
-      .then(() => {
-        showToast("Added to Liked Songs.", "success");
-        heartIcon.classList.add("liked");
-      })
-      .catch((error) => {
-        showToast("Removed from Liked Songs.", "error");
-        console.error("Error:", error);
+  const saveTrack = async (trackId, heartIcon) => {
+    try {
+      const response = await fetch("/recs/save_track", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: JSON.stringify({ track_id: trackId }),
       });
+
+      if (response.ok) {
+        showToast("Added to Liked Songs.", "success");
+        // First, remove the old icon class
+        heartIcon.classList.remove("rawcon-spotify-like");
+        // Then add the new icon class
+        heartIcon.classList.add("rawcon-spotify-liked");
+      } else {
+        throw new Error("Failed to save track");
+      }
+    } catch (error) {
+      showToast("Error liking track. Please try again.", "error");
+      console.error("Error:", error);
+    }
   };
 
-  const unsaveTrack = (trackId, heartIcon) => {
-    fetch("/recs/unsave_track", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": getCsrfToken(),
-      },
-      body: JSON.stringify({ track_id: trackId }),
-    })
-      .then(() => {
-        showToast("Track unsaved successfully!", "success");
-        heartIcon.classList.remove("liked");
-      })
-      .catch((error) => {
-        showToast("An error occurred while unsaving the track.", "error");
-        console.error("Error:", error);
+  const unsaveTrack = async (trackId, heartIcon) => {
+    try {
+      const response = await fetch("/recs/unsave_track", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: JSON.stringify({ track_id: trackId }),
       });
+
+      if (response.ok) {
+        showToast("Removed from Liked Songs.", "success");
+        // First, remove the liked icon class
+        heartIcon.classList.remove("rawcon-spotify-liked");
+        // Then add the unlike icon class
+        heartIcon.classList.add("rawcon-spotify-like");
+      } else {
+        throw new Error("Failed to unsave track");
+      }
+    } catch (error) {
+      showToast("Error unliking track. Please try again.", "error");
+      console.error("Error:", error);
+    }
   };
 
   return { addToPlaylist, removeFromPlaylist, saveTrack, unsaveTrack };
 })();
-
 // UI module
 const uiModule = (() => {
   const setupEventListeners = (playlistId) => {
