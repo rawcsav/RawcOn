@@ -180,6 +180,7 @@ input:focus-visible {
 .result-image {
   width: 75px;
   height: 75px;
+  border-radius: 4px;
   object-fit: cover;
   margin-right: var(--space-2);
 }
@@ -340,6 +341,7 @@ button:hover {
   width: 125px;
   height: auto;
   object-fit: cover;
+  border-radius: 4px;
 }
 
 .caption {
@@ -769,6 +771,7 @@ input:focus-visible + .search-btn {
   width: 60px;
   height: 60px;
   object-fit: cover;
+  border-radius: 4px;
   margin-right: var(--space-5);
   box-shadow: var(--shadow-sm);
 }
@@ -900,8 +903,13 @@ input:focus-visible + .search-btn {
   content: attr(data-tooltip-unliked);
 }
 
-.dropdown-content a.add-to-saved:has(.liked)::after {
+.dropdown-content a.add-to-saved:has(.rawcon-spotify-liked)::after {
   content: attr(data-tooltip-liked);
+}
+
+.add-to-saved {
+  position: relative;
+  cursor: pointer;
 }
 
 .dropdown-content a::after {

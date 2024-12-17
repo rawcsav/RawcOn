@@ -36,10 +36,7 @@ select {
   transform: scale(1);
   transition: transform 1s var(--transition-normal);
   transform-origin: center;
-}
-
-.grid-item img:hover {
-  transform: scale(1.05);
+  border-radius: 4px;
 }
 
 .track-item {
@@ -107,6 +104,7 @@ select {
   max-height: 125px;
   object-fit: cover;
   max-width: 125px;
+  border-radius: 4px;
 }
 
 .grid-item p {
@@ -406,6 +404,7 @@ h3 {
 .album-art {
   width: 100px;
   height: 100px;
+  border-radius: 4px;
   object-fit: cover;
 }
 

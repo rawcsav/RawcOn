@@ -289,7 +289,7 @@ const uiModule = (() => {
       </div>
       <div class="dropdown-content">
         <a href="#" class="add-to-saved" data-trackid="${trackInfo.trackid}" data-tooltip-liked="Remove from Liked Songs" data-tooltip-unliked="Add to Liked Songs">
-          <i class="heart-icon rawcon-heart"></i>
+          <i class="heart-icon rawcon-spotify-like"></i>
         </a>
         <a href="#" class="add-to-playlist" data-trackid="${trackInfo.trackid}" data-tooltip="Add to Playlist">
           <i class="plus-icon rawcon-album-plus"></i>
@@ -646,7 +646,6 @@ const trackModule = (() => {
       if (response.ok) {
         showToast("Removed from Liked Songs.", "success");
         heartIcon.classList.remove("liked");
-        // Update tooltip text through the parent anchor
       } else {
         throw new Error("Error unsaving the track");
       }

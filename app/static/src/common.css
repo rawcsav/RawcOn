@@ -153,12 +153,12 @@
 
 @font-face {
   font-family: "rawcon";
-  src: url("/static/fonts/rawcon.eot?ets8e6");
+  src: url("/static/fonts/rawcon.eot?yegxxd");
   src:
-    url("/static/fonts/rawcon.eot?ets8e6#iefix") format("embedded-opentype"),
-    url("/static/fonts/rawcon.ttf?ets8e6") format("truetype"),
-    url("/static/fonts/rawcon.woff?ets8e6") format("woff"),
-    url("/static/fonts/rawcon.svg?ets8e6#rawcon") format("svg");
+    url("/static/fonts/rawcon.eot?yegxxd#iefix") format("embedded-opentype"),
+    url("/static/fonts/rawcon.ttf?yegxxd") format("truetype"),
+    url("/static/fonts/rawcon.woff?yegxxd") format("woff"),
+    url("/static/fonts/rawcon.svg?yegxxd#rawcon") format("svg");
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -175,6 +175,15 @@ i {
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.rawcon-spotify-like:before {
+  content: "\e994";
+  color: #000000;
+}
+.rawcon-spotify-liked:before {
+  content: "\e995";
+  color: #1abc54;
 }
 
 .rawcon-circle-chevron-up:before {
@@ -1010,6 +1019,7 @@ ul {
   width: 50px;
   height: 50px;
   object-fit: cover;
+  border-radius: 4px;
   margin-right: var(--space-2);
 }
 
