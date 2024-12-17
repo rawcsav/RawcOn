@@ -14,7 +14,7 @@ auth_bp = Blueprint("auth", __name__, template_folder="templates", static_folder
 
 
 @auth_bp.route("/")
-#@cache.cached(timeout=3600)  # Cache for 1 hour
+@cache.cached(timeout=3600)  # Cache for 1 hour
 @handle_errors
 def index():
     return render_template("landing.html")
