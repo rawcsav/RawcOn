@@ -11,36 +11,30 @@ function showToast(message, type = "info") {
 
   toastContainer.appendChild(toast);
 
-  // Trigger reflow
   toast.offsetHeight;
 
   toast.classList.add("show");
 
-  // Auto close after 3 seconds
   setTimeout(() => {
     closeToast(toast);
   }, 3000);
 }
 
 function closeToast(toast) {
-  // Clear the timeout to prevent multiple close attempts
   if (toast.timeoutId) {
     clearTimeout(toast.timeoutId);
   }
 
-  // Only proceed if the toast is still in the DOM
   if (toast.parentNode === toastContainer) {
     toast.classList.remove("show");
     setTimeout(() => {
-      // Check again before removing, in case it was removed during the transition
       if (toast.parentNode === toastContainer) {
         toastContainer.removeChild(toast);
       }
-    }, 300); // Wait for the transition to finish
+    }, 300);
   }
 }
 
-// eslint-disable-next-line no-unused-vars
 function getCsrfToken() {
   return document
     .querySelector('meta[name="csrf-token"]')
@@ -55,11 +49,10 @@ const util = {
 };
 
 const chartModule = (() => {
-  // eslint-disable-next-line no-unused-vars
   let myPieChart;
-  // eslint-disable-next-line no-unused-vars
+
   let myPopularityChart;
-  // eslint-disable-next-line no-unused-vars
+
   let myAudioFeaturesChart;
 
   const initCharts = (
@@ -88,7 +81,6 @@ const chartModule = (() => {
     const labels = Object.keys(yearCountData);
     const data = Object.values(yearCountData);
 
-    // eslint-disable-next-line no-undef
     myPieChart = new Chart(ctx, {
       type: "doughnut",
       data: {
@@ -148,7 +140,6 @@ const chartModule = (() => {
       (item) => item.popularity > 0,
     );
 
-    // Prepare data for histogram-like representation
     const bucketSize = 5;
     const buckets = Array.from({ length: 20 }, (_, i) => ({
       x: i * bucketSize + bucketSize / 2,
@@ -164,9 +155,6 @@ const chartModule = (() => {
       }
     });
 
-    // Generate vibrant colors for each bar
-
-    // eslint-disable-next-line no-undef
     new Chart(ctx, {
       type: "bar",
       data: {
@@ -327,7 +315,6 @@ const chartModule = (() => {
       return value * (max - min) + min;
     }
 
-    // eslint-disable-next-line no-undef
     myAudioFeaturesChart = new Chart(ctx, {
       type: "radar",
       data: {
@@ -442,7 +429,6 @@ const chartModule = (() => {
             const index = element.index;
             const feature = features[index];
 
-            // Map dataset index to label
             const datasetLabel =
               datasetIndex === 0
                 ? "Average"
@@ -452,7 +438,6 @@ const chartModule = (() => {
                     ? "Max"
                     : null;
 
-            // Get the appropriate track info based on the dataset
             let trackInfo;
             if (datasetLabel === "Min") {
               trackInfo = featureStats[feature].min;
@@ -464,11 +449,11 @@ const chartModule = (() => {
               updateMinMaxTrack(
                 feature,
                 [
-                  trackInfo[0], // track name
-                  trackInfo[1], // value
-                  trackInfo[2], // spotify url
-                  trackInfo[3], // artist name
-                  trackInfo[4], // cover art
+                  trackInfo[0],
+                  trackInfo[1],
+                  trackInfo[2],
+                  trackInfo[3],
+                  trackInfo[4],
                 ],
                 datasetLabel,
               );
@@ -484,7 +469,6 @@ const chartModule = (() => {
     const [trackName, value, trackUrl, artistName, albumArt] = trackInfo;
     const formattedValue = formatFeatureValue(feature, value);
 
-    // Determine which class to apply based on datasetLabel
     const titleClass =
       datasetLabel === "Min"
         ? "minmax-title-min"
@@ -544,11 +528,10 @@ const chartModule = (() => {
   const initGenreBubbleChart = (genreData, genreScores) => {
     const ctx = document.getElementById("genreBubbleChart").getContext("2d");
 
-    // Prepare data for the chart
     const mainGenres = Object.entries(genreData).map(([genre, data]) => ({
       x: data.x,
       y: data.y,
-      r: Math.sqrt(data.count) * 2, // Adjust the multiplier to scale bubble sizes
+      r: Math.sqrt(data.count) * 2,
       label: genre,
       count: data.count,
     }));
@@ -569,7 +552,6 @@ const chartModule = (() => {
       score: genre.opposition_score,
     }));
 
-    // eslint-disable-next-line no-undef
     new Chart(ctx, {
       type: "bubble",
       data: {
@@ -608,7 +590,7 @@ const chartModule = (() => {
               },
             },
             ticks: {
-              align: "start", // Align tick labels to the center
+              align: "start",
               callback: function (value, index, values) {
                 if (index === 0) return "Dense/Atmospheric";
                 if (index === values.length - 1) return "Choppy/Bouncy/Sharp";
@@ -629,7 +611,7 @@ const chartModule = (() => {
               },
             },
             ticks: {
-              align: "start", // Align tick labels to the center
+              align: "start",
               callback: function (value, index, values) {
                 if (index === 0) return "Organic/Acoustic";
                 if (index === values.length - 1) return "Synthetic/Mechanized";
@@ -687,7 +669,6 @@ const chartModule = (() => {
   return { initCharts };
 })();
 
-// Playlist actions module
 const playlistActionsModule = (() => {
   const likeAllSongs = (playlistId) => {
     fetch(`/playlist/like_all_songs/${playlistId}`)
@@ -758,7 +739,6 @@ const playlistActionsModule = (() => {
   return { likeAllSongs, unlikeAllSongs, removeDuplicates, reorderPlaylist };
 })();
 
-// Recommendation module
 const recommendationModule = (() => {
   let recommendationsFetched = false;
   let eventListenersAttached = false;
@@ -885,7 +865,7 @@ const recommendationModule = (() => {
     recommendationsFetched,
   };
 })();
-// Audio module
+
 const audioModule = (() => {
   let currentPlayingAudio = null;
 
@@ -987,9 +967,9 @@ const trackActionsModule = (() => {
 
       if (response.ok) {
         showToast("Added to Liked Songs.", "success");
-        // First, remove the old icon class
+
         heartIcon.classList.remove("rawcon-spotify-like");
-        // Then add the new icon class
+
         heartIcon.classList.add("rawcon-spotify-liked");
       } else {
         throw new Error("Failed to save track");
@@ -1013,9 +993,9 @@ const trackActionsModule = (() => {
 
       if (response.ok) {
         showToast("Removed from Liked Songs.", "success");
-        // First, remove the liked icon class
+
         heartIcon.classList.remove("rawcon-spotify-liked");
-        // Then add the unlike icon class
+
         heartIcon.classList.add("rawcon-spotify-like");
       } else {
         throw new Error("Failed to unsave track");
@@ -1028,7 +1008,7 @@ const trackActionsModule = (() => {
 
   return { addToPlaylist, removeFromPlaylist, saveTrack, unsaveTrack };
 })();
-// UI module
+
 const uiModule = (() => {
   const setupEventListeners = (playlistId) => {
     document.querySelectorAll(".data-view-btn").forEach((btn) => {
@@ -1139,9 +1119,7 @@ document.addEventListener("DOMContentLoaded", function () {
     genreScores,
   );
 
-  // Setup event listeners
   uiModule.setupEventListeners(playlistId);
 
-  // Setup intersection observer for animations
   uiModule.setupIntersectionObserver();
 });

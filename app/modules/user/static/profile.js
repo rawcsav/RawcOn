@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const topArtistsList = document.getElementById("topArtists");
   const topTracksList = document.getElementById("topTracks");
   const topGenresList = document.getElementById("topGenres");
-  let chart; // Declare chart variable in a higher scope
+  let chart;
 
   let artistsOffset = 0;
   let tracksOffset = 0;
@@ -41,14 +41,12 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function handleScroll(container, loadMoreFunction) {
-    // Add scroll gradient logic
     if (container.scrollLeft > 20) {
       container.classList.add("is-scrolled");
     } else {
       container.classList.remove("is-scrolled");
     }
 
-    // Original infinite scroll logic
     if (
       container.scrollLeft + container.clientWidth >=
       container.scrollWidth - 20
@@ -75,7 +73,7 @@ document.addEventListener("DOMContentLoaded", function () {
     loadMoreArtists(period);
     loadMoreTracks(period);
     updateTopGenres(period);
-    lazyLoadImages(); // Reinitialize lazy loading for the new content
+    lazyLoadImages();
   }
 
   function loadMoreArtists(period) {
@@ -582,8 +580,6 @@ document.addEventListener("DOMContentLoaded", function () {
               clearMinMaxTrack();
             }
           } else {
-            // Do not clear the min-max track info when the user hovers off
-            // This allows the info to stay on screen for interaction
           }
         },
       },
@@ -608,7 +604,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function updateChart() {
-      if (!chart) return; // Guard clause in case chart isn't initialized
+      if (!chart) return;
 
       const avgData = features.map((feature) =>
         normalizeFeature(feature, audioFeaturesSummary[currentPeriod][feature]),
@@ -658,7 +654,6 @@ document.addEventListener("DOMContentLoaded", function () {
       ];
 
       chart.update();
-      // Do not clear min-max track info when updating the chart
     }
 
     function updateMinMaxTrack(feature, trackInfo, datasetLabel) {
@@ -675,7 +670,6 @@ document.addEventListener("DOMContentLoaded", function () {
         trackInfo.album.images[0]?.url || "/static/dist/img/default-album.svg";
       const trackUrl = trackInfo.external_urls.spotify;
 
-      // Determine which class to apply based on datasetLabel
       const titleClass =
         datasetLabel === "Min"
           ? "minmax-title-min"
@@ -714,9 +708,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    function clearMinMaxTrack() {
-      // Do not clear the min-max track info to keep it on screen
-    }
+    function clearMinMaxTrack() {}
 
     const controlsContainer = document.createElement("div");
     controlsContainer.className = "audio-features-controls";
@@ -736,7 +728,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const selectedValue = option.getAttribute("data-value");
         updateDisplay(selectedValue);
         currentPeriod = selectedValue;
-        updateChart(); // Always call updateChart
+        updateChart();
       });
     });
   }
@@ -889,12 +881,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
   window.addEventListener("scroll", handleScroll);
   window.addEventListener("resize", handleResize);
-  updateStickyPeriod(); // Initialize with the default selected period
+  updateStickyPeriod();
 
   const blurbContainer = document.getElementById("stats-blurbs-container");
 
   function displayBlurbs(blurbs) {
-    blurbContainer.innerHTML = ""; // Clear existing blurbs
+    blurbContainer.innerHTML = "";
 
     blurbs.forEach((blurb, index) => {
       const blurbElement = document.createElement("div");
@@ -909,7 +901,6 @@ document.addEventListener("DOMContentLoaded", function () {
       blurbElement.appendChild(icon);
       blurbElement.appendChild(textElement);
 
-      // Add a slight delay for each blurb to create a staggered appearance
       setTimeout(() => {
         blurbElement.style.opacity = "1";
         blurbElement.style.transform = "translateY(0)";
@@ -930,6 +921,7 @@ document.addEventListener("DOMContentLoaded", function () {
     ];
     return icons[Math.floor(Math.random() * icons.length)];
   }
+
   function fetchBlurbs() {
     fetch("/user/stats_blurbs")
       .then((response) => response.json())
@@ -943,6 +935,5 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   }
 
-  // Initial load of blurbs
   fetchBlurbs();
 });

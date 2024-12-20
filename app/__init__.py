@@ -1,4 +1,5 @@
 import os
+
 from flask import Flask, request, Response, jsonify
 from flask_assets import Environment
 from flask_bcrypt import Bcrypt
@@ -14,8 +15,8 @@ from flask_wtf.csrf import CSRFProtect
 from itsdangerous import URLSafeTimedSerializer
 
 from app.celery_app import celery
-from config import ProductionConfig, DevelopmentConfig
 from app.util.logging_util import get_logger, notify_error
+from config import ProductionConfig, DevelopmentConfig
 
 logger = get_logger(__name__)
 

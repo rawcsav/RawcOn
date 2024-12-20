@@ -2,7 +2,7 @@ import secrets
 import string
 
 import requests
-from flask import abort, current_app
+from flask import abort, current_app, session
 
 
 def verify_session(session):
@@ -41,20 +41,28 @@ def request_tokens(payload):
 
 
 def fetch_user_data(access_token):
+    if "user_data" in session:
+        return session["user_data"]
     headers = {"Authorization": f"Bearer {access_token}"}
     res = requests.get(current_app.config["ME_URL"], headers=headers)
     if res.status_code != 200:
         abort(res.status_code)
 
-    return res.json()
+    # Store the response in session before returning
+    user_data = res.json()
+    session["user_data"] = user_data
+    return user_data
 
 
 def get_spotify_user_id(access_token):
-    headers = {"Authorization": f"Bearer {access_token}"}
-    response = requests.get("https://api.spotify.com/v1/me", headers=headers)
+    if "user_data" in session:
+        return session["user_data"]["id"]
 
+    headers = {"Authorization": f"Bearer {access_token}"}
+    response = requests.get(current_app.config["ME_URL"], headers=headers)
     if response.status_code == 200:
         user_data = response.json()
+        session["user_data"] = user_data
         return user_data["id"]
     else:
         current_app.logger.error(f"Failed to fetch Spotify user ID. Status code: {response.status_code}")

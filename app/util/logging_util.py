@@ -1,9 +1,9 @@
 import logging
-from logging.handlers import RotatingFileHandler
 import os
-from typing import Optional
 import smtplib
 from email.message import EmailMessage
+from logging.handlers import RotatingFileHandler
+from typing import Optional
 
 
 class AppLogger:

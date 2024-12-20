@@ -1,0 +1,93 @@
+document.addEventListener("DOMContentLoaded", function () {
+  const eulaData = document.getElementById("eula-data");
+
+  const showEulaModal = eulaData.dataset.showEulaModal === "true";
+  const loginUrl = eulaData.dataset.loginUrl;
+  const acceptEulaUrl = eulaData.dataset.acceptEulaUrl;
+
+  const loginButton = document.querySelector(".login-button");
+  const eulaModal = document.getElementById("eulaModal");
+  const eulaModalContent = eulaModal.querySelector(".eula-modal-content");
+  const eulaAcceptCheckbox = document.getElementById("eulaAccept");
+  const eulaAcceptBtn = document.getElementById("eulaAcceptBtn");
+  const eulaDeclineBtn = document.querySelector(".eula-modal-decline");
+
+  function getCsrfToken() {
+    return document
+      .querySelector('meta[name="csrf-token"]')
+      .getAttribute("content");
+  }
+
+  function disableInteraction() {
+    eulaAcceptBtn.disabled = true;
+    eulaAcceptBtn.classList.add("loading");
+    eulaModalContent.style.pointerEvents = "none";
+  }
+
+  function enableInteraction() {
+    eulaAcceptBtn.disabled = false;
+    eulaAcceptBtn.classList.remove("loading");
+    eulaModalContent.style.pointerEvents = "auto";
+  }
+
+  function closeModal() {
+    eulaModal.style.display = "none";
+    document.body.style.overflow = "auto";
+  }
+
+  function openModal() {
+    eulaModal.style.display = "block";
+    document.body.style.overflow = "hidden";
+  }
+
+  loginButton.addEventListener("click", function (event) {
+    event.preventDefault();
+    window.showLoading();
+    if (showEulaModal) {
+      openModal();
+      window.hideLoading();
+    } else {
+      window.location.href = loginUrl;
+    }
+  });
+
+  eulaDeclineBtn.addEventListener("click", closeModal);
+
+  eulaAcceptCheckbox.addEventListener("change", function () {
+    eulaAcceptBtn.disabled = !this.checked;
+  });
+
+  eulaAcceptBtn.addEventListener("click", async function () {
+    if (eulaAcceptCheckbox.checked) {
+      try {
+        disableInteraction();
+
+        const response = await fetch(acceptEulaUrl, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": getCsrfToken(),
+            "X-Long-Running": "true",
+            "Content-Type": "application/json",
+          },
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          window.location.href = loginUrl;
+          closeModal();
+        } else {
+          throw new Error("EULA acceptance failed");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+
+        enableInteraction();
+
+        alert("An error occurred. Please try again.");
+      } finally {
+        window.hideLoading();
+      }
+    }
+  });
+});

@@ -30,17 +30,14 @@ class UserData(db.Model):
     audio_features = db.Column(db.JSON, nullable=True)
     genre_specific_data = db.Column(db.JSON, nullable=True)
     sorted_genres_by_period = db.Column(db.JSON, nullable=True)
-    recent_tracks = db.Column(db.JSON, nullable=True)
     playlist_info = db.Column(db.JSON, nullable=True)
     last_active = db.Column(db.DateTime, default=datetime.utcnow)
     isDarkMode = db.Column(db.Boolean, nullable=True)
     last_stale_update = db.Column(db.DateTime, nullable=True)
-    _access_token = db.Column(db.VARCHAR(1000), nullable=True)  # Encrypted access token
-    _refresh_token = db.Column(db.VARCHAR(1000), nullable=True)  # Encrypted refresh token
+    _access_token = db.Column(db.VARCHAR(1000), nullable=True)
+    _refresh_token = db.Column(db.VARCHAR(1000), nullable=True)
     token_expiry = db.Column(db.DateTime, nullable=True)
-    new_account = db.Column(db.Boolean, default=True)
-
-    # Cascade delete for playlists
+    new_account = db.Column(db.Boolean, default=True)  # Cascade delete for playlists
     # Cascade delete for playlists
     playlists = db.relationship("PlaylistData", back_populates="user", lazy="dynamic", cascade="all, delete-orphan")
 

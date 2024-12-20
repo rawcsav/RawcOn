@@ -9,8 +9,8 @@ from app.modules.auth.auth_util import verify_session
 from app.modules.recs.recs_util import spotify_search, get_recommendations
 from app.modules.user.user_util import init_session_client, format_track_info, get_playlist_summary
 from app.util.database_util import add_artist_to_db
-from app.util.wrappers import require_spotify_auth
 from app.util.logging_util import get_logger
+from app.util.wrappers import require_spotify_auth
 
 logger = get_logger(__name__)
 

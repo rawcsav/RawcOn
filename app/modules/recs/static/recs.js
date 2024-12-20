@@ -11,32 +11,27 @@ function showToast(message, type = "info") {
 
   toastContainer.appendChild(toast);
 
-  // Trigger reflow
   toast.offsetHeight;
 
   toast.classList.add("show");
 
-  // Auto close after 3 seconds
   setTimeout(() => {
     closeToast(toast);
   }, 3000);
 }
 
 function closeToast(toast) {
-  // Clear the timeout to prevent multiple close attempts
   if (toast.timeoutId) {
     clearTimeout(toast.timeoutId);
   }
 
-  // Only proceed if the toast is still in the DOM
   if (toast.parentNode === toastContainer) {
     toast.classList.remove("show");
     setTimeout(() => {
-      // Check again before removing, in case it was removed during the transition
       if (toast.parentNode === toastContainer) {
         toastContainer.removeChild(toast);
       }
-    }, 300); // Wait for the transition to finish
+    }, 300);
   }
 }
 
@@ -62,7 +57,6 @@ const util = {
   },
 };
 
-// DOM elements
 const elements = {
   searchInput: document.getElementById("universal-input"),
   searchButton: document.getElementById("universal-search"),
@@ -78,7 +72,6 @@ const elements = {
   toast: document.getElementById("toast"),
 };
 
-// Search module
 const searchModule = (() => {
   const performSearch = async (query) => {
     if (!query.trim()) {
@@ -112,12 +105,9 @@ const searchModule = (() => {
   return { performSearch };
 })();
 
-// Seeds module
 const seedsModule = (() => {
-  // Add this to the elements object at the beginning of the file
   elements.submitButton = document.querySelector('form button[type="submit"]');
 
-  // Add this function to the seedsModule
   const updateSubmitButton = () => {
     const seedCount = elements.seedsContainer.children.length;
     elements.seedStep.visible = seedCount >= 1;
@@ -151,13 +141,13 @@ const seedsModule = (() => {
     elements.seedsContainer.appendChild(seedElement);
     updateSeedsInput();
     updateSeedCounter();
-    updateSubmitButton(); // Add this line
+    updateSubmitButton();
   };
   const removeSeed = (seedElement) => {
     seedElement.remove();
     updateSeedsInput();
-    updateSeedCounter(); // Update counter when a seed is added
-    updateSubmitButton(); // Add this line
+    updateSeedCounter();
+    updateSubmitButton();
   };
 
   const updateSeedsInput = () => {
@@ -188,11 +178,10 @@ const seedsModule = (() => {
     removeSeed,
     updateSeedsInput,
     updateSeedCounter,
-    updateSubmitButton, // Add this line
+    updateSubmitButton,
   };
 })();
 
-// UI module
 const uiModule = (() => {
   const displaySearchResults = (data) => {
     elements.searchDropdown.innerHTML = "";
@@ -320,7 +309,6 @@ const uiModule = (() => {
   };
 })();
 
-// Slider module
 const sliderModule = (() => {
   const initMinMaxSlider = (sliderId, minInputId, maxInputId, config) => {
     const container = document.getElementById(sliderId);
@@ -332,7 +320,6 @@ const sliderModule = (() => {
     const minInput = document.getElementById(minInputId);
     const maxInput = document.getElementById(maxInputId);
 
-    // Set initial values based on config
     minSlider.min = config.min;
     minSlider.max = config.max;
     maxSlider.min = config.min;
@@ -374,7 +361,7 @@ const sliderModule = (() => {
     minSlider.addEventListener("input", updateSlider);
     maxSlider.addEventListener("input", updateSlider);
 
-    updateSlider(); // Initial update
+    updateSlider();
   };
 
   const initializeAllSliders = () => {
@@ -430,13 +417,12 @@ const sliderModule = (() => {
 
   return { initializeAllSliders };
 })();
-// Recommendation module
+
 const recommendationModule = (() => {
   const getRecommendations = async () => {
     const formData = new FormData(elements.recommendationForm);
     const data = Object.fromEntries(formData.entries());
 
-    // Prepare the data object
     const requestData = {
       artist_seeds: data.artist_seeds || "",
       track_seeds: data.track_seeds || "",
@@ -482,7 +468,7 @@ const recommendationModule = (() => {
 
   return { getRecommendations };
 })();
-// Audio playback module
+
 const audioModule = (() => {
   let currentPlayingAudio = null;
   let currentPlayingButton = null;
@@ -533,7 +519,6 @@ const audioModule = (() => {
       }
     });
 
-    // Add ended event listener to reset the play button
     audioPlayer.addEventListener("ended", () => {
       updatePlayState(false, playButton, playIcon);
       currentPlayingAudio = null;
@@ -607,7 +592,6 @@ const playlistModule = (() => {
   return { addToPlaylist, loadUserPlaylists };
 })();
 
-// Track management module
 const trackModule = (() => {
   const saveTrack = async (trackId, heartIcon) => {
     try {
@@ -657,7 +641,7 @@ const trackModule = (() => {
 
   return { saveTrack, unsaveTrack };
 })();
-// Event listeners
+
 document.addEventListener("DOMContentLoaded", () => {
   const debouncedSearch = util.debounce(searchModule.performSearch, 300);
   seedsModule.updateSubmitButton();
@@ -694,7 +678,6 @@ document.addEventListener("DOMContentLoaded", () => {
     recommendationModule.getRecommendations();
   });
 
-  // Event listener for saving/unsaving tracks
   document.addEventListener("click", function (event) {
     if (event.target.closest(".add-to-saved")) {
       event.preventDefault();
@@ -711,7 +694,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Event listener for adding tracks to playlist
   document.addEventListener("click", function (event) {
     if (event.target.closest(".add-to-playlist")) {
       event.preventDefault();
@@ -724,7 +706,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Event listener for selecting a playlist
   elements.playlistOptions.addEventListener("click", function (event) {
     if (event.target.closest(".playlist-choice")) {
       event.preventDefault();
@@ -735,7 +716,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Close modal event listeners
   document.querySelectorAll(".close").forEach((closeButton) => {
     closeButton.addEventListener("click", function () {
       elements.playlistModal.style.display = "none";

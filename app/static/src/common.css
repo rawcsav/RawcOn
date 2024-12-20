@@ -181,6 +181,7 @@ i {
   content: "\e994";
   color: #000000;
 }
+
 .rawcon-spotify-liked:before {
   content: "\e995";
   color: #1abc54;

@@ -1,0 +1,146 @@
+<div id="eulaModal" class="eula-modal" data-visible="false">
+  <div
+    class="eula-modal-content"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="eulaTitle"
+  >
+    <h2 id="eulaTitle" class="eula-modal-title">End User License Agreement</h2>
+
+    <div class="eula-modal-body">
+      <section aria-label="Agreement Terms">
+        <h3>1. Platform Integration & Service</h3>
+        <p>
+          Rawc-On is an advanced music analytics platform that integrates with
+          the Spotify Platform. This application is bound by Spotify's Developer
+          Terms and Developer Policy. The application is for personal,
+          non-commercial use only and requires a Spotify Premium account for
+          streaming functionality. Rawc-On bears sole responsibility for this
+          service and its operation.
+        </p>
+
+        <h3>2. User Data & Privacy</h3>
+        <p>
+          We respect user privacy and only collect necessary data to provide our
+          service. You can disconnect your Spotify account at any time by
+          e-mailing me with a deletion request:
+          <span class="email">gavin@rawcsav.com</span>. Upon e-mailing, all your
+          data will be permanently deleted within 5 days. Otherwise, your data
+          is retained for 30 days after your last activity, after which it is
+          automatically deleted.
+        </p>
+
+        <h3>3. Usage Restrictions</h3>
+        <p>Users are explicitly prohibited from:</p>
+        <ul>
+          <li>
+            Using the service for commercial purposes or in business settings
+          </li>
+          <li>
+            Attempting to manipulate play counts, followers, or other metrics
+          </li>
+          <li>
+            Modifying, copying, preparing derivative works of, decompiling, or
+            reverse engineering any materials and software
+          </li>
+          <li>
+            Using the service to train AI models or analyze Spotify content
+          </li>
+          <li>
+            Transferring data to other services (except personal playlist
+            metadata)
+          </li>
+          <li>Removing any copyright or proprietary notations</li>
+          <li>
+            Circumventing or attempting to circumvent any territorial
+            restrictions or content protection
+          </li>
+          <li>
+            Harvesting, collecting, or gathering user data without consent
+          </li>
+        </ul>
+
+        <h3>4. Spotify Rights & Enforcement</h3>
+        <p>
+          You expressly acknowledge that Spotify is a third-party beneficiary of
+          this agreement and is entitled to directly enforce these terms. Access
+          to streaming features may be limited by territorial restrictions, and
+          you agree not to circumvent such restrictions.
+        </p>
+
+        <h3>5. Intellectual Property & Content</h3>
+        <p>
+          All Spotify-provided content, including music data, user information,
+          and related metadata accessed through the Spotify API, is the
+          exclusive property of Spotify and its licensors. The visual design and
+          non-Spotify elements are property of Rawc-On. Users are granted a
+          limited, non-exclusive, non-transferable right for personal use only.
+        </p>
+
+        <h3>6. Disclaimers & Warranties</h3>
+        <p class="eula-disclaimer">
+          THE SERVICE AND ALL SPOTIFY PLATFORM COMPONENTS ARE PROVIDED "AS IS"
+          AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS OR
+          IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF
+          MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+          NON-INFRINGEMENT. RAWC-ON IS SOLELY RESPONSIBLE FOR THE SERVICE, AND
+          THIS SERVICE IS NOT ENDORSED BY OR AFFILIATED WITH SPOTIFY.
+        </p>
+
+        <h3>7. Governing Law</h3>
+        <p>
+          This agreement is governed by the laws of the State of California,
+          without regard to its conflict of law principles. Any disputes not
+          subject to arbitration shall be subject to the exclusive jurisdiction
+          of the state and federal courts of San Francisco County, California.
+        </p>
+
+        <div class="terms-links">
+          <p>For complete details, please read our:</p>
+          <ul>
+            <li>
+              <a href="/terms" class="terms-link"
+                >Terms of Service & Privacy Policy</a
+              >
+            </li>
+          </ul>
+        </div>
+      </section>
+    </div>
+
+    <div class="eula-modal-footer">
+      <div class="eula-acceptance-wrapper">
+        <label class="eula-checkbox-container">
+          <input
+            type="checkbox"
+            id="eulaAccept"
+            required
+            aria-required="true"
+            data-analytics="eula-checkbox"
+          />
+          <span class="eula-checkbox-label">
+            I acknowledge and agree to be bound by this Agreement
+          </span>
+        </label>
+      </div>
+      <div class="eula-modal-actions">
+        <button
+          type="button"
+          class="eula-modal-decline"
+          data-analytics="eula-decline"
+        >
+          Decline & Exit
+        </button>
+        <button
+          type="button"
+          class="eula-modal-accept"
+          disabled
+          id="eulaAcceptBtn"
+          data-analytics="eula-accept"
+        >
+          Accept & Continue
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -12,7 +12,6 @@ from app.models.user_models import UserData
 from app.modules.user.user_util import fetch_and_process_data
 from app.util.logging_util import get_logger
 
-
 logger = get_logger(__name__)
 
 

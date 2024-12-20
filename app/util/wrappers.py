@@ -1,8 +1,9 @@
 import traceback
 from datetime import datetime, timedelta
-
-from flask import session, redirect, url_for, request, current_app
+from flask import session, redirect, url_for, request, current_app, flash
 from app.util.logging_util import get_logger
+from functools import wraps
+from flask import jsonify
 
 logger = get_logger(__name__)
 
@@ -10,19 +11,23 @@ logger = get_logger(__name__)
 def require_spotify_auth(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        if "tokens" not in session or not session.get("tokens", {}).get("access_token"):
+            flash("Please authenticate and try again.", "error")
+            return redirect(url_for("auth.index"))
+
         now = datetime.now()
         tokens = session.get("tokens", {})
-        expiry_time = datetime.fromisoformat(tokens.get("expiry_time", "2000-01-01"))
-        if now >= expiry_time - timedelta(minutes=5):
-            return redirect(url_for("auth.refresh", next=request.url))
+        try:
+            expiry_time = datetime.fromisoformat(tokens.get("expiry_time", "2000-01-01"))
+            if now >= expiry_time - timedelta(minutes=5):
+                return redirect(url_for("auth.refresh", next=request.url))
+        except (TypeError, ValueError):
+            flash("Please authenticate and try again.", "error")
+            return redirect(url_for("auth.index"))
 
         return f(*args, **kwargs)
 
     return decorated_function
-
-
-from functools import wraps
-from flask import jsonify
 
 
 def handle_errors(f):

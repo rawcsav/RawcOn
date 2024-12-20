@@ -1,20 +1,15 @@
-// Configuration object
 const config = {
   loaderSelector: "#loading-overlay",
   featureEnabledKeywords: ["profile", "recommendations", "playlist"],
 };
 
-// Constants
-const LONG_REQUEST_THRESHOLD = 30000; // 30 seconds
+const LONG_REQUEST_THRESHOLD = 30000;
 
-// DOM Elements
 const loader = document.querySelector(config.loaderSelector);
 
-// Global variables for request tracking
 let activeRequests = 0;
 let longRunningRequests = new Set();
 
-// Loader functions
 window.showLoading = function (duration = 4000) {
   if (loader && loader.style.display !== "flex") {
     loader.style.display = "flex";
@@ -60,7 +55,6 @@ function hideGlobalLoader(timeoutId = null) {
   }
 }
 
-// Helper functions
 function shouldEnableFeatures() {
   const currentPath = window.location.pathname.toLowerCase();
   return config.featureEnabledKeywords.some((keyword) =>
@@ -68,7 +62,6 @@ function shouldEnableFeatures() {
   );
 }
 
-// Request interception
 const originalFetch = window.fetch;
 window.fetch = function (...args) {
   const isLongRunning =
@@ -119,7 +112,6 @@ window.customFetch = async function (url, options = {}) {
   }
 };
 
-// Setup functions
 function setupLoader() {
   document.addEventListener(
     "submit",
@@ -138,11 +130,9 @@ function setupLoader() {
         };
 
         if (method === "GET") {
-          // For GET requests, append form data to URL
           const params = new URLSearchParams(formData);
           url += (url.includes("?") ? "&" : "?") + params.toString();
         } else {
-          // For other methods, send form data in the body
           options.body = formData;
         }
 
@@ -202,9 +192,8 @@ function setupPageFeatures() {
 
   function displayPlaylists() {
     const playlistsList = document.getElementById("playlists");
-    // eslint-disable-next-line no-undef
+
     if (playlistSummary && playlistSummary.length > 0) {
-      // eslint-disable-next-line no-undef
       playlistsList.innerHTML = playlistSummary
         .map(
           (playlist) => `
@@ -258,9 +247,6 @@ function setupPageFeatures() {
   window.addEventListener("popstate", updateMenu);
 }
 
-// Event listeners
-
-// Initialize
 document.addEventListener("DOMContentLoaded", function () {
   setupLoader();
   if (shouldEnableFeatures()) {

@@ -1,6 +1,14 @@
 {% extends 'base.html' %} {% block head %}
 <title>Rawc-On</title>
 <link rel="canonical" href="https://rawcon.rawcsav.com/" />
+<meta
+  id="eula-data"
+  data-show-eula-modal="{{ show_eula_modal|tojson }}"
+  data-login-url="{{ url_for('auth.login', loginout='login') }}"
+  data-accept-eula-url="{{ url_for('auth.accept_eula') }}"
+/>
+<meta name="csrf-token" content="{{ csrf_token() }}" />
+
 {% endblock %} {% block styles %} {% assets "auth_style_bundle" %}
 <link rel="stylesheet" href="{{ ASSET_URL }}" />
 {% endassets %} {% endblock %} {% block header %} {% endblock %}{% block body %}
@@ -52,6 +60,10 @@
       alt="Spotify Logo"
   /></a>
 </div>
-{% endblock %}{% block scripts %}{% assets "auth_js_bundle" %}
+{% with messages = get_flashed_messages(with_categories=true) %} {% if messages
+%} {% for category, message in messages %}
+<div class="alert alert-{{ category }}">{{ message }}</div>
+{% endfor %} {% endif %} {% endwith %} {% include 'eula_modal.html' %} {%
+endblock %}{% block scripts %}{% assets"auth_js_bundle" %}
 <script src="{{ ASSET_URL }}"></script>
-{% endassets %}{% endblock %}
+{% endassets %} {% endblock %}

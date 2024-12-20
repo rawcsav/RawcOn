@@ -1,11 +1,12 @@
 from datetime import datetime
 
-from flask import Blueprint, render_template, session, request, jsonify
+from flask import Blueprint, render_template, session, jsonify
 from pytz import timezone
 
 from app import db, limiter
 from app.models.user_models import UserData
 from app.modules.auth.auth_util import verify_session
+from app.util.logging_util import get_logger
 from app.util.wrappers import require_spotify_auth, handle_errors
 from .user_util import (
     init_session_client,
@@ -22,7 +23,6 @@ from .user_util import (
     generate_stats_blurbs,
 )
 from ..auth.auth_util import fetch_user_data
-from app.util.logging_util import get_logger
 
 logger = get_logger(__name__)
 
@@ -33,19 +33,13 @@ eastern = timezone("US/Eastern")
 
 @user_bp.route("/profile")
 @limiter.limit("30 per minute")
-# @cache.cached(timeout=300)  # Cache for 5 minutes
 @handle_errors
 @require_spotify_auth
 def profile():
     try:
         access_token = verify_session(session)
         res_data = fetch_user_data(access_token)
-        spotify_user_id = res_data.get("id")
-        spotify_user_display_name = res_data.get("display_name")
-        user_market = res_data.get("country")
-        session["DISPLAY_NAME"] = spotify_user_display_name
-        session["USER_ID"] = spotify_user_id
-        session["MARKET"] = user_market
+        spotify_user_id = session["USER_ID"]
 
         user_data_entry = UserData.query.filter_by(spotify_user_id=spotify_user_id).first()
 
@@ -160,7 +154,6 @@ def audio_features(time_range):
         features = get_audio_features_summary(user_data, time_range)
         return jsonify(features)
     except Exception as e:
-        print(f"An error occurred: {e}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -189,7 +182,6 @@ def top_tracks(time_range):
         return jsonify(tracks)
     except Exception as e:
         logger.error(f"An error occurred while fetching a user's top tracks: {e}")
-        print(f"An error occurred: {e}")
         return jsonify({"error": str(e)}), 500
 
 

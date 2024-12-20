@@ -7,7 +7,6 @@ from app import db
 from app.models.user_models import ArtistData, FeatureData, UserData, GenreData
 from app.util.logging_util import get_logger
 
-
 logger = get_logger(__name__)
 
 

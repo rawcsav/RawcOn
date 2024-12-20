@@ -9,7 +9,6 @@ from app.models.user_models import UserData, GenreData
 from app.modules.auth.auth import refresh
 from app.modules.auth.auth_util import verify_session, fetch_user_data
 from app.util.database_util import get_or_fetch_artist_info, get_or_fetch_audio_features
-
 from app.util.logging_util import get_logger
 
 logger = get_logger(__name__)
