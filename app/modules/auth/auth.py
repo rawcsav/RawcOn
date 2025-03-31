@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 from flask import Blueprint, redirect, render_template, request, session, url_for, current_app, jsonify, flash
 from flask import make_response
 
-from app import cache, limiter
+from app import limiter
 from app.modules.auth.auth_util import (
     generate_state,
     prepare_auth_payload,
