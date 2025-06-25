@@ -440,7 +440,6 @@ def get_genre_artists_count(track_info_list, top_n=10):
     artist_urls = {}
     artist_ids = {}
 
-    # Keep track of artist URLs for each genre
     genre_artist_urls = {}
 
     for track_info in track_info_list:
@@ -461,7 +460,6 @@ def get_genre_artists_count(track_info_list, top_n=10):
 
                 genre_info[genre]["count"] += 1
                 genre_info[genre]["artists"].add(artist_name)
-                # Store artist URL in the genre info
                 genre_info[genre]["artist_urls"][artist_name] = spotify_url
 
             artist_counts[artist_name] = artist_counts.get(artist_name, 0) + 1
@@ -472,12 +470,12 @@ def get_genre_artists_count(track_info_list, top_n=10):
 
             artist_urls[artist_name] = spotify_url
 
-    # Fetch x and y coordinates for all genres
     genre_coords = {g.genre: (g.x, g.y) for g in GenreData.query.filter(GenreData.genre.in_(genre_info.keys())).all()}
 
-    # Add x and y coordinates to genre_info
-    for genre, coords in genre_coords.items():
-        genre_info[genre]["x"], genre_info[genre]["y"] = coords
+    for genre in genre_info:
+        coords = genre_coords.get(genre)
+        if coords:
+            genre_info[genre]["x"], genre_info[genre]["y"] = coords
 
     sorted_artists = sorted(artist_counts.items(), key=lambda x: x[1], reverse=True)
     top_artists = [
@@ -485,10 +483,8 @@ def get_genre_artists_count(track_info_list, top_n=10):
         for name, count in sorted_artists[:top_n]
     ]
 
-    # Convert sets to lists for JSON serialization and ensure artist_urls are included
     for genre, info in genre_info.items():
         info["artists"] = list(info["artists"])
-        # Ensure we only include URLs for artists that are in the artists list
         info["artist_urls"] = {artist: url for artist, url in info["artist_urls"].items() if artist in info["artists"]}
 
     return genre_info, top_artists
